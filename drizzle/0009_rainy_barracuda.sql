@@ -1,0 +1,1 @@
+ALTER TABLE `circle_members` ADD `history_before` integer DEFAULT 0 NOT NULL;

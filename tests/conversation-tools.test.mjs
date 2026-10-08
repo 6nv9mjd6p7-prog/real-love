@@ -1,0 +1,14 @@
+import ts from 'typescript';
+import {readFileSync} from 'node:fs';
+import assert from 'node:assert/strict';
+const compile=s=>'data:text/javascript;base64,'+Buffer.from(ts.transpileModule(s,{compilerOptions:{module:ts.ModuleKind.ESNext}}).outputText).toString('base64');
+const modelUrl=compile(readFileSync('app/model.ts','utf8'));
+const {examples}=await import(modelUrl);
+const {appendPrompt,conversationPrompts,incomingSince,nearMessageBottom,messageDay}=await import(compile(readFileSync('app/conversation-tools.ts','utf8').replace("from './model'",`from '${modelUrl}'`)));
+const person={...examples[1],interests:['History','Philosophy'],topics:[]};
+assert.equal(conversationPrompts({...person,interests:['  HISTORY '],topics:[]},person)[0],'What drew you to History?');
+assert.equal(conversationPrompts(null,person)[0],'What has held your interest lately?');
+assert.equal(appendPrompt('My unfinished thought','A question?'),'My unfinished thought\n\nA question?');assert.equal(appendPrompt('','A question?'),'A question?');assert.equal(appendPrompt('x'.repeat(1499),'A question?'),null,'prompts cannot exceed the message limit or truncate the existing draft');
+const old=[{id:'one',mine:false},{id:'two',mine:true}];assert.equal(incomingSince(old,[...old,{id:'three',mine:false},{id:'four',mine:true}]),1);assert.equal(incomingSince(old,old),0,'repeat refreshes do not add phantom messages');
+assert(nearMessageBottom(100,300,440));assert(!nearMessageBottom(50,300,600));assert.equal(messageDay('2026-10-05T12:00:00Z'),messageDay('2026-10-05T13:00:00Z'));assert.notEqual(messageDay('2026-10-05T12:00:00Z'),messageDay('2026-10-06T12:00:00Z'));
+console.log('Shared-interest prompts, draft preservation, incoming message counts, and scroll-follow decisions passed');

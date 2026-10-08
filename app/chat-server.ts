@@ -1,0 +1,44 @@
+import {env} from 'cloudflare:workers';
+import {reactionOptions,EDIT_WINDOW_MS,DELETE_WINDOW_MS,MAX_MESSAGE_EDITS,messageChangeAllowed} from './chat-tools';
+import {SafetyError,contentCheck} from './safety';
+type Kind='direct'|'circle';
+const db=()=>env.DB!;
+export async function enrichMessages(rows:any[],kind:Kind,scope:string,viewer:string,visible:(row:any)=>Promise<boolean>,reactionVisible:(member:string)=>Promise<boolean>){
+ const reactions=new Map<string,any[]>(),visibility=new Map<string,boolean>();
+ for(let start=0;start<rows.length;start+=70){const ids=rows.slice(start,start+70).map(x=>x.id);if(!ids.length)continue;
+  const result=await db().prepare(`SELECT message,member,emoji FROM message_reactions WHERE kind=? AND scope=? AND message IN (${ids.map(()=>'?').join(',')})`).bind(kind,scope,...ids).all();
+  for(const r of result.results as any[]){if(!visibility.has(r.member))visibility.set(r.member,await reactionVisible(r.member));if(!visibility.get(r.member))continue;const list=reactions.get(r.message)||[];let item=list.find(x=>x.emoji===r.emoji);if(!item){item={emoji:r.emoji,count:0,mine:false};list.push(item);}item.count++;if(r.member===viewer)item.mine=true;reactions.set(r.message,list);}
+ }
+ const table=kind==='direct'?'messages':'circle_messages',column=kind==='direct'?'connection':'circle';
+ const output=[];
+ for(const row of rows){let quoted=null;if(row.reply_to&&!row.deleted_at){const target=await db().prepare(`SELECT m.rowid,m.id,m.sender,m.body,p.data FROM ${table} m LEFT JOIN profiles p ON p.id=m.sender WHERE m.id=? AND m.${column}=? AND m.sender<>'' AND m.deleted_at=''`).bind(row.reply_to,scope).first<any>();if(target&&await visible(target))quoted={id:target.id,body:target.body,name:target.sender===viewer?'You':target.data?JSON.parse(target.data).name:'Member',mine:target.sender===viewer};}
+  const {audio_key,audio_type,audio_duration,edited_at,deleted_at,edit_count,edit_history,...safe}=row;
+  output.push({...safe,body:deleted_at?'Message deleted':row.body,audio:!deleted_at&&audio_key?{url:'/api/voice?kind='+kind+'&scope='+encodeURIComponent(scope)+'&message='+encodeURIComponent(row.id),duration:audio_duration}:null,editedAt:edited_at||'',deletedAt:deleted_at||'',editCount:edit_count||0,editHistory:deleted_at?[]:JSON.parse(edit_history||'[]'),reply:quoted,replyUnavailable:!deleted_at&&!!row.reply_to&&!quoted,reactions:deleted_at?[]:reactions.get(row.id)||[]});
+ }
+ return output;
+}
+export async function changeMessage(kind:Kind,scope:string,viewer:string,input:any,guard:string,values:any[]){
+ const table=kind==='direct'?'messages':'circle_messages',column=kind==='direct'?'connection':'circle';
+ if(typeof input.message!=='string'||input.message.length>600)throw new SafetyError('Choose a message.',400);
+ const row=await db().prepare(`SELECT * FROM ${table} WHERE id=? AND ${column}=? AND sender=?`).bind(input.message,scope,viewer).first<any>();
+ if(!row)throw new SafetyError('Only your own messages can be changed.',403);
+ if(row.deleted_at){if(input.action==='delete_message')return;throw new SafetyError('This message was deleted.',409);}
+ const deleting=input.action==='delete_message',window=deleting?DELETE_WINDOW_MS:EDIT_WINDOW_MS;
+ if(!messageChangeAllowed(row.created,window))throw new SafetyError(deleting?'The 2-minute delete window has ended.':'The 15-minute edit window has ended.',409);
+ if(!deleting&&(row.audio_key||row.edit_count>=MAX_MESSAGE_EDITS))throw new SafetyError(row.audio_key?'Voice notes cannot be edited.':'This message has reached its 5-edit limit.',409);
+ if(!deleting&&input.expectedRevision!==row.edit_count)throw new SafetyError('This message changed. Refresh before editing.',409);
+ const body=deleting?'':typeof input.text==='string'?input.text.trim():'';
+ if(!deleting&&(!body||body.length>1500))throw new SafetyError('Write a message of 1–1,500 characters.',400);
+ if(!deleting)contentCheck(body);if(!deleting&&body===row.body)return;
+ const now=new Date().toISOString(),cutoff=new Date(Date.now()-window).toISOString();
+ const history=deleting?[]:[...JSON.parse(row.edit_history||'[]'),{body:row.body,at:row.edited_at||row.created}];
+ const r=await db().prepare(`UPDATE ${table} SET body=?,edited_at=?,deleted_at=?,edit_count=?,edit_history=?,audio_key=CASE WHEN ?=1 THEN '' ELSE audio_key END WHERE id=? AND ${column}=? AND sender=? AND deleted_at='' AND edit_count=? AND created>? AND (${guard})`).bind(body,deleting?row.edited_at:now,deleting?now:'',deleting?row.edit_count:row.edit_count+1,JSON.stringify(history),deleting?1:0,row.id,scope,viewer,row.edit_count,cutoff,...values).run();
+ if(!r.meta.changes)throw new SafetyError('Message or conversation permissions changed. Refresh before trying again.',409);
+ if(deleting){await db().prepare('DELETE FROM message_reactions WHERE kind=? AND scope=? AND message=?').bind(kind,scope,row.id).run();if(row.audio_key&&env.BUCKET)await env.BUCKET.delete(row.audio_key);}
+}
+export async function saveReaction(kind:Kind,scope:string,message:string,member:string,emoji:string,guard:string,values:any[]){
+ if(emoji!==''&&!reactionOptions.some(x=>x.emoji===emoji))throw new SafetyError('Choose a supported reaction.',400);
+ if(!message||message.length>600)throw new SafetyError('Choose a message.',400);
+ if(!emoji){const result=await db().prepare(`DELETE FROM message_reactions WHERE kind=? AND scope=? AND message=? AND member=? AND (${guard})`).bind(kind,scope,message,member,...values).run();return result.meta.changes;}
+ const result=await db().prepare(`INSERT INTO message_reactions (kind,scope,message,member,emoji) SELECT ?,?,?,?,? WHERE (${guard}) ON CONFLICT(kind,scope,message,member) DO UPDATE SET emoji=excluded.emoji`).bind(kind,scope,message,member,emoji,...values).run();return result.meta.changes;
+}

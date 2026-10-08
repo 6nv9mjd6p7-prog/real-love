@@ -1,0 +1,13 @@
+import ts from 'typescript';
+import {readFileSync} from 'node:fs';
+import assert from 'node:assert/strict';
+const compiled=ts.transpileModule(readFileSync('app/message-delivery.ts','utf8'),{compilerOptions:{module:ts.ModuleKind.ESNext}}).outputText;
+const {deliverMessage}=await import('data:text/javascript;base64,'+Buffer.from(compiled).toString('base64'));
+const sent=await deliverMessage(async()=>({ok:true}),async()=>{throw Error('Network refresh failed');});
+assert.equal(sent.sent,true,'a confirmed send remains successful when refresh fails');
+assert.equal(sent.conversation,null);
+let refreshed=false;
+await assert.rejects(deliverMessage(async()=>{throw Error('Send denied');},async()=>{refreshed=true;}),/Send denied/);
+assert.equal(refreshed,false,'failed sends do not clear drafts through a successful delivery result');
+assert.deepEqual((await deliverMessage(async()=>{},async()=>({messages:['hello']}))).conversation,{messages:['hello']});
+console.log('Message delivery and refresh-failure checks passed');

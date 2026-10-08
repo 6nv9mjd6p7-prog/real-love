@@ -1,0 +1,15 @@
+import ts from 'typescript';
+import {readFileSync} from 'node:fs';
+import assert from 'node:assert/strict';
+const compile=s=>'data:text/javascript;base64,'+Buffer.from(ts.transpileModule(s,{compilerOptions:{module:ts.ModuleKind.ESNext}}).outputText).toString('base64');
+const {circleStatus,circleGroups,circleRequestGroup}=await import(compile(readFileSync('app/circle-experience.ts','utf8')));
+const base={id:'test',title:'History together',description:'Read and talk',tags:['History'],activity:'Sunday reading',status:'open',membership:null,role:null,canApprove:false,count:2};
+const proposal={...base,id:'proposal',status:'pending',membership:'accepted',role:'host',awaitingYourAgreement:true};
+const hosted={...base,id:'hosted',membership:'accepted',role:'host',joinRequests:2};
+const requested={...base,id:'requested',membership:'requested'};
+const member={...base,id:'member',membership:'accepted',role:'member'};
+const circles=[proposal,hosted,requested,member,base];
+assert.equal(circleStatus(proposal),'Your agreement needed','paused founder agreement label remains accurate without canApprove');assert.equal(circleStatus({...proposal,awaitingYourAgreement:false}),'Awaiting the other founder');assert.equal(circleStatus(hosted),'You’re a host');assert.equal(circleStatus(member),'You’re a member');assert.equal(circleStatus(requested),'Join request pending');assert.equal(circleStatus({...base,membership:'removed'}),'Participation unavailable');
+assert.deepEqual(circleGroups(circles,'Requests','').map(g=>[g.title,g.circles.map(c=>c.id)]),[['Founder proposals',['proposal']],['Requests to your circles',['hosted']],['Your join requests',['requested']]]);
+assert.deepEqual(circleGroups(circles,'Joined','').flatMap(g=>g.circles).map(c=>c.id),['hosted','member'],'pending founders do not look like open joined circles');assert(!circleGroups(circles,'Discover','').flatMap(g=>g.circles).some(c=>c.status==='pending'),'private proposals never appear as discoverable');assert.equal(circleGroups(circles,'Requests',' NO MATCH ').length,0);assert.equal(circleGroups(circles,'Joined',' sunday ').flatMap(g=>g.circles).length,2);assert.equal(circleRequestGroup(member),null);
+console.log('Circle membership labels, private proposal separation, request groups, and topic search passed');

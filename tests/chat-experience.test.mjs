@@ -1,0 +1,48 @@
+import ts from 'typescript';
+import {readFileSync} from 'node:fs';
+import {createRequire} from 'node:module';
+import {pathToFileURL} from 'node:url';
+import assert from 'node:assert/strict';
+import React from 'react';
+import {renderToStaticMarkup} from 'react-dom/server';
+const require=createRequire(import.meta.url);
+function compile(source){let js=ts.transpileModule(source,{compilerOptions:{module:ts.ModuleKind.ESNext,jsx:ts.JsxEmit.ReactJSX}}).outputText;for(const name of ['react/jsx-runtime','react'])js=js.replaceAll(`from "${name}"`,`from '${pathToFileURL(require.resolve(name)).href}'`).replaceAll(`from '${name}'`,`from '${pathToFileURL(require.resolve(name)).href}'`);return 'data:text/javascript;base64,'+Buffer.from(js).toString('base64');}
+const toolsUrl=compile(readFileSync('app/chat-tools.ts','utf8'));
+const {messageFingerprint}=await import(toolsUrl);
+assert.notEqual(messageFingerprint('Hello','message-a'),messageFingerprint('Hello','message-b'),'different reply targets have distinct retry keys');
+const source=readFileSync('app/chat-bubble.tsx','utf8').replace("from './chat-tools'",`from '${toolsUrl}'`);
+const {default:Bubble}=await import(compile(source));
+const message={id:'test',body:'An answer\nwith a new line',created:new Date().toISOString(),mine:false,reply:{id:'original',body:'A question',name:'Friend',mine:false},reactions:[{emoji:'❤️',count:2,mine:true}]};
+const html=renderToStaticMarkup(React.createElement(Bubble,{message,name:'Friend',onReply(){},onReact(){},onReport(){}}));
+assert(html.includes('Reply to Friend'));assert(html.includes('A question'));assert(html.includes('Reply'));assert(html.includes('React'));assert(html.includes('Report'));assert(html.includes('your reaction'));assert(html.includes('aria-pressed="true"'));
+const unavailable=renderToStaticMarkup(React.createElement(Bubble,{message:{...message,reply:null,replyUnavailable:true},name:'Friend',onReply(){},onReact(){}}));assert(unavailable.includes('Original message unavailable'));assert(!unavailable.includes('A question'));
+// Exercise pointer and explicit controls without asserting a browser rendering result.
+const fake=source.replace("import {useEffect,useRef,useState} from 'react';","let hook=0;const useEffect=()=>{};const useRef=x=>({current:x});const useState=x=>{const index=hook++;return [x,value=>{if(index===0)globalThis.__picker=value;}];};");
+const {default:Interactive}=await import(compile(fake));let replyCount=0,chosen=null;
+const tree=Interactive({message,name:'Friend',onReply(){replyCount++;},onReact(emoji){chosen=emoji;}});
+const target={closest:()=>null};const realNow=Date.now;let now=10000;Date.now=()=>now;globalThis.__picker=false;
+tree.props.onPointerUp({pointerType:'touch',target});assert.equal(globalThis.__picker,false);now+=150;tree.props.onPointerUp({pointerType:'touch',target});assert.equal(globalThis.__picker,true,'double touch opens reactions');Date.now=realNow;
+globalThis.__picker=false;tree.props.onDoubleClick({target});assert.equal(globalThis.__picker,true,'double click opens reactions on desktop');
+function elements(node){if(!node||typeof node!=='object')return [];return [node,...React.Children.toArray(node.props?.children).flatMap(elements)];}
+const nodes=elements(tree);nodes.find(n=>n.type==='button'&&n.props['aria-label']==='Reply to message from Friend').props.onClick();assert.equal(replyCount,1);
+nodes.find(n=>n.type==='button'&&n.props['aria-pressed']===true).props.onClick();assert.equal(chosen,'','selecting your existing reaction removes it');
+const modelUrl=compile(readFileSync('app/model.ts','utf8'));const {examples}=await import(modelUrl);
+const rulesUrl=compile(readFileSync('app/rules.ts','utf8'));
+const guidelinesUrl=compile(readFileSync('app/guidelines.tsx','utf8').replace("from './rules'",`from '${rulesUrl}'`));
+const draftUrl=compile(readFileSync('app/profile-draft.ts','utf8'));
+const editorSource=readFileSync('app/profile-editor.tsx','utf8').replace("from './model'",`from '${modelUrl}'`).replace("from './guidelines'",`from '${guidelinesUrl}'`).replace("from './profile-draft'",`from '${draftUrl}'`).replace('useState(me?(consent?0:3):1)','useState(globalThis.__step)');
+const {default:Editor}=await import(compile(editorSource));
+const props={form:examples[1],setForm(){},me:null,consent:true,setConsent(){},busy:false,onSave(){},onPreview(){},photoSetup:React.createElement('p',null,'Optional photo picker')};
+globalThis.__step=3;const signup=renderToStaticMarkup(React.createElement(Editor,props));assert(signup.includes('Optional photo picker'));assert(signup.includes('Privacy and agreement'));assert(!signup.includes('Faith or worldview'));assert(!signup.includes('Culture and background'),'new signup does not contain deeper questions');
+globalThis.__step=4;const extras=renderToStaticMarkup(React.createElement(Editor,{...props,me:examples[1]}));assert(extras.includes('Faith or worldview'));assert(extras.includes('update gender and cultural background in Basics'));assert(extras.includes('Save changes'));assert(!extras.includes('Optional photo picker'));
+globalThis.__step=1;const basics=renderToStaticMarkup(React.createElement(Editor,{...props,form:{...examples[1],gender:'Self-described',genderDescription:'My words'}}));assert(basics.includes('Gender (optional)'));assert(basics.includes('Prefer not to say'));assert(basics.includes('Gender in your own words'));assert(basics.includes('Race or cultural background (optional)'));assert(basics.includes('My words'));
+delete globalThis.__step;delete globalThis.__picker;
+console.log('Reply quotes, accessible reaction actions, double-tap handlers, retry keys, and shorter signup render passed (not browser QA).');
+
+const {messageChangeAllowed,swipeReply,EDIT_WINDOW_MS,DELETE_WINDOW_MS}=await import(toolsUrl);
+const timestamp=Date.now();assert(messageChangeAllowed(new Date(timestamp-899999).toISOString(),EDIT_WINDOW_MS,timestamp));assert(!messageChangeAllowed(new Date(timestamp-900000).toISOString(),EDIT_WINDOW_MS,timestamp));assert(!messageChangeAllowed(new Date(timestamp-120000).toISOString(),DELETE_WINDOW_MS,timestamp));assert(!messageChangeAllowed('invalid',EDIT_WINDOW_MS));assert(!messageChangeAllowed(new Date(timestamp+1).toISOString(),EDIT_WINDOW_MS,timestamp));assert(swipeReply(70,5));assert(!swipeReply(70,40));assert(!swipeReply(-70,0));
+const own=renderToStaticMarkup(React.createElement(Bubble,{message:{...message,mine:true},name:'Friend',onReply(){},onReact(){},onEdit(){},onDelete(){}}));assert(own.includes('>Edit<'));assert(own.includes('>Delete<'));
+const tombstone=renderToStaticMarkup(React.createElement(Bubble,{message:{...message,body:'Message deleted',deletedAt:new Date().toISOString()},name:'Friend',onReply(){},onReact(){},onReport(){}}));assert(tombstone.includes('Message deleted'));assert(!tombstone.includes('>Reply<'));assert(!tombstone.includes('>React<'));assert(!tombstone.includes('A question'));assert(!tombstone.includes('your reaction'));
+tree.props.onPointerDown({clientX:10,clientY:10,pointerId:1,target,currentTarget:{setPointerCapture(){}}});tree.props.onPointerUp({clientX:80,clientY:15,pointerId:1,target,pointerType:'touch'});assert.equal(replyCount,2,'horizontal swipe replies');
+tree.props.onPointerDown({clientX:10,clientY:10,pointerId:1,target,currentTarget:{setPointerCapture(){}}});tree.props.onPointerUp({clientX:80,clientY:60,pointerId:1,target,pointerType:'touch'});assert.equal(replyCount,2,'vertical scrolling does not reply');
+console.log('Swipe direction, expiry boundaries, owner edit/delete controls and tombstones passed.');

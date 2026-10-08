@@ -1,0 +1,71 @@
+import ts from 'typescript';
+import {readFileSync} from 'node:fs';
+import assert from 'node:assert/strict';
+const source=ts.transpileModule(readFileSync('app/model.ts','utf8'),{compilerOptions:{module:ts.ModuleKind.ESNext}}).outputText;
+const {newDiscoveryPeople,eligible,examples,normalizeProfile,discoveryScore,reasons}=await import('data:text/javascript;base64,'+Buffer.from(source).toString('base64'));
+const a={...examples[1],id:'a',intentions:['Romance'],gender:'Man',interested:['Woman']};
+const b={...examples[3],id:'b',gender:'Woman',interested:['Man'],intentions:['Friendship']};
+assert(eligible(a,b),'relationship labels do not divide discovery');
+assert(eligible(a,{...b,expectation:'Required',interested:[],orientation:'Allosexual'}),'sexual and gender dating preferences do not restrict connecting');
+assert(!eligible(a,{...b,minAge:40}));
+assert(!eligible(a,{...b,active:false}));
+assert(!eligible({...a,remote:false},{...b,city:'Houston'}));
+assert(!eligible(a,{...b,id:'a'}));
+assert.equal(normalizeProfile(a).connectionBoundary,'Open to romance over time');
+assert.equal(normalizeProfile(b).connectionBoundary,'Friendship only');
+assert.deepEqual(normalizeProfile(a).intentions,['Connect']);
+console.log('Connection-first discovery and practical boundary checks passed');
+
+const basic={...a,interests:['History'],topics:[],activities:[],availability:'Flexible'};
+const legacy={...b,interests:['History & culture'],topics:[],activities:[],availability:'Flexible'};
+assert(discoveryScore(basic,legacy)>0,'a topic relates to a legacy broad category');
+assert(reasons(basic,legacy).some(x=>x.startsWith('Related interest areas:')),'related categories are not claimed as exact shared interests');
+const moved={...legacy,interests:[],topics:['history']};
+assert(discoveryScore(basic,moved)>discoveryScore(basic,legacy),'exact topics outrank broad overlap across old and new storage');
+assert.equal(discoveryScore({...basic,topics:['History']},moved),discoveryScore(basic,moved),'duplicate interest/topic entries do not inflate matching');
+
+const {compareDiscovery,matchesDiscovery}=await import('data:text/javascript;base64,'+Buffer.from(source).toString('base64'));
+const f={interestMode:'mine',location:'any',minAge:18,maxAge:99,activity:'',availability:''};
+const unrelated={...b,id:'unrelated',interests:['Cooking'],topics:[],activities:['Conversation','Reading together'],availability:'Weekends'};
+const exact={...moved,id:'exact',city:'Houston'};
+const localExact={...exact,id:'local',city:' Austin '};
+assert(matchesDiscovery(basic,exact,f),'shared interest default includes exact topic matches');
+assert(matchesDiscovery(basic,legacy,f),'legacy category overlap remains available and described as related');
+assert(!matchesDiscovery(basic,unrelated,f),'default excludes profiles without interest overlap');
+assert(matchesDiscovery(basic,unrelated,{...f,interestMode:'any'}),'any interest broadens only the interest selection');
+assert(compareDiscovery(basic,exact,unrelated)<0,'shared interests outrank practical activity overlap');
+assert(compareDiscovery(basic,exact,legacy)<0,'exact topics outrank broad categories');
+assert(compareDiscovery(basic,localExact,exact)<0,'same-area profiles win when interest overlap is equal');
+assert(matchesDiscovery(basic,localExact,{...f,location:'local'}),'same-area filter normalizes case and whitespace');
+assert(!matchesDiscovery(basic,exact,{...f,location:'local'}),'same-area filter never silently expands');
+assert(!matchesDiscovery({...basic,remote:false},exact,{...f,location:'online'}),'online filtering respects own preference');
+assert(!matchesDiscovery(basic,{...exact,remote:false},{...f,location:'online'}),'online filtering respects other preference');
+assert(!matchesDiscovery(basic,exact,{...f,maxAge:20}),'age filter narrows discovery');
+assert(!matchesDiscovery(basic,exact,{...f,activity:'Volunteering'}),'activity filter is explicit');
+assert(!matchesDiscovery(basic,exact,{...f,availability:'Occasional'}),'availability filter is explicit');
+console.log('Interest-first ordering and explicit discovery filters passed');
+
+const {connectionContext,orderedProfileInterests}=await import('data:text/javascript;base64,'+Buffer.from(source).toString('base64'));
+const cx=connectionContext(basic,{...localExact,interests:['Cooking','  HISTORY  '],topics:['history'],availability:'Weekday evenings'});
+assert.deepEqual(cx.exact,['history'],'duplicate casing never inflates a shared count');
+assert(cx.sameArea,'explanations use the same normalized area rule as ordering');
+assert(cx.online,'online availability is independent of same-area status');
+assert(cx.discuss.some(x=>x.includes('Availability:')),'different schedules are discussion cues');
+const relatedContext=connectionContext(basic,legacy);assert.deepEqual(relatedContext.exact,[]);assert.deepEqual(relatedContext.related[0].mine,['History']);assert.deepEqual(relatedContext.related[0].theirs,['History & culture']);
+assert.equal(connectionContext(basic,{...legacy,interests:['Wigs & beauty history']}).related.length,0,'sibling topics do not invent a shared interest');
+assert.equal(connectionContext({...basic,activities:[],availability:'Flexible'},unrelated).availability,null,'flexible/default availability is never claimed as a concrete shared schedule');
+assert.equal(connectionContext({...basic,city:'',remote:false},{...unrelated,city:'',remote:false}).sameArea,false,'missing areas are not treated as proximity');
+assert.deepEqual(connectionContext(basic,unrelated).exact,[],'any-interest discovery does not invent overlap');
+assert.equal(orderedProfileInterests({...unrelated,interests:['Cooking','Art','Music','History']},basic)[0],'History','exact overlap outside the first three fields is surfaced');
+assert.equal(connectionContext({...basic,expectation:'Not wanted'},{...unrelated,expectation:'Required'}).discuss.some(x=>x.includes('sexual expectations')),true,'optional future expectations remain a discussion cue rather than a friendship exclusion');
+console.log('Connection explanations and shared-interest visibility checks passed');
+
+assert.equal(discoveryScore({...basic,activities:['Conversation','Conversation']},{...moved,activities:['Conversation']}),discoveryScore({...basic,activities:['Conversation']},{...moved,activities:['Conversation']}),'duplicate activities cannot inflate ordering');
+
+const candidates=[{id:'accepted'},{id:'pending'},{id:'closed'},{id:'new'}];
+assert.deepEqual(newDiscoveryPeople(candidates,[{status:'accepted',person:{id:'accepted'}},{status:'pending',person:{id:'pending'}},{status:'closed',person:{id:'closed'}}]).map(p=>p.id),['pending','closed','new']);
+assert.deepEqual(candidates.map(p=>p.id),['accepted','pending','closed','new'],'saved/profile source stays intact');
+assert.deepEqual(newDiscoveryPeople(candidates,[]),candidates);
+console.log('Accepted contacts excluded from new discovery without altering saved/profile data');
+
+const changedIdentity={...b,gender:'Self-described',genderDescription:'My own words',background:'Different cultural background'};assert.equal(discoveryScore(a,b),discoveryScore(a,changedIdentity),'gender and race do not change ranking');assert.equal(eligible(a,b),eligible(a,changedIdentity),'gender and race do not change friendship eligibility');

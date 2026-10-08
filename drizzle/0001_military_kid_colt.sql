@@ -1,0 +1,1 @@
+ALTER TABLE `connections` ADD `proposal` text DEFAULT '' NOT NULL;
