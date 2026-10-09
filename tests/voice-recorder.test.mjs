@@ -40,6 +40,12 @@ globalThis.fetch=async(url,options)=>new Promise((_,reject)=>options.signal.addE
 nodes(render()).find(n=>n.type==='audio').props.onCanPlay();const stalledSend=sendButton().props.onClick();uploadDeadline();await stalledSend;assert(sendButton(),'timed-out upload retains preview');assert(nodes(render()).some(n=>n.props?.role==='alert'&&String(n.props.children).includes('timed out')));
 globalThis.setTimeout=savedSetTimeout;globalThis.clearTimeout=savedClearTimeout;globalThis.fetch=savedFetch;button('Discard voice note').props.onClick();
 let prompts=0;navigator.mediaDevices.getUserMedia=async()=>{prompts++;return mic();};start=button('Start voice recording');start.props.onClick();start.props.onClick();await flush();assert.equal(prompts,1,'rapid double taps create one recorder');button('Cancel voice recording').props.onClick();await flush();
+// An ended microphone stream stops MediaRecorder without the Stop button.
+button('Start voice recording').props.onClick();await flush();time+=3500;instances.at(-1).stop();await flush();
+nodes(render()).find(n=>n.type==='audio').props.onCanPlay();await sendButton().props.onClick();
+assert.equal(requests.at(-1).options.headers['x-voice-duration'],'3500','native stop uses this recording duration, not zero or a previous note');
+button('Start voice recording').props.onClick();await flush();assert(button('Stop voice recording'),'native stop releases the recording guard for the next note');
+button('Cancel voice recording').props.onClick();await flush();
 navigator.mediaDevices.getUserMedia=async()=>{throw Object.assign(Error('Denied'),{name:'NotAllowedError'});};button('Start voice recording').props.onClick();await flush();assert(nodes(render()).some(n=>n.props?.role==='alert'),'permission denial is explained');assert(button('Start voice recording'),'permission denial restores composer');
 // Browser recorder errors are followed asynchronously by a final stop event.
 navigator.mediaDevices.getUserMedia=async()=>mic();button('Start voice recording').props.onClick();await flush();

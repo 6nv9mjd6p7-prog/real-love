@@ -346,15 +346,27 @@ input:not([type=checkbox]):not([type=radio]),select,textarea{border-radius:var(-
 
 /* Keep the transcript and composer within the visible mobile viewport. */
 .voice-playback-status{font-size:.875rem;line-height:1.5;margin:6px 0}
-.message.mine .voice-playback-status{color:#eef0ff}
+.message.mine .voice-playback-status,.message.mine .voice-message>span{color:#eef0ff}
 .message.mine .voice-message .secondary{background:white;color:var(--indigo)}
 .field-validation{display:block;margin-top:6px;font-size:.875rem}
 [aria-invalid=true]{border-color:#a1223e!important}
 .chat-help{margin-top:10px;border-top:1px solid var(--line);padding-top:6px}
 .chat-help>summary{min-height:44px;color:var(--indigo)}
-@media(max-width:700px){
-.conversation-screen,.circle-conversation{display:flex;flex-direction:column;height:calc(var(--chat-viewport,100dvh) - 88px);min-height:0;overflow:hidden;padding:12px}
-.chat-context-area{flex:0 1 auto;max-height:34%;overflow-y:auto;overscroll-behavior:contain;padding:0 2px}
+@media(max-width:700px),(max-width:1024px) and (max-height:500px){
+.app-shell:has(.conversation-screen,.circle-conversation){display:flex;flex-direction:column;height:var(--app-viewport,100dvh);min-height:0;overflow:hidden}
+.app-shell:has(.conversation-screen,.circle-conversation)>.sidebar{position:static;flex:0 0 auto;padding:4px 8px;width:100%;height:auto}
+.app-shell:has(.conversation-screen,.circle-conversation)>.sidebar .brand,.app-shell:has(.conversation-screen,.circle-conversation) .sidebar-bottom{display:none}
+.app-shell:has(.conversation-screen,.circle-conversation)>.sidebar nav{flex-direction:row;margin:0;gap:4px}
+.app-shell:has(.conversation-screen,.circle-conversation) .nav-item{flex:1;min-width:0;padding:6px;min-height:44px;flex-wrap:nowrap;font-size:.875rem}
+.app-shell:has(.conversation-screen,.circle-conversation)>main{display:flex;flex-direction:column;flex:1;min-height:0}
+.app-shell:has(.conversation-screen,.circle-conversation) .topbar{height:auto;min-height:44px;flex:0 0 auto;padding:0 12px}
+.app-shell:has(.conversation-screen,.circle-conversation) .topbar>span{display:none}
+.app-shell:has(.conversation-screen,.circle-conversation) .support-banner,.app-shell:has(.conversation-screen,.circle-conversation)>main>footer{display:none}
+.app-shell:has(.conversation-screen,.circle-conversation) .content{display:flex;flex-direction:column;flex:1;min-height:0;width:100%;margin:0;padding:8px}
+.content:has(.circle-conversation)>.section-tabs{display:none}
+.app-shell:has(.conversation-screen,.circle-conversation) .notice{flex:0 0 auto;max-height:15%;overflow:auto;margin:4px 8px;padding:4px 8px}
+.conversation-screen,.circle-conversation{display:flex;flex-direction:column;flex:1;min-height:0;height:auto;overflow:hidden;padding:12px;margin:0}
+.chat-context-area{flex:0 1 auto;max-height:25%;overflow-y:auto;overscroll-behavior:contain;padding:0 2px}
 .conversation-heading,.chat-heading{margin:4px 0;padding-bottom:8px}
 .conversation-heading p{margin:4px 0}
 .conversation-screen .conversation-messages,.circle-conversation .conversation-messages{flex:1 1 0;min-height:0;max-height:none;margin:0;padding:12px 0;overflow-y:auto}
@@ -364,6 +376,10 @@ input:not([type=checkbox]):not([type=radio]),select,textarea{border-radius:var(-
 .conversation-screen>.field-help,.conversation-screen>.inline-error{flex:0 0 auto;margin:4px 0;font-size:.875rem}
 .latest-messages{flex:0 0 auto;min-height:36px;margin:4px 0}
 }
+@media(max-width:1024px) and (max-height:420px){
+.app-shell:has(.conversation-screen,.circle-conversation) .topbar{display:none}
+.app-shell:has(.conversation-screen,.circle-conversation) .chat-context-area{max-height:20%}
+}
 
 .inbox-section[hidden]{display:none}.voice-recorder-actions meter{width:7rem;max-width:100%;height:1rem;accent-color:var(--indigo)}.voice-recorder-actions>span[role=status]{flex-basis:100%;font-size:1rem}.support-banner>button{flex-shrink:0;min-width:44px}
 
@@ -372,3 +388,16 @@ input:not([type=checkbox]):not([type=radio]),select,textarea{border-radius:var(-
 .card-background{font-size:.875rem;margin:.35rem 0 .7rem;line-height:1.5;color:var(--muted)}.card-background span{font-weight:600}.identity-facts span{overflow-wrap:anywhere}
 
 .extended-discovery-filters>details{margin:1rem 0;padding:.8rem;border:1px solid var(--line);border-radius:10px}.extended-discovery-filters summary{cursor:pointer;min-height:44px;font-weight:600}.extended-discovery-filters fieldset{border:0;padding:0;margin:1rem 0}.extended-discovery-filters legend{font-size:1rem;font-weight:600}.extended-discovery-filters .choice-chips{margin:.6rem 0}.active-filter-chips button{white-space:normal;overflow-wrap:anywhere;text-align:left}
+
+/* Discovery leads with people; detailed preferences remain in Filters. */
+.discovery-modes{margin:8px 0}.discovery-summary{margin:8px 0}
+.discovery-modes>button{flex:1;min-width:0;padding:8px;font-size:.875rem}
+.content:has(.discovery-filters)>.section-tabs:not(.discovery-modes){display:flex;flex-wrap:nowrap;margin-bottom:12px}
+.content:has(.discovery-filters)>.section-tabs:not(.discovery-modes)>button{flex:1;min-width:0;padding:6px;font-size:.875rem}
+.content:has(.discovery-filters)>.page-heading{margin-bottom:12px}
+.content:has(.discovery-filters)>.search input{min-height:24px;height:24px;padding:0}
+.discovery-filters{margin:8px 0;padding:0;border:0}
+.discovery-filters>summary{min-height:44px;align-content:center;cursor:pointer;font-weight:600}
+.compact-person{padding:18px}.compact-person .about{margin:10px 0}
+.compact-person .card-starter{margin:10px 0;padding:10px}
+.compact-person .connection-summary{margin:10px 0;padding:10px}

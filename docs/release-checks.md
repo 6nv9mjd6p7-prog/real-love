@@ -1,5 +1,23 @@
 # Real Love pilot release checks
 
+## Remaining GitHub review fixes — October 9, 2026
+
+- Circle conversation and older-history fetches no longer mark notifications read. A separate, membership-authorized acknowledgement clears only that member's circle message/reaction/joined/opened notifications through the fetched snapshot. Later notifications, other circles, other members, and host join-request alerts remain unread.
+- The circle UI acknowledges only while visible, focused, online, and at the latest messages. Returning to the latest messages or refocusing can acknowledge the fetched snapshot. These are private notification states, not public read receipts. Unchanged-message caching retains fresh notification cursors.
+- Profile-photo previews now handle thumbnail failures and offer Retry photo. Retry remounts the image; a changed photo source does not inherit an earlier failure. Server photo authorization is unchanged.
+- SQLite API regression checks cover read-only fetches, cursor boundaries, unrelated alerts, invalid cursors, and nonmember rejection. Lifecycle checks cover photo error/retry/source changes and notification cursors on cached history.
+- Native Chromium checks with controlled response fixtures verified acknowledgement at the latest messages, no acknowledgement while reading older history or while the document is hidden, acknowledgement on visibility restoration, and thumbnail failure followed by successful native image loading on retry. Fixtures simulated response failures and notification cursors; they did not alter production accounts or data.
+- All 23 automated test files pass. TypeScript and the production build pass. Physical-device and independently authenticated two-account checks remain pending. Publishing to the live site is a separate step.
+
+## Priority UX improvements — October 8, 2026
+
+- Direct and circle conversations use one mobile viewport, with optional conversation ideas and feedback inside help. Support and redundant circle-navigation chrome no longer compete with the mobile transcript. Context, participants, photo controls, and safety actions remain accessible in the scrollable context area.
+- Native Chromium at 390×844: both transcripts measure about 411px. At 390×500: both measure about 153px; at 320×500: direct 153px, circle 131px. At 844×390 landscape: both measure about 120px. Send stays inside the viewport; no horizontal page overflow appeared in these checks. Expanded help and conversation ideas were exercised. Reduced viewport checks approximate keyboard space; physical phone keyboards remain pending.
+- Sent voice labels now use `#eef0ff` on the indigo bubble, verified through browser computed styles.
+- Incoming guidance/new invitation notifications open `#conversations/requests`; sent guidance and successful invitations open `#conversations/sent`. Older invitation notifications also resolve to Requests. Chromium verified deep links, tab navigation, refresh, and Back.
+- Discovery explanations and preference details now live inside Filters; compact cards summarize introductions and keep full answers in View profile. First demo results appear within the initial 390×844 viewport. Member age-filter persistence across refresh was verified; demo filters remain separate.
+- All 23 automated test files pass, including incoming/sent guidance destination checks. TypeScript and production build pass. Existing lint failures remain outside this change.
+
 ## Verified automatically
 
 - TypeScript compilation, production build and current test suite.
@@ -10,7 +28,7 @@
 
 ## Pending browser and device checks
 
-Test desktop keyboard, iOS Safari and Android Chrome. Include 320px width, landscape, 200% text, 400% browser zoom and reduced-motion settings. No browser/device results have been recorded yet.
+Test desktop keyboard, iOS Safari and Android Chrome. Include 320px width, landscape, 200% text, 400% browser zoom and reduced-motion settings. Desktop Chromium voice-flow results are recorded below; the broader browser/device checks remain pending.
 
 - Navigate every page with Tab/Shift+Tab/Enter; visible focus and clear control names; skip link reaches main content.
 - Open profile/report dialogs; background unreachable; Escape and close work when idle; busy controls cannot dismiss; focus returns to opener.
@@ -32,6 +50,24 @@ Use two independently admitted adult test members and an independent reviewer. A
 6. Switch accounts/sign out; confirm drafts and previously visible content do not cross accounts. Exercise deletion and reviewer decisions only on disposable test accounts.
 
 Record device/browser, date, tester, expected/actual result and reproduction steps for each failure. Fix blockers before widening access. Moderation coverage, response times and escalation ownership also need an operational rehearsal; code checks cannot validate them.
+
+## Desktop Chromium voice checks — October 8, 2026
+
+Tested by Codex using headless Chromium 151.0.7922.173 on Linux, the portable local development server, disposable admitted local members, local D1/R2, and Chromium's synthetic microphone. Recording used native `getUserMedia` and `MediaRecorder`; preview and saved-message playback used native audio decoding. Playback progress was checked through advancing `currentTime`, not audible speech quality. No production accounts or data were used.
+
+Passed:
+
+- Direct and circle recording, Stop, playable preview, successful upload, and playback through the protected voice API.
+- Microphone tracks end after Stop, Cancel, and navigating away. Cancelling a delayed microphone request also stops its eventual stream without creating a preview.
+- Native microphone permission denial explains the problem and restores the recording control.
+- Ending all microphone tracks during recording produces a playable, sendable preview and allows another recording afterward.
+- A deliberately lost upload response preserves the recording. Retrying uses the same attempt ID and stores exactly one message, even when the first request already succeeded.
+- A failed playback request exposes Retry playback; retry loads and plays the saved audio.
+- Anonymous playback returns 401, wrong-conversation access returns 403, and stale-account sending returns 409. A two-byte playback range returns 206 with two bytes and `private, no-store` caching.
+
+Verified bug and fix: an ended microphone stream bypassed the Stop button, leaving the upload duration at zero (or a previous recording's duration) and the internal recording guard active. Chromium displayed a playable preview, but the API rejected its upload with 400; the next recording could not start. The native stop handler now releases the guard and records the elapsed duration when Stop did not already do so; each new recording resets its duration. The lifecycle regression test covers an automatic stop following earlier recordings, successful sending, and starting another recording. Browser reproduction using native track shutdown passes after the fix.
+
+Post-fix validation: all 23 automated test files pass, TypeScript passes, and the production build passes. Physical microphone quality, iOS Safari, Android Chrome, independently authenticated recipient playback, the real-device 60-second limit, and the broader accessibility/layout checklist remain unverified.
 
 ## Early-access preparation — October 5
 
