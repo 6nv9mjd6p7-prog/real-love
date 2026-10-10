@@ -1,4 +1,6 @@
 export type BroadLocation={city:string;region:string;country:string};
+export type BroadLocationPoint=BroadLocation&{areaLat:number;areaLon:number;locationPlaceId:string};
+export const MAX_NEARBY_MILES=100;
 
 const fold=(value:unknown)=>typeof value==='string'?value.normalize('NFKD').replace(/\p{M}/gu,'').trim().replace(/\s+/g,' ').toLowerCase():'';
 
@@ -15,7 +17,21 @@ export function sameBroadArea(a:Partial<BroadLocation>,b:Partial<BroadLocation>)
  return !!legacyAreaKey(a)&&legacyAreaKey(a)===legacyAreaKey(b);
 }
 
-export function locationLabel(value:Partial<BroadLocation>){return [value.city,value.region,value.country].map(x=>typeof x==='string'?x.trim():'').filter(Boolean).join(', ');}
+export function locationLabel(value:Partial<BroadLocation>){
+ const parts=[value.city,value.region,value.country].map(x=>typeof x==='string'?x.trim():'').filter(Boolean);
+ return parts.filter((x,i)=>i===0||fold(x)!==fold(parts[i-1])).join(', ');
+}
+
+const point=(value:{areaLat?:unknown;areaLon?:unknown})=>typeof value.areaLat==='number'&&Number.isFinite(value.areaLat)&&value.areaLat>=-90&&value.areaLat<=90&&typeof value.areaLon==='number'&&Number.isFinite(value.areaLon)&&value.areaLon>=-180&&value.areaLon<=180?[value.areaLat,value.areaLon] as const:null;
+export function locationDistanceMiles(a:{areaLat?:unknown;areaLon?:unknown},b:{areaLat?:unknown;areaLon?:unknown}){
+ const left=point(a),right=point(b);if(!left||!right)return null;
+ const rad=(n:number)=>n*Math.PI/180,dLat=rad(right[0]-left[0]),dLon=rad(right[1]-left[1]),lat1=rad(left[0]),lat2=rad(right[0]);
+ const h=Math.sin(dLat/2)**2+Math.cos(lat1)*Math.cos(lat2)*Math.sin(dLon/2)**2;
+ return 3958.7613*2*Math.asin(Math.min(1,Math.sqrt(h)));
+}
+export function withinMiles(a:Partial<BroadLocation>&{areaLat?:unknown;areaLon?:unknown},b:Partial<BroadLocation>&{areaLat?:unknown;areaLon?:unknown},miles:number){
+ const distance=locationDistanceMiles(a,b);return distance===null?sameBroadArea(a,b):distance<=miles;
+}
 
 export function connectionLocation(req:Request):BroadLocation|null{
  const cf=(req as Request&{cf?:{city?:unknown;region?:unknown;regionCode?:unknown;country?:unknown}}).cf;
