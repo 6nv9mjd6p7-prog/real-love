@@ -26,7 +26,7 @@ assert(!profileHasInterest({...examples[1],interests:['Cooking'],topics:[],about
 assert(profileHasInterest({...examples[1],interests:['History'],topics:[]},'History & culture'),'broad area browsing includes its topics');
 console.log('Profile grouping, interaction cues, and topic browsing checks passed');
 
-const compared=renderToStaticMarkup(React.createElement(View,{person:examples[1],me:{...examples[1],id:'other',city:' Austin ',interests:['Systems thinking']},onInterest:()=>{}}));assert(compared.includes('Exact shared interests'));assert(compared.includes('Same entered area: Austin'));assert(compared.includes('self-reported preferences'));assert(compared.includes('shared-interest-label'));assert(!compared.includes('match percentage'));
+const compared=renderToStaticMarkup(React.createElement(View,{person:examples[1],me:{...examples[1],id:'other',city:' Austin ',interests:['Systems thinking']},onInterest:()=>{}}));assert(compared.includes('Exact shared interests'));assert(compared.includes('Same general area: Austin'));assert(compared.includes('self-reported preferences'));assert(compared.includes('shared-interest-label'));assert(!compared.includes('match percentage'));
 
 const actionable=renderToStaticMarkup(React.createElement(View,{person:examples[1],onAnswer:()=>{}}));assert(actionable.includes('Ask about this introduction'));assert(actionable.includes('Ask about doing this together'));
 
