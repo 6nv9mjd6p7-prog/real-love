@@ -3,7 +3,7 @@ import {useEffect,useId,useState} from 'react';
 import {locationKey,locationLabel,type BroadLocationPoint} from './location';
 
 export default function LocationEditor({accountId,form,setForm,me,busy}:{accountId:string;form:any;setForm:(value:any)=>void;me:any;busy:boolean}){
- const listId=useId();
+ const inputId=useId(),listId=useId();
  const [query,setQuery]=useState(''),[results,setResults]=useState<BroadLocationPoint[]>([]),[searching,setSearching]=useState(false),[finding,setFinding]=useState(false),[message,setMessage]=useState(''),[connectionKey,setConnectionKey]=useState('');
  const confirmed=!!me?.locationConfirmed&&locationKey(form)===locationKey(me)&&!form.confirmLocation;
  const selected=locationLabel(form),hasDistancePoint=typeof form.areaLat==='number'&&typeof form.areaLon==='number'&&!!form.locationPlaceId;
@@ -27,11 +27,11 @@ export default function LocationEditor({accountId,form,setForm,me,busy}:{account
  }
 
  return <div className="location-editor">
-  <label className="location-search">City or general area (required)
-   <input type="search" disabled={busy} autoComplete="off" maxLength={120} value={query} placeholder={selected||'Start typing a city, town, or general area'} role="combobox" aria-autocomplete="list" aria-expanded={results.length>0} aria-controls={listId} onChange={event=>{setQuery(event.target.value);setMessage('');setConnectionKey('');}}/>
+  <div className="location-search"><label htmlFor={inputId}>City or general area (required)</label>
+   <input id={inputId} data-profile-field="city" type="search" disabled={busy} autoComplete="off" maxLength={120} value={query} placeholder={selected||'Start typing a city, town, or general area'} role="combobox" aria-autocomplete="list" aria-expanded={results.length>0} aria-controls={listId} onChange={event=>{setQuery(event.target.value);setMessage('');setConnectionKey('');}}/>
    {searching&&<span className="field-help" role="status">Finding real places…</span>}
    {results.length>0&&<div className="location-results" id={listId} role="listbox" aria-label="Location suggestions">{results.map(place=><button type="button" role="option" key={place.locationPlaceId+locationKey(place)} disabled={busy} onClick={()=>choose(place)}><strong>{place.city}</strong><span>{[place.region,place.country].filter((x,i,a)=>i===0||x!==a[i-1]).join(', ')}</span></button>)}</div>}
-  </label>
+  </div>
   {selected&&<div className="selected-location"><strong>Selected area</strong><span>{selected}</span><span className="field-help">{hasDistancePoint?'Linked to place data for nearby-distance matching.':'Older saved location. Search and reselect it to enable distance-based nearby matching.'}</span></div>}
   <div className="location-check"><strong>{confirmed?'Area confirmed recently':form.confirmLocation?'Ready to confirm when you save':'Area confirmation optional'}</strong><p className="field-help">Confirmation compares your selected broad area with the approximate area of your current internet connection. It does not verify identity, residence, or an exact position.</p><button type="button" className="secondary" disabled={busy||finding} onClick={find}>{finding?'Checking connection…':'Find my connection area'}</button>{message&&<p className="field-help" role="status">{message}</p>}</div>
   <p className="location-attribution field-help">Place suggestions © OpenStreetMap contributors · powered by Photon.</p>
