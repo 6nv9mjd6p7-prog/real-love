@@ -6,7 +6,7 @@ Implementation update: the four first priorities below have now been addressed l
 
 October 9 update: circle fetches now preserve unread notifications until a focused reader reaches the latest messages; photo-preview errors now have an explicit retry. Both have regression and Chromium checks recorded in the release document. Other P2 recommendations below remain outstanding.
 
-October 10 update: free-text location is now a structured broad area with optional connection-based confirmation. Exact location is never requested or stored, manual entry remains available, confirmation expires, and it does not affect interest-first ranking. Hosted request metadata still needs a smoke test after publishing.
+October 10 update: free-text broad-area entry is now replaced by real place suggestions backed by OpenStreetMap/Photon. Selecting a city or general area stores a private general-area point for approximate distance matching; street addresses, precise GPS, IP addresses, and live location are not stored. Discovery can be narrowed from 5–100 miles while shared interests remain the primary ordering signal. Existing profiles without a place point keep same-area matching until they reselect their location. Connection-based area confirmation remains optional and still needs a hosted smoke test after publishing.
 
 ## Scope and evidence
 
