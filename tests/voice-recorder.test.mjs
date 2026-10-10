@@ -7,6 +7,7 @@ import React from 'react';
 const require=createRequire(import.meta.url);
 // Stateful hook harness: these are lifecycle checks, not real-device browser QA.
 globalThis.__voiceHooks=[];globalThis.__voiceIndex=0;globalThis.__voiceCleanup=[];
+const windowListeners=new Map();globalThis.window={addEventListener:(type,fn)=>windowListeners.set(type,fn),removeEventListener:(type,fn)=>{if(windowListeners.get(type)===fn)windowListeners.delete(type);}};const fireWindow=(type,event)=>windowListeners.get(type)?.(event);
 const fake=`const useState=x=>{const i=globalThis.__voiceIndex++;const h=globalThis.__voiceHooks;if(!(i in h))h[i]=x;return [h[i],v=>h[i]=typeof v==='function'?v(h[i]):v];};const useRef=x=>{const i=globalThis.__voiceIndex++;const h=globalThis.__voiceHooks;return h[i]??(h[i]={current:x});};const useEffect=fn=>{const i=globalThis.__voiceIndex++;if(!globalThis.__voiceHooks[i]){globalThis.__voiceHooks[i]=true;globalThis.__voiceCleanup.push(fn());}};`;
 const source=readFileSync('app/voice-recorder.tsx','utf8').replace("import {useEffect,useRef,useState} from 'react';",fake);
 const code=ts.transpileModule(source,{compilerOptions:{module:ts.ModuleKind.ESNext,target:ts.ScriptTarget.ES2022,jsx:ts.JsxEmit.ReactJSX}}).outputText.replace(/from ["']lucide-react["']/,`from '${pathToFileURL(require.resolve('lucide-react')).href}'`).replace('from "react/jsx-runtime"',`from '${pathToFileURL(require.resolve('react/jsx-runtime')).href}'`);
@@ -52,6 +53,8 @@ navigator.mediaDevices.getUserMedia=async()=>mic();button('Start voice recording
 const broken=instances.at(-1);broken.state='inactive';broken.onerror();
 assert(!button('Start voice recording'),'do not allow a replacement recorder until the failed recorder has stopped');
 broken.onstop();assert(button('Start voice recording'),'error cleanup restores recording after stop');assert(!sendButton(),'failed audio is discarded');
+// Press-and-hold starts recording and releasing after a deliberate hold produces the same preview flow.
+navigator.mediaDevices.getUserMedia=async()=>mic();start=button('Start voice recording');start.props.onPointerDown({pointerId:41,pointerType:'touch',button:0});await flush();assert(button('Stop voice recording'),'press-and-hold starts recording');time+=1200;fireWindow('pointerup',{pointerId:41});await flush();assert(sendButton(),'releasing a held recorder stops and previews');button('Discard voice note').props.onClick();assert.equal(windowListeners.size,0,'hold listeners are removed after release');
 navigator.mediaDevices.getUserMedia=async()=>mic();button('Start voice recording').props.onClick();await flush();const before=stopped;for(const cleanup of globalThis.__voiceCleanup)cleanup?.();await flush();assert.equal(stopped,before+1,'unmount shuts down microphone');
 Date.now=realNow;globalThis.setInterval=realInterval;globalThis.clearInterval=realClear;globalThis.fetch=realFetch;URL.createObjectURL=realCreate;URL.revokeObjectURL=realRevoke;
-console.log('Tap start/stop, delayed permission, cancellation, denial, double taps, preview, retries, 60-second limit and microphone cleanup passed.');
+console.log('Press-and-hold release, tap start/stop, delayed permission, cancellation, denial, double taps, preview, retries, 60-second limit and microphone cleanup passed.');
