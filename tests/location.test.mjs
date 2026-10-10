@@ -17,4 +17,9 @@ const now=Date.now(),confirmed={city:'Austin',region:'Texas',country:'United Sta
 assert(location.locationIsConfirmed(confirmed,now));
 assert(!location.locationIsConfirmed({...confirmed,city:'Dallas'},now));
 assert(!location.locationIsConfirmed({...confirmed,locationConfirmedAt:new Date(now-91*86400000).toISOString()},now));
-console.log('Structured area normalization, distance, legacy compatibility, connection metadata, and confirmation expiry passed');
+
+const photoCode=ts.transpileModule(readFileSync('app/photo-policy.ts','utf8'),{compilerOptions:{module:ts.ModuleKind.ESNext,target:ts.ScriptTarget.ES2022}}).outputText;
+const {publicProfile}=await import('data:text/javascript;base64,'+Buffer.from(photoCode).toString('base64'));
+const visible=publicProfile({id:'p',name:'P',age:30,gender:'Prefer not to say',city:'Austin',region:'Texas',country:'United States',areaLat:30.2672,areaLon:-97.7431,locationPlaceId:'R/1',remote:true,intentions:['Connect'],orientation:'Prefer not to label',expectation:'Unsure',affection:'',faith:'',about:'Hi',responsibility:'',space:'',growth:'',interests:['History'],active:true});
+assert.equal('areaLat' in visible,false);assert.equal('areaLon' in visible,false);assert.equal('locationPlaceId' in visible,false);assert.equal(visible.city,'Austin');
+console.log('Structured area normalization, distance, privacy, legacy compatibility, connection metadata, and confirmation expiry passed');
