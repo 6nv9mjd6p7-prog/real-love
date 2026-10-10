@@ -5,14 +5,14 @@ const compile=source=>'data:text/javascript;base64,'+Buffer.from(ts.transpileMod
 const model=compile(readFileSync('app/model.ts','utf8'));
 const {defaultDiscovery,normalizeDiscovery,readDiscovery,writeDiscovery,clearDiscovery,discoveryKey}=await import(compile(readFileSync('app/discovery-preferences.ts','utf8').replace("from './model'",`from '${model}'`)));
 const items=new Map();const storage={get length(){return items.size;},key(i){return [...items.keys()][i]??null;},getItem(k){return items.get(k)??null;},setItem(k,v){items.set(k,v);},removeItem(k){items.delete(k);}};
-const chosen={...defaultDiscovery,interestMode:'any',category:'Custom topic',locationFilter:'online',filterMinAge:24,filterMaxAge:45,activityFilter:'Reading together',availabilityFilter:'Weekends',aceFilter:true,search:'history'};
+const chosen={...defaultDiscovery,interestMode:'any',category:'Custom topic',locationFilter:'online',radiusMiles:50,filterMinAge:24,filterMaxAge:45,activityFilter:'Reading together',availabilityFilter:'Weekends',aceFilter:true,search:'history'};
 assert(writeDiscovery(storage,'a',chosen));assert.deepEqual(readDiscovery(storage,'a'),chosen,'all chosen filters survive refresh');assert.deepEqual(readDiscovery(storage,'b'),defaultDiscovery,'accounts have separate preferences');
 clearDiscovery(storage,'b');assert.deepEqual(readDiscovery(storage,'a'),defaultDiscovery,'account switch removes previous account settings');assert.equal(storage.length,0);
 writeDiscovery(storage,'a',chosen);writeDiscovery(storage,'a',{...defaultDiscovery});assert.deepEqual(readDiscovery(storage,'a'),defaultDiscovery,'reset itself persists');
 storage.setItem('other-app','keep');clearDiscovery(storage);assert.equal(storage.getItem('other-app'),'keep');assert.deepEqual(readDiscovery(storage,'a'),defaultDiscovery);
 storage.setItem(discoveryKey('a'),'bad JSON');assert.deepEqual(readDiscovery(storage,'a'),defaultDiscovery);
 storage.setItem(discoveryKey('a'),JSON.stringify({version:2,preferences:chosen}));assert.deepEqual(readDiscovery(storage,'a'),defaultDiscovery);
-const invalid=normalizeDiscovery({interestMode:'invalid',locationFilter:'everywhere',filterMinAge:17,filterMaxAge:101,aceFilter:'true',activityFilter:'invalid',availabilityFilter:'invalid',search:'a'.repeat(121),category:'x'.repeat(61)});assert.deepEqual(invalid,defaultDiscovery);
-assert.equal(normalizeDiscovery({filterMinAge:60,filterMaxAge:20}).filterMinAge,18);assert.equal(normalizeDiscovery({filterMinAge:60,filterMaxAge:20}).filterMaxAge,99);
+const invalid=normalizeDiscovery({interestMode:'invalid',locationFilter:'everywhere',radiusMiles:1000,filterMinAge:17,filterMaxAge:101,aceFilter:'true',activityFilter:'invalid',availabilityFilter:'invalid',search:'a'.repeat(121),category:'x'.repeat(61)});assert.deepEqual(invalid,defaultDiscovery);
+assert.equal(normalizeDiscovery({radiusMiles:5}).radiusMiles,5);assert.equal(normalizeDiscovery({radiusMiles:100}).radiusMiles,100);assert.equal(normalizeDiscovery({radiusMiles:0}).radiusMiles,25);assert.equal(normalizeDiscovery({filterMinAge:60,filterMaxAge:20}).filterMinAge,18);assert.equal(normalizeDiscovery({filterMinAge:60,filterMaxAge:20}).filterMaxAge,99);
 const denied={getItem(){throw Error('denied');},setItem(){throw Error('denied');},get length(){throw Error('denied');}};assert.deepEqual(readDiscovery(denied,'a'),defaultDiscovery);assert.equal(writeDiscovery(denied,'a',chosen),false);clearDiscovery(denied);
 console.log('Discovery preference restoration, reset, account separation, validation, and unavailable-storage checks passed');
