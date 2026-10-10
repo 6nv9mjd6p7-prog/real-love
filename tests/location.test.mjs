@@ -6,6 +6,9 @@ const location=await import('data:text/javascript;base64,'+Buffer.from(code).toS
 assert.equal(location.locationKey({city:' AUSTÍN ',region:' Texas ',country:'United States'}),'austin|texas|united states');
 assert(location.sameBroadArea({city:'Austin',region:'Texas',country:'United States'},{city:'austin',region:'texas',country:'united states'}));
 assert(!location.sameBroadArea({city:'Austin',region:'Texas',country:'United States'},{city:'Austin',region:'Ontario',country:'Canada'}));
+const austin={city:'Austin',region:'Texas',country:'United States',areaLat:30.2672,areaLon:-97.7431},houston={city:'Houston',region:'Texas',country:'United States',areaLat:29.7604,areaLon:-95.3698};
+const miles=location.locationDistanceMiles(austin,houston);assert(miles>140&&miles<170,'general-area distance uses city points');assert(!location.withinMiles(austin,houston,100));assert(location.withinMiles(austin,houston,200));assert(location.withinMiles({city:'Austin'},{city:' austin '},25),'legacy profiles fall back to same-area matching');
+assert.equal(location.locationLabel({city:'Singapore',region:'Singapore',country:'Singapore'}),'Singapore','repeated region labels are collapsed');
 assert(location.sameBroadArea({city:'Austin'},{city:' austin '}),'legacy profiles retain normalized city matching during migration');
 const request=new Request('https://rl.test');Object.defineProperty(request,'cf',{value:{city:'Austin',region:'Texas',country:'US'}});
 assert.deepEqual(location.connectionLocation(request),{city:'Austin',region:'Texas',country:'United States'});
@@ -14,4 +17,9 @@ const now=Date.now(),confirmed={city:'Austin',region:'Texas',country:'United Sta
 assert(location.locationIsConfirmed(confirmed,now));
 assert(!location.locationIsConfirmed({...confirmed,city:'Dallas'},now));
 assert(!location.locationIsConfirmed({...confirmed,locationConfirmedAt:new Date(now-91*86400000).toISOString()},now));
-console.log('Structured area normalization, legacy compatibility, connection metadata, and confirmation expiry passed');
+
+const photoCode=ts.transpileModule(readFileSync('app/photo-policy.ts','utf8'),{compilerOptions:{module:ts.ModuleKind.ESNext,target:ts.ScriptTarget.ES2022}}).outputText;
+const {publicProfile}=await import('data:text/javascript;base64,'+Buffer.from(photoCode).toString('base64'));
+const visible=publicProfile({id:'p',name:'P',age:30,gender:'Prefer not to say',city:'Austin',region:'Texas',country:'United States',areaLat:30.2672,areaLon:-97.7431,locationPlaceId:'R/1',remote:true,intentions:['Connect'],orientation:'Prefer not to label',expectation:'Unsure',affection:'',faith:'',about:'Hi',responsibility:'',space:'',growth:'',interests:['History'],active:true});
+assert.equal('areaLat' in visible,false);assert.equal('areaLon' in visible,false);assert.equal('locationPlaceId' in visible,false);assert.equal(visible.city,'Austin');
+console.log('Structured area normalization, distance, privacy, legacy compatibility, connection metadata, and confirmation expiry passed');

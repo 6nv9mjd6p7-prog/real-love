@@ -1,6 +1,6 @@
 import {activityOptions,availabilityOptions,normalizeProfileFilters,type ExtraProfileFilters} from './model';
-export type DiscoveryPreferences={interestMode:'mine'|'any';locationFilter:'any'|'local'|'online';filterMinAge:number;filterMaxAge:number;category:string;activityFilter:string;availabilityFilter:string;aceFilter:boolean;search:string;profileFilters:ExtraProfileFilters};
-export const defaultDiscovery:DiscoveryPreferences={interestMode:'any',locationFilter:'any',filterMinAge:18,filterMaxAge:99,category:'All interests',activityFilter:'',availabilityFilter:'',aceFilter:false,search:'',profileFilters:{}};
+export type DiscoveryPreferences={interestMode:'mine'|'any';locationFilter:'any'|'local'|'online';radiusMiles:number;filterMinAge:number;filterMaxAge:number;category:string;activityFilter:string;availabilityFilter:string;aceFilter:boolean;search:string;profileFilters:ExtraProfileFilters};
+export const defaultDiscovery:DiscoveryPreferences={interestMode:'any',locationFilter:'any',radiusMiles:25,filterMinAge:18,filterMaxAge:99,category:'All interests',activityFilter:'',availabilityFilter:'',aceFilter:false,search:'',profileFilters:{}};
 const PREFIX='real-love-discovery-v1:';
 export function discoveryKey(account:string){return PREFIX+encodeURIComponent(account);}
 export function normalizeDiscovery(value:unknown):DiscoveryPreferences{
@@ -8,7 +8,8 @@ export function normalizeDiscovery(value:unknown):DiscoveryPreferences{
  const age=(v:unknown,fallback:number)=>typeof v==='number'&&Number.isInteger(v)&&v>=18&&v<=99?v:fallback;
  let min=age(p.filterMinAge,18),max=age(p.filterMaxAge,99);if(min>max){min=18;max=99;}
  const string=(v:unknown,max:number,fallback:string)=>typeof v==='string'&&v.length<=max?v:fallback;
- return {interestMode:p.interestMode==='mine'?'mine':'any',locationFilter:p.locationFilter==='local'||p.locationFilter==='online'?p.locationFilter:'any',filterMinAge:min,filterMaxAge:max,category:string(p.category,60,'All interests')||'All interests',activityFilter:typeof p.activityFilter==='string'&&activityOptions.includes(p.activityFilter)?p.activityFilter:'',availabilityFilter:typeof p.availabilityFilter==='string'&&availabilityOptions.includes(p.availabilityFilter)?p.availabilityFilter:'',aceFilter:p.aceFilter===true,search:string(p.search,120,''),profileFilters:normalizeProfileFilters(p.profileFilters)};
+ const radius=typeof p.radiusMiles==='number'&&Number.isInteger(p.radiusMiles)&&p.radiusMiles>=5&&p.radiusMiles<=100?p.radiusMiles:25;
+ return {interestMode:p.interestMode==='mine'?'mine':'any',locationFilter:p.locationFilter==='local'||p.locationFilter==='online'?p.locationFilter:'any',radiusMiles:radius,filterMinAge:min,filterMaxAge:max,category:string(p.category,60,'All interests')||'All interests',activityFilter:typeof p.activityFilter==='string'&&activityOptions.includes(p.activityFilter)?p.activityFilter:'',availabilityFilter:typeof p.availabilityFilter==='string'&&availabilityOptions.includes(p.availabilityFilter)?p.availabilityFilter:'',aceFilter:p.aceFilter===true,search:string(p.search,120,''),profileFilters:normalizeProfileFilters(p.profileFilters)};
 }
 export function readDiscovery(storage:Storage|null,account:string){try{const raw=storage?.getItem(discoveryKey(account));if(raw){const parsed=JSON.parse(raw);if(parsed.version===1)return normalizeDiscovery(parsed.preferences);}}catch{}return {...defaultDiscovery};}
 export function writeDiscovery(storage:Storage|null,account:string,preferences:DiscoveryPreferences){try{if(!storage||!account)return false;storage.setItem(discoveryKey(account),JSON.stringify({version:1,preferences:normalizeDiscovery(preferences)}));return true;}catch{return false;}}
