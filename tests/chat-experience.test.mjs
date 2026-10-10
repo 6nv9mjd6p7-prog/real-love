@@ -30,12 +30,14 @@ const modelUrl=compile(readFileSync('app/model.ts','utf8'));const {examples}=awa
 const rulesUrl=compile(readFileSync('app/rules.ts','utf8'));
 const guidelinesUrl=compile(readFileSync('app/guidelines.tsx','utf8').replace("from './rules'",`from '${rulesUrl}'`));
 const draftUrl=compile(readFileSync('app/profile-draft.ts','utf8'));
-const editorSource=readFileSync('app/profile-editor.tsx','utf8').replace("from './model'",`from '${modelUrl}'`).replace("from './guidelines'",`from '${guidelinesUrl}'`).replace("from './profile-draft'",`from '${draftUrl}'`).replace('useState(me?(consent?0:3):1)','useState(globalThis.__step)');
+const locationUrl=compile(readFileSync('app/location.ts','utf8'));
+const locationEditorUrl=compile(readFileSync('app/location-editor.tsx','utf8').replace("from './location'",`from '${locationUrl}'`));
+const editorSource=readFileSync('app/profile-editor.tsx','utf8').replace("from './model'",`from '${modelUrl}'`).replace("from './guidelines'",`from '${guidelinesUrl}'`).replace("from './profile-draft'",`from '${draftUrl}'`).replace("from './location-editor'",`from '${locationEditorUrl}'`).replace('useState(me?(consent?0:3):1)','useState(globalThis.__step)');
 const {default:Editor}=await import(compile(editorSource));
-const props={form:examples[1],setForm(){},me:null,consent:true,setConsent(){},busy:false,onSave(){},onPreview(){},photoSetup:React.createElement('p',null,'Optional photo picker')};
+const props={accountId:'test-account',form:examples[1],setForm(){},me:null,consent:true,setConsent(){},busy:false,onSave(){},onPreview(){},photoSetup:React.createElement('p',null,'Optional photo picker')};
 globalThis.__step=3;const signup=renderToStaticMarkup(React.createElement(Editor,props));assert(signup.includes('Optional photo picker'));assert(signup.includes('Privacy and agreement'));assert(!signup.includes('Faith or worldview'));assert(!signup.includes('Culture and background'),'new signup does not contain deeper questions');
 globalThis.__step=4;const extras=renderToStaticMarkup(React.createElement(Editor,{...props,me:examples[1]}));assert(extras.includes('Faith or worldview'));assert(extras.includes('update gender and cultural background in Basics'));assert(extras.includes('Save changes'));assert(!extras.includes('Optional photo picker'));
-globalThis.__step=1;const basics=renderToStaticMarkup(React.createElement(Editor,{...props,form:{...examples[1],gender:'Self-described',genderDescription:'My words'}}));assert(basics.includes('Gender (optional)'));assert(basics.includes('Prefer not to say'));assert(basics.includes('Gender in your own words'));assert(basics.includes('Race or cultural background (optional)'));assert(basics.includes('My words'));
+globalThis.__step=1;const basics=renderToStaticMarkup(React.createElement(Editor,{...props,form:{...examples[1],gender:'Self-described',genderDescription:'My words'}}));assert(basics.includes('Gender (optional)'));assert(basics.includes('Prefer not to say'));assert(basics.includes('Gender in your own words'));assert(basics.includes('Race or cultural background (optional)'));assert(basics.includes('State, province, or region'));assert(basics.includes('Find my connection area'));assert(basics.includes('No address, IP address, coordinates, or live location is saved.'));assert(basics.includes('My words'));
 delete globalThis.__step;delete globalThis.__picker;
 console.log('Reply quotes, accessible reaction actions, double-tap handlers, retry keys, and shorter signup render passed (not browser QA).');
 

@@ -1,0 +1,17 @@
+import ts from 'typescript';
+import {readFileSync} from 'node:fs';
+import assert from 'node:assert/strict';
+const code=ts.transpileModule(readFileSync('app/location.ts','utf8'),{compilerOptions:{module:ts.ModuleKind.ESNext,target:ts.ScriptTarget.ES2022}}).outputText;
+const location=await import('data:text/javascript;base64,'+Buffer.from(code).toString('base64'));
+assert.equal(location.locationKey({city:' AUSTÍN ',region:' Texas ',country:'United States'}),'austin|texas|united states');
+assert(location.sameBroadArea({city:'Austin',region:'Texas',country:'United States'},{city:'austin',region:'texas',country:'united states'}));
+assert(!location.sameBroadArea({city:'Austin',region:'Texas',country:'United States'},{city:'Austin',region:'Ontario',country:'Canada'}));
+assert(location.sameBroadArea({city:'Austin'},{city:' austin '}),'legacy profiles retain normalized city matching during migration');
+const request=new Request('https://rl.test');Object.defineProperty(request,'cf',{value:{city:'Austin',region:'Texas',country:'US'}});
+assert.deepEqual(location.connectionLocation(request),{city:'Austin',region:'Texas',country:'United States'});
+assert.equal(location.connectionLocation(new Request('https://rl.test')),null);
+const now=Date.now(),confirmed={city:'Austin',region:'Texas',country:'United States',locationConfirmationKey:'austin|texas|united states',locationConfirmedAt:new Date(now-10*86400000).toISOString()};
+assert(location.locationIsConfirmed(confirmed,now));
+assert(!location.locationIsConfirmed({...confirmed,city:'Dallas'},now));
+assert(!location.locationIsConfirmed({...confirmed,locationConfirmedAt:new Date(now-91*86400000).toISOString()},now));
+console.log('Structured area normalization, legacy compatibility, connection metadata, and confirmation expiry passed');

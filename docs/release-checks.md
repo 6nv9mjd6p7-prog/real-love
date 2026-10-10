@@ -1,5 +1,14 @@
 # Real Love pilot release checks
 
+## Structured and optional location confirmation — October 10, 2026
+
+- Profile location is separated into city/general area, state/province/region, and country. Browser address autofill hints are enabled. Discovery displays the broad label and compares all three structured fields when both profiles have them; legacy city-only profiles keep normalized city matching until updated.
+- “Find my connection area” reads only Cloudflare's broad request location and first shows it as a suggestion. Nothing changes until the member chooses “Use this area” and saves. Manual entry remains available when metadata is missing or the suggestion is wrong.
+- Saving with confirmation requested compares the selected structured area on the server. The profile stores a normalized area key and timestamp, not an IP address, coordinates, or live location. Confirmation expires after 90 days and is invalidated by changing the area. Raw confirmation metadata is omitted from public and owner API profiles.
+- The visible label says “Area confirmed recently” and explains that this does not verify identity, residence, character, safety, or exact position. Confirmation is not used for eligibility, interest-first ranking, compatibility, or review decisions.
+- Automated checks cover normalization, same-named cities in different regions/countries, legacy compatibility, absent connection metadata, server-side matching, mismatches, expiry, public-data omission, search, and ranking independence.
+- Native Chromium verified suggestion review, choosing an area, pending-confirmation invalidation after manual editing, the confirmation request payload, absence of IP/coordinate fields, and no horizontal overflow at 390px and 320px widths. A hosted smoke test is still required because local Miniflare does not provide real Cloudflare request-location metadata.
+
 ## Remaining GitHub review fixes — October 9, 2026
 
 - Circle conversation and older-history fetches no longer mark notifications read. A separate, membership-authorized acknowledgement clears only that member's circle message/reaction/joined/opened notifications through the fetched snapshot. Later notifications, other circles, other members, and host join-request alerts remain unread.

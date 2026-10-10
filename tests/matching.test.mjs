@@ -10,6 +10,9 @@ assert(eligible(a,{...b,expectation:'Required',interested:[],orientation:'Allose
 assert(!eligible(a,{...b,minAge:40}));
 assert(!eligible(a,{...b,active:false}));
 assert(!eligible({...a,remote:false},{...b,city:'Houston'}));
+assert(!eligible({...a,remote:false,region:'Texas',country:'United States'},{...b,remote:false,city:'Austin',region:'Ontario',country:'Canada'}),'structured areas distinguish cities with the same name');
+assert(eligible({...a,remote:false,city:' AUSTÍN ',region:' Texas ',country:'United States'},{...b,remote:false,city:'austin',region:'texas',country:'united states'}),'structured area matching normalizes case, accents, and whitespace');
+assert.equal(discoveryScore(a,b),discoveryScore({...a,locationConfirmed:true},b),'location confirmation is never a compatibility or ranking score');
 assert(!eligible(a,{...b,id:'a'}));
 assert.equal(normalizeProfile(a).connectionBoundary,'Open to romance over time');
 assert.equal(normalizeProfile(b).connectionBoundary,'Friendship only');

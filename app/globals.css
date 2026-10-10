@@ -401,3 +401,6 @@ input:not([type=checkbox]):not([type=radio]),select,textarea{border-radius:var(-
 .compact-person{padding:18px}.compact-person .about{margin:10px 0}
 .compact-person .card-starter{margin:10px 0;padding:10px}
 .compact-person .connection-summary{margin:10px 0;padding:10px}
+.location-editor{grid-column:1/-1}.location-check{margin:8px 0 16px;padding:14px;border:1px solid var(--line);border-radius:12px;background:var(--bg)}
+.location-check>strong,.location-suggestion>span{display:block}.location-suggestion{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-top:12px;padding-top:12px;border-top:1px solid var(--line)}
+.location-confirmed{display:inline-flex!important;width:max-content;padding:2px 8px;border-radius:999px;background:#e8f7e5;color:#315b2b;font-size:.8rem;font-weight:600}

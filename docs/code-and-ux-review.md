@@ -6,6 +6,8 @@ Implementation update: the four first priorities below have now been addressed l
 
 October 9 update: circle fetches now preserve unread notifications until a focused reader reaches the latest messages; photo-preview errors now have an explicit retry. Both have regression and Chromium checks recorded in the release document. Other P2 recommendations below remain outstanding.
 
+October 10 update: free-text location is now a structured broad area with optional connection-based confirmation. Exact location is never requested or stored, manual entry remains available, confirmation expires, and it does not affect interest-first ranking. Hosted request metadata still needs a smoke test after publishing.
+
 ## Scope and evidence
 
 The repository contains 243 tracked files. Review covered the application screens and helpers, API authorization and storage paths, database schema and migrations, notification and service-worker behavior, automated-test coverage, and build/setup configuration. TypeScript source and dependency inventories included the generic UI components; those largely unused library primitives were not individually audited. This is a product/code review, not a security certification.
