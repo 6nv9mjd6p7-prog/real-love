@@ -230,6 +230,24 @@ footer{flex-wrap:wrap}
 .support-compact h2{font-size:.875rem;line-height:1.5;font-weight:600}
 .support-compact p,.support-compact>div>span{display:none}
 .support-compact>div{flex:1 1 16rem}.support-compact>a{padding:.5rem .75rem;font-size:.875rem;width:auto}
+.support-banner.support-compact{flex-wrap:nowrap;gap:8px}
+.support-compact>div{flex:1 1 auto}
+.support-compact>button{padding:4px;min-height:44px}
+.app-shell:has(.conversation-screen,.circle-conversation) .topbar{display:none}
+.conversation-heading{align-items:flex-start;gap:10px}
+.conversation-heading>div{min-width:0;flex:1}
+.chat-back{flex-shrink:0;min-width:44px;font-size:1.4rem}
+@media(max-width:720px){
+.app-shell{padding-bottom:calc(76px + env(safe-area-inset-bottom))}
+.sidebar nav,.app-shell:has(.conversation-screen,.circle-conversation)>.sidebar nav{position:fixed;inset:auto 0 0;z-index:20;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:2px;margin:0;padding:6px max(6px,env(safe-area-inset-right)) calc(6px + env(safe-area-inset-bottom)) max(6px,env(safe-area-inset-left));background:white;border-top:1px solid var(--line)}
+.sidebar nav .nav-item,.app-shell:has(.conversation-screen,.circle-conversation) .sidebar nav .nav-item{position:relative;display:flex;flex-direction:column;justify-content:center;align-items:center;gap:3px;min-width:0;min-height:60px;padding:4px 2px;font-size:.75rem;text-align:center;line-height:1.2}
+.sidebar nav .count{position:absolute;top:0;right:4px;font-size:.65rem}
+.sidebar-bottom{display:none}
+.support-compact h2{font-size:.8rem}
+.support-compact>a{padding:6px;font-size:.8rem;min-height:44px}
+.support-compact>a>svg{display:none}
+.app-shell:has(.conversation-screen,.circle-conversation)>.sidebar{height:0;padding:0}
+}
 .review-alert{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1rem}
 .photo-section{max-width:800px;margin-bottom:1.5rem}.profile-extras{display:flex;flex-direction:column;gap:1rem}
 .conversation-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:.4rem 1rem;text-align:left}
@@ -352,7 +370,7 @@ input:not([type=checkbox]):not([type=radio]),select,textarea{border-radius:var(-
 [aria-invalid=true]{border-color:#a1223e!important}
 .chat-help{margin-top:10px;border-top:1px solid var(--line);padding-top:6px}
 .chat-help>summary{min-height:44px;color:var(--indigo)}
-@media(max-width:700px),(max-width:1024px) and (max-height:500px){
+@media(max-width:720px),(max-width:1024px) and (max-height:500px){
 .app-shell:has(.conversation-screen,.circle-conversation){display:flex;flex-direction:column;height:var(--app-viewport,100dvh);min-height:0;overflow:hidden}
 .app-shell:has(.conversation-screen,.circle-conversation)>.sidebar{position:static;flex:0 0 auto;padding:4px 8px;width:100%;height:auto}
 .app-shell:has(.conversation-screen,.circle-conversation)>.sidebar .brand,.app-shell:has(.conversation-screen,.circle-conversation) .sidebar-bottom{display:none}
@@ -404,3 +422,10 @@ input:not([type=checkbox]):not([type=radio]),select,textarea{border-radius:var(-
 .location-editor{grid-column:1/-1}.location-check{margin:8px 0 16px;padding:14px;border:1px solid var(--line);border-radius:12px;background:var(--bg)}
 .location-check>strong,.location-suggestion>span{display:block}.location-suggestion{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-top:12px;padding-top:12px;border-top:1px solid var(--line)}
 .location-confirmed{display:inline-flex!important;width:max-content;padding:2px 8px;border-radius:999px;background:#e8f7e5;color:#315b2b;font-size:.8rem;font-weight:600}
+/* Keep chat tabs inside the resized viewport when the keyboard is open. */
+@media(max-width:720px){
+.app-shell:has(.conversation-screen,.circle-conversation){padding-bottom:0}
+.app-shell:has(.conversation-screen,.circle-conversation)>main{order:1}
+.app-shell:has(.conversation-screen,.circle-conversation)>.sidebar{order:2;height:auto;padding:0;flex:0 0 auto}
+.app-shell:has(.conversation-screen,.circle-conversation)>.sidebar nav{position:static;display:grid}
+}
