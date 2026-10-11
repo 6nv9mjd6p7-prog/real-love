@@ -1,0 +1,17 @@
+import ts from 'typescript';
+import {readFileSync} from 'node:fs';
+import {createRequire} from 'node:module';
+import {pathToFileURL} from 'node:url';
+import assert from 'node:assert/strict';
+import React from 'react';
+import {renderToStaticMarkup} from 'react-dom/server';
+const require=createRequire(import.meta.url);
+let code=ts.transpileModule(readFileSync('app/approval-status.tsx','utf8'),{compilerOptions:{module:ts.ModuleKind.ESNext,jsx:ts.JsxEmit.ReactJSX}}).outputText;
+for(const module of ['react','react/jsx-runtime'])code=code.replaceAll(`from "${module}"`,`from '${pathToFileURL(require.resolve(module)).href}'`).replaceAll(`from '${module}'`,`from '${pathToFileURL(require.resolve(module)).href}'`);
+const {default:Status}=await import('data:text/javascript;base64,'+Buffer.from(code).toString('base64'));
+const noop=()=>{},props={paused:false,onPreview:noop,onEdit:noop,onDemo:noop,onAlerts:noop,onStatus:noop,onCheck:async()=>{}};
+const render=p=>renderToStaticMarkup(React.createElement(Status,{...props,...p}));
+const full=render({});assert.match(full,/aria-current="step"/);assert.match(full,/do not need to submit it again/);assert.match(full,/no guaranteed review time/);assert.match(full,/Set up approval alerts/);
+assert.match(render({paused:true}),/stay paused after approval/);
+const compact=render({compact:true});assert.match(compact,/View review status/);assert(!compact.includes('approval-steps'),'secondary screens do not repeat the full waiting journey');
+console.log('Pending review status, paused choice, optional alerts and compact secondary state passed (render tests).');

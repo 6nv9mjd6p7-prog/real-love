@@ -433,6 +433,19 @@ input:not([type=checkbox]):not([type=radio]),select,textarea{border-radius:var(-
 .compact-person .connection-summary{border:0;padding:0;margin:8px 0;background:transparent}
 .compact-person .connection-summary strong{font-size:.875rem}
 .first-connection-guide{margin-top:24px}
+.approval-status{max-width:52rem}
+.approval-label{font-size:.75rem;font-weight:700;letter-spacing:.08em;color:var(--indigo)}
+.approval-status h2{margin:8px 0}
+.approval-steps{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;list-style:none;padding:0;margin:20px 0}
+.approval-steps li{padding:12px;border:1px solid var(--line);border-radius:10px;background:white}
+.approval-steps li[aria-current=step]{border-color:var(--indigo);background:#eeedff}
+.approval-steps strong,.approval-steps span{display:block}
+.approval-steps span{font-size:.875rem;margin-top:6px;color:var(--muted)}
+.approval-alerts{margin-top:16px;border-top:1px solid var(--line);padding-top:12px}
+.approval-alerts summary{min-height:44px;cursor:pointer;font-weight:600}
+.approval-alerts p{margin:8px 0}
+.approval-compact{padding:12px 16px}
+@media(max-width:600px){.approval-steps{grid-template-columns:1fr}.approval-status .inline-actions{align-items:stretch}.approval-status .inline-actions>button{flex:1 1 100%}}
 /* Keep chat tabs inside the resized viewport when the keyboard is open. */
 @media(max-width:720px){
 .app-shell:has(.conversation-screen,.circle-conversation){padding-bottom:0}
