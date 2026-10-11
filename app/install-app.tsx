@@ -1,7 +1,10 @@
 'use client';
+import { Capacitor } from '@capacitor/core';
 import { useEffect, useState } from 'react';
+import { useNativeApp } from './use-native-app';
 type InstallEvent = Event & { prompt: () => Promise<void>; userChoice: Promise<{ outcome: string }> };
 export default function InstallApp() {
+  const nativeApp = useNativeApp();
   const [prompt, setPrompt] = useState<InstallEvent | null>(null);
   const [installed, setInstalled] = useState(true);
   const [open, setOpen] = useState(false);
@@ -9,6 +12,7 @@ export default function InstallApp() {
   const [notice, setNotice] = useState('');
   const [engaged, setEngaged] = useState(false);
   useEffect(() => {
+    if (Capacitor.isNativePlatform()) return;
     const display = window.matchMedia('(display-mode: standalone)');
     const check = () => setInstalled(display.matches || Boolean((navigator as Navigator & { standalone?: boolean }).standalone));
     check();
@@ -22,13 +26,13 @@ export default function InstallApp() {
     display.addEventListener('change', check);
     if ('serviceWorker' in navigator && window.isSecureContext) navigator.serviceWorker.register('/sw.js', { scope: '/', updateViaCache: 'none' }).catch(() => {});
     return () => { window.removeEventListener('real-love-engaged', engagement); window.removeEventListener('beforeinstallprompt', capture); window.removeEventListener('appinstalled', done); display.removeEventListener('change', check); };
-  }, []);
+  }, [nativeApp]);
   async function install() {
     if (!prompt) return;
     try { await prompt.prompt(); const choice = await prompt.userChoice; setPrompt(null); setNotice(choice.outcome === 'accepted' ? 'Installation requested. Follow your browser’s instructions.' : 'You can install later from your browser menu.'); }
     catch { setPrompt(null); setNotice('Use your browser menu to install Real Love.'); }
   }
-  if (installed || !engaged) return null;
+  if (nativeApp || installed || !engaged) return null;
   return <section className="install-app" aria-label="Install Real Love">
     <button className="text-button" aria-expanded={open} onClick={() => setOpen(!open)}>{open ? 'Close install guide' : 'Add Real Love to your phone'}</button>
     {open && <div className="install-guide">

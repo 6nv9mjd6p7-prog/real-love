@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import InstallApp from "./install-app";
+import NativeRuntime from "./native-runtime";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -22,7 +23,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className="antialiased">{children}<InstallApp /></body>
+      <body className="antialiased">{children}<NativeRuntime /><InstallApp /></body>
     </html>
   );
 }

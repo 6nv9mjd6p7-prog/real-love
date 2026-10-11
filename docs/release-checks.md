@@ -1,5 +1,13 @@
 # Real Love pilot release checks
 
+## iPhone native milestone — October 11, 2026
+
+- A Capacitor 8 iOS 15+ project now provides native app lifecycle handling, safe custom deep links, keyboard/status-bar behavior, a branded icon and launch screen, and HTTPS-only hosted loading with an offline fallback.
+- iOS permission copy is limited to microphone recording and optional camera/photo selection. Native runtime logs are disabled. Deep links accept only known Real Love routes and the production origin; external links open outside the private app WebView.
+- The iPhone build hides browser-install UI, browser Web Push controls, and Ko-fi contribution links. In-app notifications remain available and clearly disclose that native phone alerts are not included yet.
+- The automated native contract checks cover route parsing, origin rejection, privacy metadata, App Transport Security, dependency alignment, and shell configuration.
+- Physical-iPhone microphone/photo/auth/keyboard testing, native APNs, production email or Apple sign-in, Apple signing, and App Store metadata remain pending. The current remote `server.url` shell is an internal QA milestone, not the recommended architecture for public App Review; see `IOS_NATIVE_SETUP.md`.
+
 ## Validated places and nearby radius — October 10, 2026
 
 - Profile location entry searches real cities, towns, districts, and general areas through the app server using OpenStreetMap-backed Photon. Search waits 400 ms after typing, starts at two characters, returns normalized suggestions, rate-limits signed-in members, and caches successful repeated queries in the running server process. If the strict broad-area search returns nothing, a guarded fallback accepts only OpenStreetMap place features rather than streets or addresses. Typed text alone does not change the profile; the member must choose a returned place. Failed/empty searches expose a retry.

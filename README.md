@@ -115,6 +115,10 @@ Replace the filename with the pending migration and `DB` with your D1 binding na
 - `npm run build`: build the deployable Sites artifact
 - `npm run start`: preview the built Worker locally with D1/R2 support
 - `npm run db:generate`: generate Drizzle migrations after schema changes
+- `pnpm native:sync`: sync the Capacitor iOS project after native configuration or plugin changes
+- `pnpm native:open:ios`: open the iOS project in Xcode on macOS
+
+The iPhone project, its current limitations, physical-device checklist, and App Store handoff are documented in [IOS_NATIVE_SETUP.md](./IOS_NATIVE_SETUP.md).
 
 When using the Sites plugin, follow its skill instructions for installation, builds, and publishing. These npm commands remain available for standalone use.
 

@@ -467,3 +467,21 @@ input:not([type=checkbox]):not([type=radio]),select,textarea{border-radius:var(-
 .app-shell:has(.conversation-screen,.circle-conversation)>.sidebar{order:2;height:auto;padding:0;flex:0 0 auto}
 .app-shell:has(.conversation-screen,.circle-conversation)>.sidebar nav{position:static;display:grid}
 }
+
+/* The native shell uses a familiar bottom tab bar and respects the home indicator. */
+html[data-native-platform] body{-webkit-user-select:none;-webkit-touch-callout:none}
+html[data-native-platform] input,html[data-native-platform] textarea{user-select:text;-webkit-user-select:text}
+html[data-native-platform] .support-banner,html[data-native-platform] .support-section{display:none!important}
+@media(max-width:720px){
+html[data-native-platform] .app-shell{display:block;min-height:100dvh;padding-bottom:calc(62px + env(safe-area-inset-bottom));overflow:visible}
+html[data-native-platform] .app-shell>.sidebar{position:fixed!important;inset:auto 0 0 0;z-index:30;width:100%;height:auto;padding:6px max(8px,env(safe-area-inset-right)) max(6px,env(safe-area-inset-bottom)) max(8px,env(safe-area-inset-left));border:0;border-top:1px solid var(--line);background:#fffffff5;backdrop-filter:blur(16px)}
+html[data-native-platform] .app-shell>.sidebar .brand,html[data-native-platform] .app-shell>.sidebar .sidebar-bottom{display:none!important}
+html[data-native-platform] .app-shell>.sidebar nav{display:flex;flex-flow:row nowrap;margin:0;gap:4px}
+html[data-native-platform] .app-shell>.sidebar .nav-item{flex:1 1 0;min-width:0;min-height:48px;padding:5px;justify-content:center;flex-direction:column;gap:1px;font-size:.75rem}
+html[data-native-platform] .app-shell>.sidebar .nav-item svg{width:19px;height:19px}
+html[data-native-platform] .app-shell>.sidebar .nav-item .count{position:absolute;transform:translate(14px,-13px);margin:0}
+html[data-native-platform] .app-shell:has(.conversation-screen,.circle-conversation){display:flex;height:100dvh;min-height:0;padding-bottom:calc(62px + env(safe-area-inset-bottom));overflow:hidden}
+html[data-native-platform] .app-shell:has(.conversation-screen,.circle-conversation)>.sidebar{display:block}
+html[data-native-platform] .app-shell:has(.conversation-screen,.circle-conversation)>main{min-height:0}
+html[data-native-platform] footer{padding-bottom:max(22px,env(safe-area-inset-bottom))}
+}
