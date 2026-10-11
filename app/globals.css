@@ -435,6 +435,12 @@ input:not([type=checkbox]):not([type=radio]),select,textarea{border-radius:var(-
 .first-connection-guide{margin-top:24px}
 .approval-status{max-width:52rem}
 .returning-activity{margin:0 0 20px;padding:14px;border:1px solid var(--line);border-radius:12px;background:white}
+.introduction-invite{margin-top:14px}
+.invitation-modal h2{margin-bottom:16px}
+.invitation-modal>label{display:block;margin:12px 0}
+.invitation-modal textarea{min-height:120px}
+.invitation-modal>.primary{margin-top:12px}
+.invitation-modal>.text-button{margin:12px 0;display:block}
 .activity-heading{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:10px}
 .activity-heading h2{font-size:1.1rem}.activity-heading>span{font-size:.8rem;color:var(--muted)}
 .activity-shortcuts{display:flex;gap:8px;flex-wrap:wrap}
