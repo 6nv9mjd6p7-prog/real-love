@@ -511,3 +511,21 @@ html[data-native-platform] footer{padding-bottom:max(22px,env(safe-area-inset-bo
 .settings-shortcuts{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:24px}.settings-shortcuts button{min-height:44px;padding:10px 14px;background:white;border:1px solid var(--action-border);border-radius:9px;color:var(--indigo);font-weight:600}.settings-shortcuts button:hover{background:var(--hover-surface)}.settings-groups{display:grid;gap:24px;max-width:900px}.settings-group{scroll-margin-top:24px}.settings-group>h2{margin-bottom:16px}.settings-group:focus{outline:2px solid var(--indigo);outline-offset:5px}.settings-group>h3{margin:20px 0 10px}.settings-group .care-card{margin-top:18px}.settings-detail{margin:20px 0}.settings-detail>summary{cursor:pointer;min-height:44px;color:var(--indigo);font-weight:600;align-content:center}.settings-delete>summary{color:#9e3434}.settings-delete .danger-link{min-height:44px}.settings-groups .care-grid>.form-section{margin:0}
 @media(max-width:720px){.settings-shortcuts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}.settings-shortcuts button{text-align:left;overflow-wrap:anywhere}.settings-groups{gap:20px}}
 .app-purpose h3{margin:18px 0 8px;font-size:1rem}.app-purpose{margin-bottom:20px}
+/* Page titles, section headings, content, and helper text use distinct levels. */
+.content>.page-heading h1,.entry-card h1{font-size:clamp(2rem,3.2vw,2.75rem);line-height:1.15;letter-spacing:-.035em;overflow-wrap:anywhere}
+.content>.page-heading{align-items:flex-start;margin-bottom:24px}.content>.page-heading p{font-size:1rem;color:var(--muted);line-height:1.65;margin-top:10px}
+.entry-card>p{max-width:42rem;font-size:1.0625rem;line-height:1.7}.entry-card>.field-help{font-size:.875rem}
+.form-section>h2,.care-card>h2,.settings-group>h2,.profile-section-title{font-size:1.25rem;line-height:1.35;font-weight:700;letter-spacing:-.015em}
+.form-section>h3,.settings-group>h3,.app-purpose h3{font-size:1rem;line-height:1.5;font-weight:700}
+.profile-panel>p,.full-prompt>p,.compact-person .about{color:var(--ink);line-height:1.7}
+.compact-person .person-title h2{font-size:1.25rem;line-height:1.35;font-weight:700}.compact-person .bio-meta{line-height:1.6;margin-top:4px;font-size:.875rem}.compact-person .card-starter{background:var(--section-surface);border-radius:10px}.compact-person .card-starter strong{font-size:.875rem}.compact-person .card-starter p{margin-top:6px;line-height:1.6}
+.compact-person .inline-actions{gap:10px;margin-top:16px}.compact-person .inline-actions .profile-link{margin-top:0;background:var(--indigo);color:white;border-color:var(--indigo);font-weight:700}.compact-person .inline-actions .profile-link:hover{background:#3f458b;border-color:#3f458b;color:white}.compact-person .inline-actions>.secondary{width:100%;background:white}
+.profile-introduction{border-color:#b9c3e4;background:#f8f9ff}.profile-introduction>.profile-section-title{color:var(--indigo)}
+.draft-status{display:block;width:fit-content;max-width:100%;padding:6px 10px;background:var(--section-surface);border-radius:8px;font-weight:600;color:#4d5268;overflow-wrap:anywhere}
+.profile-form>.draft-status{margin:0}.form-section .field-help,.care-card .field-help{font-size:.875rem;line-height:1.7}.field-validation{font-weight:600}
+.profile-form .form-section>label,.profile-form .form-grid label{font-weight:600}.profile-form label input,.profile-form label select,.profile-form label textarea,.profile-form label .field-help{font-weight:400}
+.profile-extras>h2{font-size:1.25rem;margin-bottom:12px}.profile-extras>.field-help{margin-bottom:16px}
+.settings-detail>summary,.signup-optional>summary,.approval-alerts>summary{font-size:1rem;font-weight:600}.settings-detail[open],.signup-optional[open]{border-color:var(--action-border)}
+.empty-state h2{font-size:1.375rem;line-height:1.35}.empty-state p{line-height:1.7}.approval-status h2{font-size:1.5rem;line-height:1.3}.approval-steps strong{line-height:1.4}.approval-steps span{font-size:.9375rem;line-height:1.6}
+.activity-heading h2{font-size:1.125rem;line-height:1.4}.activity-heading>span{font-size:.875rem;color:var(--muted)}
+@media(max-width:720px){.content>.page-heading h1,.entry-card h1{font-size:2rem}.compact-person{padding:20px}.content>.page-heading{margin-bottom:20px}.entry-card>p{font-size:1rem}}
