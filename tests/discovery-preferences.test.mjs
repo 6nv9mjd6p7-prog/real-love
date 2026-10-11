@@ -16,3 +16,9 @@ const invalid=normalizeDiscovery({interestMode:'invalid',locationFilter:'everywh
 assert.equal(normalizeDiscovery({radiusMiles:5}).radiusMiles,5);assert.equal(normalizeDiscovery({radiusMiles:100}).radiusMiles,100);assert.equal(normalizeDiscovery({radiusMiles:0}).radiusMiles,25);assert.equal(normalizeDiscovery({filterMinAge:60,filterMaxAge:20}).filterMinAge,18);assert.equal(normalizeDiscovery({filterMinAge:60,filterMaxAge:20}).filterMaxAge,99);
 const denied={getItem(){throw Error('denied');},setItem(){throw Error('denied');},get length(){throw Error('denied');}};assert.deepEqual(readDiscovery(denied,'a'),defaultDiscovery);assert.equal(writeDiscovery(denied,'a',chosen),false);clearDiscovery(denied);
 console.log('Discovery preference restoration, reset, account separation, validation, and unavailable-storage checks passed');
+
+writeDiscovery(storage,'a',chosen);writeDiscovery(storage,'a',{...defaultDiscovery,search:'Saved only'},'saved');
+assert.equal(readDiscovery(storage,'a','saved').search,'Saved only');assert.equal(readDiscovery(storage,'a').search,'history');
+clearDiscovery(storage,'a');assert.equal(readDiscovery(storage,'a','saved').search,'Saved only','account cleanup preserves both scopes');
+writeDiscovery(storage,'a',defaultDiscovery,'saved');assert.equal(readDiscovery(storage,'a').search,'history','resetting Saved leaves Discover unchanged');
+clearDiscovery(storage);assert.deepEqual(readDiscovery(storage,'a','saved'),defaultDiscovery,'sign-out clears Saved too');
