@@ -1,0 +1,16 @@
+import ts from 'typescript';
+import {readFileSync} from 'node:fs';
+import {createRequire} from 'node:module';
+import {pathToFileURL} from 'node:url';
+import assert from 'node:assert/strict';
+import React from 'react';
+import {renderToStaticMarkup} from 'react-dom/server';
+const require=createRequire(import.meta.url);
+const code=ts.transpileModule(readFileSync('app/chat-row.tsx','utf8'),{compilerOptions:{module:ts.ModuleKind.ESNext,jsx:ts.JsxEmit.ReactJSX}}).outputText.replace('from "react/jsx-runtime"',`from '${pathToFileURL(require.resolve('react/jsx-runtime')).href}'`);
+const {default:Row}=await import('data:text/javascript;base64,'+Buffer.from(code).toString('base64'));
+const chat={person:{name:'Alex'},unread:2,lastMessage:{mine:true,body:'A long preview',created:'2026-10-11T08:00:00Z'}};
+const render=c=>renderToStaticMarkup(React.createElement(Row,{chat:c,onOpen:()=>{},avatar:React.createElement('button',null,'Profile')}));
+const html=render(chat),open=html.slice(html.indexOf('<button class="chat-row-open"'));
+assert.match(open,/Alex/);assert.match(open,/You: A long preview/);assert.match(open,/<time/);assert.match(open,/2 unread messages/);assert(!open.includes('Profile'),'profile control remains outside the chat button');assert.equal((html.match(/<button/g)||[]).length,2);
+const unavailable=render({...chat,available:false});assert.match(unavailable,/safety options/);assert(!unavailable.includes('A long preview'));
+console.log('Chat button includes name, preview, timestamp and unread label; separate profile control and unavailable preview protection passed.');
