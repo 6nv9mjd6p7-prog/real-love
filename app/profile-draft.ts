@@ -14,7 +14,7 @@ export function profileDraftError(draft:any,consent:boolean){
  if(!draft.interests?.length||draft.interests.length>8)return 'Choose 1–8 interests in Interests.';
  if(!draft.about?.trim())return 'Add a short introduction in Introduction & privacy.';
  if(!Number.isInteger(Number(draft.minAge))||!Number.isInteger(Number(draft.maxAge))||Number(draft.minAge)<18||Number(draft.maxAge)>99||Number(draft.minAge)>Number(draft.maxAge))return 'Choose an adult age range between 18 and 99, with the minimum no higher than the maximum.';
- if(!consent)return 'Read and agree to the community rules in Introduction & privacy before saving.';
+ if(!consent)return 'Read and agree to the app conduct rules in Introduction & privacy before saving.';
  return '';
 }
 
