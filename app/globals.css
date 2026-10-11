@@ -423,6 +423,16 @@ input:not([type=checkbox]):not([type=radio]),select,textarea{border-radius:var(-
 .location-check>strong,.location-suggestion>span{display:block}.location-suggestion{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-top:12px;padding-top:12px;border-top:1px solid var(--line)}
 .location-search{display:block;position:relative;margin:12px 0}.location-search>input{width:100%;margin-top:6px}.location-results{display:grid;gap:4px;margin-top:6px;padding:6px;border:1px solid var(--line);border-radius:10px;background:white;box-shadow:0 8px 24px rgba(30,34,72,.08)}.location-results button{display:flex;flex-direction:column;align-items:flex-start;gap:2px;width:100%;padding:10px 12px;border-radius:8px;text-align:left}.location-results button:hover,.location-results button:focus-visible{background:var(--hover-surface)}.location-results span{font-size:.875rem;color:var(--muted)}.selected-location{display:flex;flex-direction:column;gap:4px;padding:12px 14px;border:1px solid var(--line);border-radius:10px;background:var(--section-surface)}.location-attribution{margin-top:8px}.discovery-filters input[type=range]{width:100%;min-height:44px}
 .location-confirmed{display:inline-flex!important;width:max-content;padding:2px 8px;border-radius:999px;background:#e8f7e5;color:#315b2b;font-size:.8rem;font-weight:600}
+.discovery-toolbar{display:flex;align-items:flex-start;flex-wrap:wrap;gap:8px 12px;margin:12px 0 4px}
+.discovery-toolbar>.search{flex:1 1 180px;min-width:0;margin:0}
+.discovery-toolbar>.discovery-filters{flex:0 0 auto;margin:0}
+.discovery-toolbar>.discovery-filters>summary{padding:8px 12px;border:1px solid var(--action-border,var(--line));border-radius:10px;background:white;min-height:44px}
+.discovery-toolbar>.discovery-filters[open]{flex:1 1 100%;min-width:0;padding:12px;border:1px solid var(--line);border-radius:12px;background:white}
+.discovery-toolbar .discovery-modes{margin:12px 0}
+.discovery-results{font-size:.875rem;margin:4px 0 12px}
+.compact-person .connection-summary{border:0;padding:0;margin:8px 0;background:transparent}
+.compact-person .connection-summary strong{font-size:.875rem}
+.first-connection-guide{margin-top:24px}
 /* Keep chat tabs inside the resized viewport when the keyboard is open. */
 @media(max-width:720px){
 .app-shell:has(.conversation-screen,.circle-conversation){padding-bottom:0}

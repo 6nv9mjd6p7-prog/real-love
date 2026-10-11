@@ -20,6 +20,6 @@ assert.match(profileDraftError({...saved,age:17},true),/18/);
 console.log('Profile preview status and save validation checks passed');
 
 assert.match(profileSetupError({...saved,name:''},1),/name/);assert.match(profileSetupError({...saved,age:17},1),/18/);assert.match(profileSetupError({...saved,city:''},1),/city/);assert.match(profileSetupError({...saved,interests:[]},2),/1–8/);assert.equal(profileSetupError(saved,1),'');assert.equal(profileSetupError(saved,2),'');
-assert.match(profileSetupError({...saved,region:''},1),/region/);assert.match(profileSetupError({...saved,country:''},1),/country/);
+for(const missing of ['region','country']){const incomplete={...saved,[missing]:''};assert.match(profileSetupError(incomplete,1),/location suggestions/);assert.equal(profileValidationIssue(incomplete,true).field,'city','incomplete selected locations focus the place-search control');}
 
 assert.equal(profileValidationIssue({...saved,city:''},true).step,1);assert.equal(profileValidationIssue({...saved,interests:[]},true).step,2);assert.equal(profileValidationIssue({...saved,about:''},true).field,'about');assert.equal(profileValidationIssue({...saved,minAge:40,maxAge:20},true).step,4);assert.equal(profileValidationIssue(saved,false).field,'consent');
