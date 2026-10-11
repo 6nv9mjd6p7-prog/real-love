@@ -1,0 +1,16 @@
+import ts from 'typescript';
+import {readFileSync} from 'node:fs';
+import {createRequire} from 'node:module';
+import {pathToFileURL} from 'node:url';
+import assert from 'node:assert/strict';
+import React from 'react';
+import {renderToStaticMarkup} from 'react-dom/server';
+const require=createRequire(import.meta.url);
+const code=ts.transpileModule(readFileSync('app/returning-activity.tsx','utf8'),{compilerOptions:{module:ts.ModuleKind.ESNext,jsx:ts.JsxEmit.ReactJSX}}).outputText.replace('from "react/jsx-runtime"',`from '${pathToFileURL(require.resolve('react/jsx-runtime')).href}'`);
+const {default:Activity,recentActivityChats}=await import('data:text/javascript;base64,'+Buffer.from(code).toString('base64'));
+const chat=(id,created,extra={})=>({id,status:'accepted',available:true,person:{name:id},lastMessage:{created,body:'PRIVATE PREVIEW'},...extra});
+const chats=[chat('new','2026-10-10'),chat('unread','2026-10-01',{unread:2}),chat('unavailable','2026-10-11',{available:false,unread:9}),chat('pending','2026-10-11',{status:'pending'})];
+assert.deepEqual(recentActivityChats(chats).map(c=>c.id),['unread','new']);
+const render=p=>renderToStaticMarkup(React.createElement(Activity,{connections:[],requests:0,circleRequests:0,circleUpdates:0,onNavigate:()=>{},...p}));
+assert.equal(render({}),'');const html=render({connections:chats,requests:1,circleUpdates:2});assert.match(html,/2 unread messages/);assert.match(html,/Circle activity/);assert(!html.includes('PRIVATE PREVIEW'));assert(!html.includes('unavailable'));assert(!html.includes('pending'));
+console.log('Returning activity excludes unavailable contacts, prioritizes unread chats, omits private previews and hides empty state.');
