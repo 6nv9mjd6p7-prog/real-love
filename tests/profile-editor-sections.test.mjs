@@ -31,6 +31,17 @@ assert(!html.includes('How I communicate'),'returning users edit communication i
 html=renderToStaticMarkup(React.createElement(Editor,{...props,me:null}));
 assert(html.includes('How I communicate'),'signup retains optional communication controls');
 assert(html.includes('PHOTO MANAGEMENT'),'signup photo remains optional at the final step');
+assert(html.indexOf('Give someone a way to say hello')<html.indexOf('Privacy and agreement'));
+assert(html.indexOf('Privacy and agreement')<html.indexOf('Add more to your profile (optional)'),'required agreement precedes optional extras');
+assert(html.indexOf('Add more to your profile (optional)')<html.indexOf('How I communicate'));
+assert(html.includes('You can skip these and save your profile now.'));
+assert(!html.includes('<details open="" class="signup-optional'),'optional extras begin collapsed');
+globalThis.__profileStep=1;
+const basics=renderToStaticMarkup(React.createElement(Editor,{...props,me:null}));
+assert(basics.indexOf('Age, 18+')<basics.indexOf('Identity details (optional)'));
+assert(basics.includes('They are not required to continue.'));
+assert(basics.includes('Everything else can wait.'));
+assert(!basics.includes('<details open="" class="signup-optional'),'optional identity begins collapsed');
 let chosen,previewed=false;
 const tree=Sections({form,photoUploaded:false,busy:false,changed:true,onPreview:()=>previewed=true,onChoose:n=>chosen=n});
 tree.props.children[0].props.children[2].props.onClick();assert(previewed);
