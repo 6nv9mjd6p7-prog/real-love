@@ -1,0 +1,33 @@
+import ts from 'typescript';
+import {readFileSync} from 'node:fs';
+import assert from 'node:assert/strict';
+const compile=s=>'data:text/javascript;base64,'+Buffer.from(ts.transpileModule(s,{compilerOptions:{module:ts.ModuleKind.ESNext}}).outputText).toString('base64');
+const policy=compile(readFileSync('app/support-prompt.ts','utf8'));
+const {supportPromptReady,dismissSupportPrompt,clearSupportPrompts,SUPPORT_DELAY_MS}=await import(policy);
+const items=new Map(),storage={get length(){return items.size;},key:i=>[...items.keys()][i],getItem:k=>items.get(k)??null,setItem:(k,v)=>items.set(k,v),removeItem:k=>items.delete(k)};
+const now=100000;
+assert(!supportPromptReady(storage,'',true,now));assert(!supportPromptReady(storage,'a',false,now));assert.equal(items.size,0,'no record before a conversation');
+assert(!supportPromptReady(storage,'a',true,now),'first experience has no appeal');
+assert(!supportPromptReady(storage,'a',true,now+SUPPORT_DELAY_MS-1));
+assert(supportPromptReady(storage,'a',true,now+SUPPORT_DELAY_MS),'appeal becomes eligible one day later');
+assert(!supportPromptReady(storage,'a',false,now+SUPPORT_DELAY_MS),'paused or unavailable interaction hides appeal');
+dismissSupportPrompt(storage,'a');assert(!supportPromptReady(storage,'a',true,now+SUPPORT_DELAY_MS*100),'dismissal persists across visits');
+assert(!supportPromptReady(storage,'b',true,now+SUPPORT_DELAY_MS),'another account starts fresh');
+clearSupportPrompts(storage,'b');assert.equal(items.size,1);
+storage.setItem('unrelated','keep');clearSupportPrompts(storage);assert.equal(storage.getItem('unrelated'),'keep');assert.equal(items.size,1);
+assert(!supportPromptReady(null,'a',true,now));
+assert(!supportPromptReady({getItem(){throw Error('denied');}},'a',true,now),'unavailable storage fails without an appeal');
+globalThis.window={localStorage:storage};
+let slots=[],index=0,pending=[];
+globalThis.__supportHooks={useState(initial){const i=index++;if(!(i in slots))slots[i]=initial;return [slots[i],v=>slots[i]=v];},useEffect(fn,deps){const i=index++,previous=slots[i];if(!previous||deps.some((v,j)=>v!==previous[j])){slots[i]=deps;pending.push(fn);}}};
+const hookSource=readFileSync('app/use-support-prompt.ts','utf8').replace("import {useEffect,useState} from 'react';","const {useEffect,useState}=globalThis.__supportHooks;").replace("from './support-prompt'",`from '${policy}'`);
+const {useSupportPrompt}=await import(compile(hookSource));
+function render(account,experienced){index=0;return useSupportPrompt(account,experienced);}
+function commit(){const effects=pending;pending=[];effects.forEach(fn=>fn());}
+supportPromptReady(storage,'old',true,Date.now()-SUPPORT_DELAY_MS-1);
+render('old',true);commit();assert(render('old',true).show);
+assert(!render('new',true).show,'account transitions never inherit a visible banner');commit();assert(!render('new',true).show);
+const source=readFileSync('app/love-app.tsx','utf8');
+assert(source.includes("route==='discover'&&!loadError&&supportPrompt.show"),'banner is limited to successful Discover');
+assert(source.includes('Support Real Love (optional)</summary>'),'settings support is collapsed and voluntary');
+console.log('Support delay, persistent dismissal, account boundaries, storage failures, and Discover-only placement passed.');
