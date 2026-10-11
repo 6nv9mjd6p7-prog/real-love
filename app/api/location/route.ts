@@ -24,6 +24,6 @@ export async function POST(req:Request){
   if(lat<-90||lat>90||lon<-180||lon>180||!Number.isFinite(lat)||!Number.isFinite(lon))return Response.json({error:'Location coordinates are invalid.'},{status:400,headers:safetyHeaders});
   await quota(user.userId,'location_reverse',10,60);
   const coarseLat=Math.round(lat*100)/100,coarseLon=Math.round(lon*100)/100;
-  return Response.json({suggestion:await reverseBroadLocation(coarseLat,coarseLon)},{headers:safetyHeaders});
+  const suggestion=await reverseBroadLocation(coarseLat,coarseLon);return Response.json({suggestion:{...suggestion,areaLat:coarseLat,areaLon:coarseLon}},{headers:safetyHeaders});
  }catch(error:any){if(error?.status===401)return Response.json({error:error.message},{status:401,headers:safetyHeaders});return failure(error);}
 }
