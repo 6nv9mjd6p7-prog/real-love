@@ -5,8 +5,8 @@ export default function ReturningActivity({connections,requests,circleRequests,c
  const chats=recentActivityChats(connections),unread=connections.filter(c=>c.status==='accepted'&&c.available!==false).reduce((n,c)=>n+(c.unread||0),0);
  if(!chats.length&&!requests&&!circleRequests&&!circleUpdates)return null;
  return <section className="returning-activity" aria-labelledby="returning-title"><div className="activity-heading"><h2 id="returning-title">Continue connecting</h2><span>At your own pace</span></div><div className="activity-shortcuts">
- <button onClick={()=>onNavigate('conversations/chats')}><strong>Chats</strong><span>{unread?unread+' unread messages':'Open your conversations'}</span></button>
- {requests>0&&<button onClick={()=>onNavigate('conversations/requests')}><strong>Invitations</strong><span>{requests} to review</span></button>}
+ <button onClick={()=>onNavigate('conversations/chats')}><strong>Chats</strong><span>{unread?unread+' unread messages':'Open your chats'}</span></button>
+ {requests>0&&<button onClick={()=>onNavigate('conversations/requests')}><strong>Requests</strong><span>{requests} invitations to review</span></button>}
  {circleRequests>0&&<button onClick={()=>onNavigate('circles/requests')}><strong>Circle requests</strong><span>{circleRequests} to review</span></button>}
  {circleUpdates>0&&<button onClick={()=>onNavigate('notifications')}><strong>Circle activity</strong><span>{circleUpdates} new updates</span></button>}
  </div>{chats.length>0&&<div className="activity-recent" aria-label="Recent conversations">{chats.map(c=><button key={c.id} onClick={()=>onNavigate('chat/'+encodeURIComponent(c.id))}><strong>{c.person.name}</strong><span>{c.unread?c.unread+' unread':'Continue conversation'} →</span></button>)}</div>}</section>;
