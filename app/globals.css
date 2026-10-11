@@ -529,3 +529,5 @@ html[data-native-platform] footer{padding-bottom:max(22px,env(safe-area-inset-bo
 .empty-state h2{font-size:1.375rem;line-height:1.35}.empty-state p{line-height:1.7}.approval-status h2{font-size:1.5rem;line-height:1.3}.approval-steps strong{line-height:1.4}.approval-steps span{font-size:.9375rem;line-height:1.6}
 .activity-heading h2{font-size:1.125rem;line-height:1.4}.activity-heading>span{font-size:.875rem;color:var(--muted)}
 @media(max-width:720px){.content>.page-heading h1,.entry-card h1{font-size:2rem}.compact-person{padding:20px}.content>.page-heading{margin-bottom:20px}.entry-card>p{font-size:1rem}}
+
+.discovery-location-help{margin:12px 0}.discovery-location-help>summary{cursor:pointer;min-height:44px;color:var(--indigo);font-weight:600;align-content:center}
