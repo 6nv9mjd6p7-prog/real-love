@@ -32,7 +32,8 @@ const guidelinesUrl=compile(readFileSync('app/guidelines.tsx','utf8').replace("f
 const draftUrl=compile(readFileSync('app/profile-draft.ts','utf8'));
 const locationUrl=compile(readFileSync('app/location.ts','utf8'));
 const locationEditorUrl=compile(readFileSync('app/location-editor.tsx','utf8').replace("from './location'",`from '${locationUrl}'`));
-const editorSource=readFileSync('app/profile-editor.tsx','utf8').replace("from './model'",`from '${modelUrl}'`).replace("from './guidelines'",`from '${guidelinesUrl}'`).replace("from './profile-draft'",`from '${draftUrl}'`).replace("from './location-editor'",`from '${locationEditorUrl}'`).replace('useState(me?(consent?0:3):1)','useState(globalThis.__step)');
+const sectionsUrl=compile(readFileSync('app/profile-sections.tsx','utf8'));
+const editorSource=readFileSync('app/profile-editor.tsx','utf8').replace("from './profile-sections'",`from '${sectionsUrl}'`).replace("from './model'",`from '${modelUrl}'`).replace("from './guidelines'",`from '${guidelinesUrl}'`).replace("from './profile-draft'",`from '${draftUrl}'`).replace("from './location-editor'",`from '${locationEditorUrl}'`).replace('useState(me?(consent?0:3):1)','useState(globalThis.__step)');
 const {default:Editor}=await import(compile(editorSource));
 const props={accountId:'test-account',form:examples[1],setForm(){},me:null,consent:true,setConsent(){},busy:false,onSave(){},onPreview(){},photoSetup:React.createElement('p',null,'Optional photo picker')};
 globalThis.__step=3;const signup=renderToStaticMarkup(React.createElement(Editor,props));assert(signup.includes('Optional photo picker'));assert(signup.includes('Privacy and agreement'));assert(!signup.includes('Faith or worldview'));assert(!signup.includes('Culture and background'),'new signup does not contain deeper questions');
