@@ -47,4 +47,4 @@ const app=readFileSync('app/love-app.tsx','utf8');
 assert(app.includes('<ProfilePreviewPhoto memberId={me?.id} uploaded={!!(me as any)?.photoUploaded} selected={signupPhotoPreview} version={photoVersion}/>'));
 console.log('Own profile preview displays saved or selected photo without changing sharing consent');
 
-assert(html.includes('How ')&&html.includes('communicates'));assert(html.includes('Ask before giving advice.'));assert(html.includes('Please ask directly.'));assert(html.includes('Conversation ideas'));assert(html.includes('Set a boundary'));assert(html.includes('Repair'));assert(html.includes('No conversation identifier or message text is collected'));
+assert(html.includes('How ')&&html.includes('communicates'));assert(html.includes('Ask before giving advice.'));assert(html.includes('Please ask directly.'));assert(html.includes('Conversation ideas'));assert(html.includes('Everyday'));assert(html.includes('Communicate'));assert(html.includes('What song have you had on repeat lately?'));assert(html.includes('No conversation identifier or message text is collected'));

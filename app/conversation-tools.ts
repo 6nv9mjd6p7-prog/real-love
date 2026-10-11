@@ -6,7 +6,7 @@ export function conversationPrompts(me:Profile|null|undefined,person:Profile):st
  const shared=profileInterests(person).find(x=>mine.has(x.toLowerCase()));
  return [shared?`What drew you to ${shared}?`:'What has held your interest lately?',
  'What is something you enjoyed this week?',
- 'What kind of pace works for you when staying in touch?'];
+ 'If we explored that interest together, what would be a good first step?'];
 }
 export function appendPrompt(draft:string,prompt:string,max=1500):string|null{
  const next=draft.trim()?draft+'\n\n'+prompt:prompt;return next.length<=max?next:null;
