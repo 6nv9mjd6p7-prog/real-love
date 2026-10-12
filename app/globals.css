@@ -531,3 +531,4 @@ html[data-native-platform] footer{padding-bottom:max(22px,env(safe-area-inset-bo
 @media(max-width:720px){.content>.page-heading h1,.entry-card h1{font-size:2rem}.compact-person{padding:20px}.content>.page-heading{margin-bottom:20px}.entry-card>p{font-size:1rem}}
 
 .discovery-location-help{margin:12px 0}.discovery-location-help>summary{cursor:pointer;min-height:44px;color:var(--indigo);font-weight:600;align-content:center}
+.journey-summary>h3{margin:24px 0 10px;line-height:1.4}.journey-summary .metric-grid dd{font-size:1.25rem;line-height:1.5;overflow-wrap:anywhere}

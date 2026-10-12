@@ -450,3 +450,26 @@ const feedbackRows=sql.prepare("SELECT * FROM product_events WHERE member='alice
 console.log('Optional communication preferences round-trip and private daily feedback validation/replacement passed.');
 
 const identityProfile={...draft('identity-member'),gender:'Self-described',genderDescription:'Genderfluid',background:'Yoruba',interested:model.genders};assert.equal((await post('identity-member',{action:'profile',profile:identityProfile})).status,200);let identitySaved=(await get('identity-member')).data.me;assert.equal(identitySaved.genderDescription,'Genderfluid');assert.equal(identitySaved.background,'Yoruba');assert.equal((await post('identity-member',{action:'profile',profile:{...identityProfile,gender:'Prefer not to say',background:''}})).status,200);identitySaved=(await get('identity-member')).data.me;assert.equal(identitySaved.gender,'Prefer not to say');assert(!identitySaved.genderDescription);assert.equal(identitySaved.background,'');assert.equal(JSON.parse(sql.prepare('SELECT data FROM profiles WHERE id=?').get('identity-member').data).genderDescription,'','withdrawing gender sharing clears the saved description');console.log('Identity self-description, optional sharing, legacy preference lists, and withdrawal passed.');
+
+// Journey milestones are allowlisted, account scoped, and idempotent.
+as(null);assert.equal((await metrics.POST(request({action:'journey',expectedAccount:'alice',kind:'signup_basics_completed'}))).status,401);
+as('identity-member');assert.equal((await metrics.POST(request({action:'journey',expectedAccount:'other',kind:'signup_basics_completed'}))).status,400);
+assert.equal((await metrics.POST(request({action:'journey',expectedAccount:'identity-member',kind:'approved'}))).status,400,'clients cannot claim server milestones');
+assert.equal((await metrics.POST(request({action:'journey',expectedAccount:'identity-member',kind:'discovery_opened'}))).status,403,'unapproved members cannot claim discovery access');
+for(let i=0;i<2;i++)assert.equal((await metrics.POST(request({action:'journey',expectedAccount:'identity-member',kind:'signup_basics_completed',answer:'must not be stored'}))).status,200);
+const milestoneRows=sql.prepare("SELECT * FROM product_events WHERE member='identity-member' AND kind='signup_basics_completed'").all();assert.equal(milestoneRows.length,1);assert(!JSON.stringify(milestoneRows).includes('must not be stored'));
+assert.equal(sql.prepare("SELECT COUNT(*) AS n FROM product_events WHERE member='bob' AND kind='message_sent'").get().n,1,'successful messages count once per sender');
+as('referee');const baseline=await (await metrics.GET()).json();
+const day=86400000,stamp=days=>new Date(Date.now()-days*day).toISOString();
+function milestone(member,kind,days){sql.prepare('INSERT INTO product_events (id,member,kind,created) VALUES (?,?,?,?)').run(JSON.stringify([member,kind]),member,kind,stamp(days));}
+for(const member of ['journey-a','journey-b']){milestone(member,'signup_started',11);milestone(member,'approved',10);milestone(member,'signup_basics_completed',10.5);}
+for(const [kind,days] of [['signup_interests_completed',10.4],['profile_saved',10.3],['discovery_opened',9],['profile_opened',8],['chat_opened',6],['invitation_sent',7],['accepted',6],['message_sent',5],['two_way',4],['visit',9]])milestone('journey-a',kind,days);
+for(const [kind,days] of [['discovery_opened',11],['invitation_sent',2],['message_sent',1],['signup_interests_completed',1],['profile_saved',12],['visit',10]])milestone('journey-b',kind,days);
+milestone('journey-recent','approved',2);milestone('journey-recent','signup_started',2);milestone('journey-recent','two_way',1);
+milestone('journey-old','approved',40);milestone('journey-old','signup_started',40);
+const measured=await (await metrics.GET()).json();
+assert.equal(measured.cohort.approved-baseline.cohort.approved,2,'only matured approval windows from the past month count');
+for(const field of ['discovered','viewed','chatted','invited','accepted','messaged','conversations','returned'])assert.equal(measured.cohort[field]-baseline.cohort[field],1,field+' excludes early, late, recent and old events');
+assert.equal(measured.signupCohort.started-baseline.signupCohort.started,2);assert.equal(measured.signupCohort.basics-baseline.signupCohort.basics,2);assert.equal(measured.signupCohort.interests-baseline.signupCohort.interests,1);assert.equal(measured.signupCohort.saved-baseline.signupCohort.saved,1);
+assert(!JSON.stringify(measured).includes('journey-a'),'owner response returns totals, not member identifiers');
+console.log('Journey allowlist, authorization, deduplication, content omission, sender milestones and seven-day observation windows passed.');

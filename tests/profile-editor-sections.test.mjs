@@ -49,4 +49,11 @@ const cards=tree.props.children[1].props.children;
 cards.forEach((card,i)=>{card.props.onClick();assert.equal(chosen,i+1);assert.equal(card.props.type,'button');});
 const disabled=Sections({form,photoUploaded:false,busy:true,changed:false,onPreview:()=>{},onChoose:()=>{}});
 assert(disabled.props.children[1].props.children.every(card=>card.props.disabled));
+const interactive=source.replace(/import \{useState,useEffect,useRef,type ReactNode\} from '[^']+';/,"const useState=initial=>[initial,()=>{}],useEffect=()=>{},useRef=initial=>({current:initial});");
+const {default:ProgressEditor}=await import(compile(interactive));
+const progress=[];let saved=0;
+for(const step of [1,2]){globalThis.__profileStep=step;const tree=ProgressEditor({...props,me:null,onProgress:n=>progress.push(n),onSave:async()=>saved++});await tree.props.onSubmit({preventDefault(){}});}
+assert.deepEqual(progress,[1,2],'valid Continue actions emit completed signup steps');assert.equal(saved,0);
+globalThis.__profileStep=1;await ProgressEditor({...props,me:null,form:{...form,name:''},onProgress:n=>progress.push(n)}).props.onSubmit({preventDefault(){}});assert.deepEqual(progress,[1,2],'invalid fields do not emit completion');
+await ProgressEditor({...props,onProgress:n=>progress.push(n),onSave:async()=>saved++}).props.onSubmit({preventDefault(){}});assert.deepEqual(progress,[1,2],'returning profile edits do not emit signup completion');assert.equal(saved,1);
 console.log('Profile overview, section destinations, dedicated photos, save separation, and signup communication passed (render checks).');
