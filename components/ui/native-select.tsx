@@ -3,6 +3,7 @@ import { ChevronDownIcon } from "lucide-react"
 
 import { cn } from "@/lib/utils"
 
+// Reusable native single-choice control: callers supply a visible label, blank option where appropriate, and controlled value.
 function NativeSelect({
   className,
   size = "default",

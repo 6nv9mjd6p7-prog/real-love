@@ -31,7 +31,7 @@ See [Sites runtime setup](docs/SITES_RUNTIME.md) for managed/portable developmen
 - [Native iPhone setup and limitations](IOS_NATIVE_SETUP.md)
 - `.openai/hosting.json` identifies the hosted project and its D1/R2 bindings.
 
-This source was synchronized with live version 88 (`f932f3956ae412b46639e147488151030437314e`) while preserving explanatory comments. GitHub and hosted Sites remain separate copies; later edits can diverge again. Pushing here does not deploy the hosted app.
+This source was synchronized with live version 89 (`51742deb4e4e949bb659239c0e43c39dc1562e89`) while preserving explanatory comments. GitHub and hosted Sites remain separate copies; later edits can diverge again. Pushing here does not deploy the hosted app.
 
 ## Privacy boundaries
 
@@ -40,3 +40,5 @@ Authentication, admission, active status, connection consent, and reviewer autho
 Never commit credentials, environment secrets, local runtime state, or real member data. Generated bundles, dependency directories, and third-party vendored code are not the place to document application behavior.
 
 Profile input and private birth-date behavior: [implementation notes](docs/profile-inputs.md).
+
+Dropdown, radio, checkbox, and search decisions: [choice control audit](docs/choice-controls.md).

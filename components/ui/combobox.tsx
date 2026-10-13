@@ -52,6 +52,7 @@ function ComboboxClear({ className, ...props }: ComboboxPrimitive.Clear.Props) {
   )
 }
 
+// Searchable choice input for long option lists; callers control the selection and accessible label.
 function ComboboxInput({
   className,
   children,

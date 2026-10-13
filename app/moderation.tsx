@@ -5,6 +5,7 @@
 'use client';
 import OwnerMetrics from './owner-metrics';
 import {useState,useEffect} from 'react';
+// Reviewer assignment selects a stable member ID from a dynamic dropdown; admission and safety actions stay explicit buttons.
 export default function Moderation({accountId}:{accountId:string}){const [data,setData]=useState<any>(null),[notice,setNotice]=useState(''),[busy,setBusy]=useState(false),[reason,setReason]=useState(''),[target,setTarget]=useState(''),[adult,setAdult]=useState(''),[loading,setLoading]=useState(true),[loadError,setLoadError]=useState(''),[admissionReasons,setAdmissionReasons]=useState<Record<string,string>>({});
 async function load(){setLoading(true);setLoadError('');try{const r=await fetch('/api/moderation',{cache:'no-store'});const d:any=await r.json();if(!r.ok)throw Error(d.error||'Safety review could not load.');if(d.accountId!==accountId){window.location.reload();return false;}if(!['admissions','photos','cases','moderators'].every(key=>Array.isArray(d[key])))throw Error('Safety review returned an incomplete response. Please retry.');setData(d);return true;}catch(e:any){setLoadError(e.message||'Safety review could not load. Please retry.');return false;}finally{setLoading(false);}}
 useEffect(()=>{load();},[]);

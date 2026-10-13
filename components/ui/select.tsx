@@ -24,6 +24,7 @@ function SelectValue({
   return <SelectPrimitive.Value data-slot="select-value" {...props} />
 }
 
+// Custom single-choice trigger; prefer the native select in simple forms and keep multiple selections in checkbox groups.
 function SelectTrigger({
   className,
   size = "default",

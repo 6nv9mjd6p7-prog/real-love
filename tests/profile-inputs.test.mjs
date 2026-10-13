@@ -37,6 +37,11 @@ assert(renderToStaticMarkup(render(4)).includes(examples[1].offer),'legacy answe
 for(const [key] of model.profilePrompts)form[key]='';form.promptKeys=[];
 let picker=nodes(render(4)).find(n=>n.type==='select'&&n.props.children[0].props.children==='Choose a question');for(const key of ['care','question','growth']){picker.props.onChange({target:{value:key}});picker=nodes(render(4)).find(n=>n.type==='select'&&n.props.children[0].props.children==='Choose a question');}assert(picker.props.disabled,'three selected prompts prevents adding another');assert.equal(form.offer,'');
 html=renderToStaticMarkup(render(4));assert(html.includes('type="checkbox"'));assert(html.includes('type="radio"'));assert(html.includes('How you experience attraction'));assert(!html.includes('Sexual orientation'));
+const attraction=()=>nodes(render(4)).find(n=>n.type==='select'&&n.props['data-profile-field']==='orientation');
+assert.equal(attraction().props.children[1].length,model.orientationOptions.length,'dropdown contains every allowed attraction choice');
+attraction().props.onChange({target:{value:'Self-described'}});assert.equal(form.orientation,'Self-described');
+form.orientationDescription='My own description';attraction().props.onChange({target:{value:'Asexual'}});assert.equal(form.orientationDescription,'','switching away from self-description clears its public text');
+attraction().props.onChange({target:{value:''}});assert.equal(form.orientation,'','optional dropdown can be left unanswered');
 assert(!model.profileGender({...form,gender:''}).includes('undefined'));
 delete globalThis.__profileHooks;
 console.log('Birth-date calendar boundaries and privacy, legacy answers, multi-choice matching, and editable controls passed.');

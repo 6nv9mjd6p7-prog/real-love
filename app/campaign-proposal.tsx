@@ -3,6 +3,7 @@ import {useEffect,useRef,useState} from 'react';
 
 export type CampaignDraft={title:string;company:string;summary:string;demand:string;uncertainty:string;alternatives:string;reviewDate:string;sources:{url:string;claim:string}[]};
 /** Split the long proposal into focused steps; draft values remain owned by the parent. */
+// Proposal steps are navigation, sources are free-form evidence, and agreement is a deliberate checkbox.
 export default function CampaignProposal({draft,setDraft,consent,setConsent,busy,onSubmit}:{draft:CampaignDraft;setDraft:(draft:CampaignDraft)=>void;consent:boolean;setConsent:(value:boolean)=>void;busy:boolean;onSubmit:()=>Promise<boolean>}){
  const [step,setStep]=useState(0),[submitting,setSubmitting]=useState(false);
  const heading=useRef<HTMLHeadingElement>(null),sending=useRef(false);

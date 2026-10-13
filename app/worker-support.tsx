@@ -14,6 +14,9 @@ export const workerResources = [
 ];
 
 
+// Topic is one resource filter. Deduplicate dropdown options if several resources share a topic.
+const resourceTopics=Array.from(new Set(workerResources.map(resource=>resource.topic)));
+
 export default function WorkerSupport({onCircles,onOrganize,canOrganize}:{onCircles:()=>void;onOrganize:()=>void;canOrganize:boolean}) {
   const [topic,setTopic]=useState('All');
   return <div className="worker-support">
@@ -27,7 +30,7 @@ export default function WorkerSupport({onCircles,onOrganize,canOrganize}:{onCirc
       <article className="care-card"><h2>Professional advice</h2><p>Contact a qualified adviser independently. Ask about credentials, scope, fees, and privacy before sharing details.</p><strong>External help only</strong></article>
       <article className="care-card"><h2>Union representation</h2><p>A relationship with a union must be established separately. Joining this app or a circle does not create it.</p><strong>No representation offered here</strong></article>
     </section>
-    </details><section className="form-section" aria-labelledby="worker-resources"><h2 id="worker-resources" tabIndex={-1}>Educational resources · United States</h2><p>Choose a concern to see a starting point. These links belong to outside organizations; none is presented as a Real Love partner. Check jurisdiction, eligibility, and deadlines directly with the organization.</p><label>Workplace concern<select value={topic} onChange={e=>setTopic(e.target.value)}>{['All',...workerResources.map(r=>r.topic)].map(t=><option key={t}>{t}</option>)}</select></label>
+    </details><section className="form-section" aria-labelledby="worker-resources"><h2 id="worker-resources" tabIndex={-1}>Educational resources · United States</h2><p>Choose a concern to see a starting point. These links belong to outside organizations; none is presented as a Real Love partner. Check jurisdiction, eligibility, and deadlines directly with the organization.</p><label>Workplace concern<select value={topic} onChange={e=>setTopic(e.target.value)}>{['All',...resourceTopics].map(t=><option key={t}>{t}</option>)}</select></label>
       <div className="worker-resources">{workerResources.filter(r=>topic==='All'||r.topic===topic).map(r=><article className="care-card" key={r.url}><span className="eyebrow">{r.kind}</span><h3>{r.title}</h3><p>{r.detail}</p><a className="secondary" href={r.url} target="_blank" rel="noopener noreferrer" referrerPolicy="no-referrer">Visit {r.publisher}<span className="sr-only"> (external site, opens in a new tab)</span></a></article>)}</div>
       <p className="field-help">Links and scope reviewed October 12, 2026. Resources can change. Opening a link takes you to that provider’s site and privacy practices. Real Love does not submit a complaint or referral for you.</p>
     </section>

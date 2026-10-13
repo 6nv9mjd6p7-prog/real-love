@@ -10,7 +10,7 @@ The birth date and selected prompt keys are returned only in the authenticated m
 
 ## Optional choices and compatibility
 
-New optional personal answers are blank rather than preselected. Gender, introduction prompt, private openness to romance, attraction, and future expectations use visible radio choices. Optional radio groups can be cleared. Attraction allows self-description; that description appears only when self-description is selected. Communication, activities, participation, and availability use native checkboxes with clear labels.
+New optional personal answers are blank rather than preselected. Gender, introduction prompt, private openness to romance, and future expectations use visible radio choices. The longer attraction list uses a native single-choice dropdown with an unanswered placeholder. Optional radio groups can be cleared. Attraction allows self-description; that description appears only when self-description is selected. Communication, activities, participation, and availability use native checkboxes with clear labels.
 
 Availability and participation store arrays. Existing single-choice answers are mapped into those arrays without inventing new choices. Scalar summaries remain for older clients. Server saves preserve arrays if an older payload omits them and leaves its scalar summary unchanged. Matching, search, profile display, and discovery filters use the arrays. Only explicitly shared concrete availability slots are described as common timing; flexible/varies/occasional does not establish an agreed schedule.
 

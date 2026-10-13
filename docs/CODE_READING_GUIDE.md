@@ -69,3 +69,7 @@ These recurring forms appear throughout the code. One physical line sometimes co
 ## Reviewing safely
 
 Start with a test that demonstrates the intended permission or lifecycle rule. For a comment-only change, compare TypeScript output with comments removed against the original snapshot, then run existing tests and type checking. For behavior changes, add a focused regression. Browser layout, focus, touch gestures, and native device behavior still require real interactive verification.
+
+## Choosing an input control
+
+See [Choice control audit](choice-controls.md) for each screen and its rationale. Longer single-choice lists use dropdowns; short comparisons remain visible. Multiple answers use checkboxes, interests support search and chips, and places require structured combobox selection. UI controls do not replace server validation. Optional blank values mean unanswered, while birth dates stay outside public profile projections.

@@ -123,6 +123,7 @@ export const profileTextFields=[
 export type ProfileTextField=typeof profileTextFields[number][0];
 export type ProfileAnswerRule={field:ProfileTextField;mode:'contains'|'shared'|'not-shared';value:string};
 export type ExtraProfileFilters={gender?:string;orientation?:string;expectation?:string;startRole?:string;introPrompt?:string;photo?:'available'|'none';communication?:string[];activities?:string[];answers?:ProfileAnswerRule[]};
+// Seven optional attraction choices fit a compact single-choice dropdown; blank is not an identity label.
 export const orientationOptions=['Asexual','Gray-asexual','Demisexual','Allosexual','Exploring','Self-described','Prefer not to label'];
 export const introPromptOptions=['A little about me','I could talk for hours about…','Something I’m curious about…'];
 // Validate persisted filter values before using them; browser storage is not trusted input.
