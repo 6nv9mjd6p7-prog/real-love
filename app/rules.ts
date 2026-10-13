@@ -7,6 +7,6 @@ export const communityRules=[
 ['Protect other people’s privacy','Do not publish, forward, record, or redistribute private messages, names, or photos without permission. Share only your own information. Never disclose someone’s address, workplace, intimate history, or identity without consent.'],
 ['No financial exploitation','During this pilot, no money requests, investment pitches, unsolicited selling, fundraising, or paid recruitment. Do not ask for gift cards, passwords, verification codes, or financial details. External links are disabled to reduce spam and scam exposure.'],
 ['Leadership creates responsibility','Hosts, mentors, moderators, and founders follow the same rules. Belonging, spiritual guidance, mentorship, and leadership must never be used to obtain romance, sex, obedience, money, or secrecy. No retaliation for reporting or leaving.'],
-['Keep your freedom','Community membership, a shared religion, agreement with a leader, or disclosure of trauma is never required. You can pause, decline, block, leave a circle, or delete your profile.'],
+['Keep your freedom','Using Real Love never requires a shared religion, agreement with a leader, or disclosure of trauma. You can pause, decline, block, leave a circle, or delete your profile.'],
 ['Adults and honest participation','This is an invitation-based adult pilot. Use an honest adult age and do not impersonate anyone. Adult eligibility and orientation are reviewed before admission; this is not an identity, background, or character certification.']
 ];

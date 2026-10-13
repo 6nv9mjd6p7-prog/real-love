@@ -10,7 +10,7 @@ const source=readFileSync('app/worker-support.tsx','utf8').replace("from 'react'
 const js=ts.transpileModule(source,{compilerOptions:{module:ts.ModuleKind.ESNext,jsx:ts.JsxEmit.ReactJSX}}).outputText.replace(/from ["']react\/jsx-runtime["']/,`from '${pathToFileURL(require.resolve('react/jsx-runtime')).href}'`);
 const {default:Support,workerResources}=await import('data:text/javascript;base64,'+Buffer.from(js).toString('base64'));
 const html=renderToStaticMarkup(React.createElement(Support,{onCircles:()=>{}}));
-for(const label of ['Work &amp; Worker Support','Explore worker circles','External help only','No representation offered here','not enroll','There is no employer field','not end-to-end encrypted','Not available:','United States'])assert(html.includes(label),label);
+for(const label of ['Work &amp; Worker Support','Explore worker circles','External help only','No representation offered here','does not join a circle','There is no employer field','not end-to-end encrypted','Not available:','United States'])assert(html.includes(label),label);
 assert(!html.includes('<form'),'resource hub does not collect workplace disclosures');
 assert(!html.includes('iframe'),'no provider embeds leak a visit before clicking');
 for(const resource of workerResources){assert(new URL(resource.url).protocol==='https:');assert(html.includes(resource.url));}
