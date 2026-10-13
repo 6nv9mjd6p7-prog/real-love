@@ -21,8 +21,15 @@ const {default:Editor}=await import(compile(source));let form={...examples[1],bi
 const props={accountId:'member',setForm:x=>form=typeof x==='function'?x(form):x,consent:true,setConsent:()=>{},busy:false,onSave:async()=>{},onPreview:()=>{}};
 function render(step){hooks[0]=step;index=0;return Editor({...props,form,me});}function nodes(n){return !n||typeof n!=='object'?[]:[n,...React.Children.toArray(n.props?.children).flatMap(nodes)];}
 let tree=render(1),html=renderToStaticMarkup(tree);assert(html.includes('Date of birth (private'));assert(!html.includes('Age, 18+'));assert(html.includes('bday-year'));
-let month=nodes(tree).find(n=>n.type==='input'&&n.props.autoComplete==='bday-month');month.props.onChange({target:{value:'10'}});assert.equal(form.birthDate,'1996-10-01');assert.equal(form.age,ageFromBirthDate('1996-10-01'));
-month=nodes(render(1)).find(n=>n.type==='input'&&n.props.autoComplete==='bday-month');month.props.onChange({target:{value:''}});assert.equal(form.age,'','incomplete dates cannot silently keep a derived age');form={...form,birthDate:'1996-01-01',age:30};
+let month=nodes(tree).find(n=>n.type==='select'&&n.props.autoComplete==='bday-month');month.props.onChange({target:{value:'10'}});assert.equal(form.birthDate,'1996-10-01');assert.equal(form.age,ageFromBirthDate('1996-10-01'));
+month=nodes(render(1)).find(n=>n.type==='select'&&n.props.autoComplete==='bday-month');month.props.onChange({target:{value:''}});assert.equal(form.age,'','incomplete dates cannot silently keep a derived age');form={...form,birthDate:'1996-01-01',age:30};
+function birthControl(part){return nodes(render(1)).find(n=>n.props.autoComplete===part);}
+const oldDate=form.birthDate;birthControl('bday-day').props.onChange({target:{value:'36'}});assert.equal(form.birthDate,oldDate,'day 36 is rejected immediately');assert(renderToStaticMarkup(render(1)).includes('Choose a day from 1 to 31'));
+birthControl('bday-month').props.onChange({target:{value:'13'}});assert.equal(form.birthDate,oldDate,'month 13 is rejected');
+form={...form,birthDate:'2000-01-31'};birthControl('bday-month').props.onChange({target:{value:'4'}});assert.equal(form.birthDate,'2000-4-','switching to April clears an impossible day rather than changing the birthday');assert.equal(birthControl('bday-day').props.children[1].length,30);
+form={...form,birthDate:'2000-02-29'};assert.equal(birthControl('bday-day').props.children[1].length,29);birthControl('bday-year').props.onChange({target:{value:'2001'}});assert.equal(form.birthDate,'2001-02-');assert.equal(birthControl('bday-day').props.children[1].length,28,'February follows leap-year rules');
+const beforeYear=form.birthDate;birthControl('bday-year').props.onChange({target:{value:String(new Date().getUTCFullYear()+1)}});assert.equal(form.birthDate,beforeYear,'future years are rejected');birthControl('bday-year').props.onChange({target:{value:'abc'}});assert.equal(form.birthDate,beforeYear);
+form={...form,birthDate:'1996-01-01',age:30};
 function check(text){return nodes(render(4)).find(n=>n.type==='label'&&React.Children.toArray(n.props.children).some(x=>typeof x==='string'&&x===text)).props.children[0];}
 check('Weekday evenings').props.onChange();check('Weekends').props.onChange();assert.deepEqual(form.availabilityChoices,['Weekday evenings','Weekends']);
 check(model.startRoles[0]).props.onChange();check(model.startRoles[1]).props.onChange();assert.equal(form.participation.length,2);

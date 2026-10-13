@@ -668,3 +668,4 @@ html[data-native-platform] footer{padding-bottom:max(22px,env(safe-area-inset-bo
 .optional-prompt{padding:16px 0;border-top:1px solid var(--line)}
 .optional-prompt label{display:block}
 .profile-choice-group label.check-line input{margin:0}
+.birth-date-parts{grid-template-columns:minmax(0,1.6fr) minmax(0,1fr) minmax(0,1.2fr)}
