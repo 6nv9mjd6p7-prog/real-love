@@ -27,7 +27,8 @@ export default {
     const security = new Headers(response.headers);
     security.set('X-Content-Type-Options','nosniff');
     security.set('Referrer-Policy','no-referrer');
-    security.set('Permissions-Policy','camera=(), microphone=(self), geolocation=()');
+    // Same-origin location requests still require explicit browser permission.
+    security.set('Permissions-Policy','camera=(), microphone=(self), geolocation=(self)');
     security.set('Cross-Origin-Resource-Policy','same-origin');
     if(!security.has('Content-Security-Policy'))security.set('Content-Security-Policy',"default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' blob: data:; media-src 'self' blob:; connect-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'self' https://chatgpt.com https://*.chatgpt.com");
     return new Response(response.body,{status:response.status,statusText:response.statusText,headers:security});

@@ -17,5 +17,33 @@ render().find(n=>n.props.role==='option').props.onClick();assert.equal(form.city
 button('Use my current area').props.onClick();let stale=success;input().props.onChange({target:{value:'Chicago'}});await stale({coords:{latitude:30.27,longitude:-97.74,accuracy:50}});assert.equal(requests.length,1,'late device lookup must not replace a manual correction');assert.equal(input().props.value,'Chicago');
 button('Use my current area').props.onClick();await success({coords:{latitude:30.27,longitude:-97.74,accuracy:50000}});assert.equal(requests.length,1,'a very coarse position is not presented as the current city');assert(render().some(n=>n.props.role==='status'&&String(n.props.children).includes('rough location')));assert.equal(form.city,'Austin');
 button('Use my current area').props.onClick();error({code:1});assert(render().some(n=>n.props.role==='status'&&String(n.props.children).includes('permission')));
+// Permission, platform, and timeout failures must never leave a silent disabled button.
+const realSetTimeout=globalThis.setTimeout,realClearTimeout=globalThis.clearTimeout;
+const originalDocument=Object.getOwnPropertyDescriptor(globalThis,'document');
+const originalWindow=Object.getOwnPropertyDescriptor(globalThis,'window');
+const originalSecure=Object.getOwnPropertyDescriptor(globalThis,'isSecureContext');
+let deadline;
+globalThis.setTimeout=fn=>{deadline=fn;return 123;};globalThis.clearTimeout=()=>{};
+button('Use my current area').props.onClick();
+assert(render().some(n=>n.props.role==='status'&&String(n.props.children).includes('Requesting location access')),'click immediately explains the permission request');
+const timedOutSuccess=success;deadline();
+assert.equal(button('Use my current area').props.disabled,false,'permission waiting cannot disable the button forever');
+assert(render().some(n=>n.props.role==='status'&&String(n.props.children).includes('No location response')));
+const beforeLate=requests.length;await timedOutSuccess({coords:{latitude:30.27,longitude:-97.74,accuracy:50}});assert.equal(requests.length,beforeLate,'late permission results after expiry are ignored');
+navigator.geolocation.getCurrentPosition=()=>{throw Error('Unavailable WebView');};
+button('Use my current area').props.onClick();assert.equal(button('Use my current area').props.disabled,false,'synchronous platform exceptions recover');
+assert(render().some(n=>n.props.role==='status'&&String(n.props.children).includes('could not be read')));
+Object.defineProperty(globalThis,'document',{value:{featurePolicy:{allowsFeature:()=>false},documentElement:{dataset:{}}},configurable:true});
+Object.defineProperty(globalThis,'window',{value:{self:{},top:{}},configurable:true});
+button('Use my current area').props.onClick();assert(render().some(n=>n.props.role==='status'&&String(n.props.children).includes('embedded view blocks')));
+assert(render().some(n=>n.type==='a'&&n.props.target==='_blank'&&n.props.href.endsWith('/#profile')),'blocked embeds have a direct browser recovery action');
+document.featurePolicy.allowsFeature=()=>true;
+Object.defineProperty(globalThis,'isSecureContext',{value:false,configurable:true});
+button('Use my current area').props.onClick();assert(render().some(n=>n.props.role==='status'&&String(n.props.children).includes('secure browser')));
+Object.defineProperty(globalThis,'isSecureContext',{value:true,configurable:true});
+navigator.geolocation=null;
+button('Use my current area').props.onClick();assert(render().some(n=>n.props.role==='status'&&String(n.props.children).includes('does not provide location')));
+for(const [key,descriptor] of [['document',originalDocument],['window',originalWindow],['isSecureContext',originalSecure]]){if(descriptor)Object.defineProperty(globalThis,key,descriptor);else delete globalThis[key];}
+globalThis.setTimeout=realSetTimeout;globalThis.clearTimeout=realClearTimeout;
 globalThis.fetch=realFetch;if(originalNavigator)Object.defineProperty(globalThis,'navigator',originalNavigator);else delete globalThis.navigator;delete globalThis.__deviceHooks;
 console.log('Location editing, fresh accurate request, candidate confirmation, privacy, stale detection, coarse readings, and denied permission passed.');

@@ -41,6 +41,8 @@
 	<true/>
 	<key>NSCameraUsageDescription</key>
 	<string>Real Love lets you take an optional profile photo when you choose.</string>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>Real Love uses your location only when you choose Use my current area, to suggest a nearby city or general area.</string>
 	<key>NSMicrophoneUsageDescription</key>
 	<string>Real Love uses the microphone only when you choose to record a voice note.</string>
 	<key>NSPhotoLibraryUsageDescription</key>

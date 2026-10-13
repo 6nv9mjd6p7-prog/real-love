@@ -27,7 +27,7 @@ const directives=new Map(secured.headers.get('Content-Security-Policy').split(';
 assert.deepEqual(directives.get('media-src'),["'self'",'blob:'],'local voice previews and private saved notes are allowed');
 assert.deepEqual(directives.get('connect-src'),["'self'"],'recordings stay on this app');
 assert.deepEqual(directives.get('object-src'),["'none'"]);
-assert.equal(secured.headers.get('Permissions-Policy'),'camera=(), microphone=(self), geolocation=()','recording may request microphone access without enabling camera or location');
+assert.equal(secured.headers.get('Permissions-Policy'),'camera=(), microphone=(self), geolocation=(self)','microphone and optional location may request permission on this origin; camera stays blocked');
 globalThis.__securityResponse=new Response('photo',{headers:{'Content-Security-Policy':"default-src 'none'; sandbox"}});
 const photoResponse=await worker.fetch(new Request('https://example.test/api/photo'),{},{});
 assert.equal(photoResponse.headers.get('Content-Security-Policy'),"default-src 'none'; sandbox",'specific photo policy is preserved');

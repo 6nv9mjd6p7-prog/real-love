@@ -24,7 +24,7 @@ assert.equal(nativeDestination('reallove://open?route=https%3A%2F%2Fevil.test'),
 assert.equal(nativeDestination('not a URL'),null);
 
 const plist=readFileSync('ios/App/App/Info.plist','utf8');
-for(const key of ['NSMicrophoneUsageDescription','NSCameraUsageDescription','NSPhotoLibraryUsageDescription','CFBundleURLTypes','ITSAppUsesNonExemptEncryption'])assert(plist.includes(`<key>${key}</key>`),`${key} must remain declared in Info.plist`);
+for(const key of ['NSLocationWhenInUseUsageDescription','NSMicrophoneUsageDescription','NSCameraUsageDescription','NSPhotoLibraryUsageDescription','CFBundleURLTypes','ITSAppUsesNonExemptEncryption'])assert(plist.includes(`<key>${key}</key>`),`${key} must remain declared in Info.plist`);
 assert(plist.includes('<string>reallove</string>'),'the private deep-link scheme must remain registered');
 assert(!plist.includes('NSAllowsArbitraryLoads'),'the native app must not weaken App Transport Security');
 
