@@ -597,10 +597,64 @@ html[data-native-platform] footer{padding-bottom:max(22px,env(safe-area-inset-bo
 @media(max-width:720px){html[data-native-platform] .app-shell>.sidebar .nav-item{position:relative}html[data-native-platform] .app-shell>.sidebar .nav-item .count{top:0;right:1px;transform:none;font-size:.55rem;margin:0}html[data-native-platform] .app-shell>.sidebar .nav-item:has(.request-count) .count:not(.request-count){right:auto;left:1px}html[data-native-platform] .profile-save-bar{bottom:calc(76px + env(safe-area-inset-bottom))}}
 @media(max-width:720px){.sidebar nav .nav-item .count{font-size:.55rem;right:1px;margin:0}.sidebar nav .nav-item:has(.request-count) .count:not(.request-count){right:auto;left:1px}}
 
-/* Location search is a standalone input, outside the label/input form selectors. */
+/* Location labels remain separate from the shared field styling below. */
 .location-search>label{display:block;font-weight:600;margin-bottom:8px}
-.location-search>input{display:block;box-sizing:border-box;width:100%;min-height:48px;margin-top:0;padding:12px 14px;border:1.5px solid #9293b0;border-radius:10px;background:#fbfcff;color:var(--ink);font-size:1rem;line-height:1.5;appearance:auto;cursor:text}
-.location-search>input::placeholder{color:#686a7e;opacity:1}
-.location-search>input:focus{border-color:var(--indigo);outline:3px solid #747df0;outline-offset:2px;background:white}
-.location-search>input:disabled{background:#eeeff4;cursor:wait}
+.location-search>input{margin-top:0}
 .location-search>.field-help{margin-top:8px}
+
+/* Apply the same affordance to fields regardless of their label or container.
+   Exclude native choice controls, sliders, hidden inputs, and input buttons. */
+:root body :is(input,textarea,select):not([type=checkbox]):not([type=radio]):not([type=range]):not([type=hidden]):not([data-input-otp]):not([type=button]):not([type=submit]):not([type=reset]):not([type=image]){
+  box-sizing:border-box;width:100%;max-width:100%;min-width:0;min-height:48px;
+  border:1.5px solid var(--field-border);border-radius:var(--control-radius);
+  background:#fbfcff;color:var(--ink);padding:12px 14px;
+  font:inherit;font-size:1rem;line-height:1.5;
+}
+/* Pointer and keyboard focus both reveal the active editing field. */
+:root body :is(input,textarea,select):not([type=hidden]):not([data-input-otp]):focus{
+  border-color:var(--indigo);outline:3px solid #747df0;outline-offset:2px;
+}
+:root body :is(input,textarea,select):not([type=checkbox]):not([type=radio]):not([type=range]):not([type=hidden]):not([data-input-otp]):focus{background:white}
+:root body :is(input,textarea)::placeholder{color:var(--muted);opacity:1}
+:root body :is(input,textarea,select):not([type=checkbox]):not([type=radio]):not([type=range]):not([type=hidden]):not([data-input-otp]):disabled{
+  background:#eeeff4;color:#595c73;cursor:not-allowed;opacity:1;
+}
+:root body :is(input,textarea,select)[aria-invalid=true]{border-color:#9e3434}
+/* Search icons sit beside the same visible input used in every other form. */
+.search{border:0;background:transparent;padding:0}
+.search:focus-within{outline:none}
+:root body .content:has(.discovery-filters)>.search input{height:auto;min-height:48px;padding:12px 14px}
+/* Keep native ticks, dots, and slider keyboard behavior; do not turn them into text boxes. */
+:root body input:is([type=checkbox],[type=radio]){
+  appearance:auto;accent-color:var(--indigo);width:20px;height:20px;min-height:20px;
+  padding:0;border:1px solid var(--field-border);background:white;flex:0 0 auto;
+  box-shadow:0 0 0 1px var(--field-border);cursor:pointer;
+}
+:root body input[type=range]{
+  width:100%;min-height:48px;padding:10px 12px;border:1.5px solid var(--field-border);
+  border-radius:var(--control-radius);background:#fbfcff;accent-color:var(--indigo);
+}
+:root body input:is([type=checkbox],[type=radio],[type=range]):disabled{opacity:.6;cursor:not-allowed}
+:root body input[type=file]::file-selector-button{
+  padding:8px 12px;margin-right:12px;border:1px solid var(--field-border);
+  border-radius:8px;background:white;color:var(--indigo);font:inherit;cursor:pointer;
+}
+
+/* Composite library controls use the same visible surfaces when adopted by a screen.
+   OTP's transparent capture input stays untouched; its visible slots show the field. */
+:root body [data-slot=select-trigger],:root body [data-slot=input-otp-slot]{
+  min-height:48px;border:1.5px solid var(--field-border);background:#fbfcff;
+  color:var(--ink);padding:12px 14px;border-radius:var(--control-radius);
+}
+:root body [data-slot=select-trigger]:focus,:root body [data-slot=input-otp-slot][data-active=true]{
+  border-color:var(--indigo);outline:3px solid #747df0;outline-offset:2px;background:white;
+}
+:root body :is([data-slot=checkbox],[data-slot=radio-group-item]){
+  width:20px;height:20px;padding:0;border:1.5px solid var(--field-border);background:white;
+}
+:root body :is([data-slot=checkbox],[data-slot=radio-group-item])[data-state=checked]{
+  border-color:var(--indigo);background:var(--indigo);color:white;
+}
+:root body :is([data-slot=checkbox],[data-slot=radio-group-item],[data-slot=slider-thumb]):focus{
+  outline:3px solid #747df0;outline-offset:2px;
+}
