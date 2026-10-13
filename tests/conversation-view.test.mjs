@@ -20,7 +20,7 @@ const composerUrl=compile(readFileSync('app/chat-composer.tsx','utf8').replace("
 const source=readFileSync('app/conversation.tsx','utf8').replace("from './conversation-ideas'",`from '${ideasUrl}'`).replace("from './notification-toggle'",`from '${toggleUrl}'`).replace("from './merge-history'",`from '${mergeUrl}'`).replace("from './interactive-photo'",`from '${photoUrl}'`).replace("from './chat-composer'",`from '${composerUrl}'`).replace("from './chat-bubble'",`from '${bubbleUrl}'`).replace("from './chat-tools'",`from '${chatToolsUrl}'`).replace("import {useTabDraft} from './use-tab-draft';", "const useTabDraft=()=>['Unfinished thought',()=>{}];").replace("from './shared-avatar'",`from '${avatarUrl}'`).replace("from './draft-storage'",`from '${draftUrl}'`).replace("from './message-delivery'",`from '${deliveryUrl}'`).replace("from './conversation-tools'",`from '${toolsUrl}'`);
 const {default:View}=await import(compile(source));const noop=()=>{};
 const html=renderToStaticMarkup(React.createElement(View,{accountId:'test',me:examples[1],connection:{id:'test',person:{...examples[1],communication:['Ask before giving advice.'],communicationNote:'Please ask directly.'},proposal:'An opening',context:{label:'Introduction',text:'Public context'},photoMine:false,photosShared:false},api:noop,onBack:noop,onProfile:noop,onReport:noop,onBlock:noop,onClose:noop,onPhoto:noop,onCircle:noop,onRead:noop}));
-assert(html.includes('View profile'));assert(html.includes('Opening invitation &amp; shared photo'));assert(html.includes('role="log"'));assert(html.includes('aria-label="Conversation with'));assert(html.includes('Message to'));assert(html.includes('Unfinished thought'));assert(html.includes('Add to draft'));assert(html.includes('it does not mean read'));assert(!html.includes('conversation-photo'),'private photos remain absent until consent');assert(html.includes('Loading conversation'),'initial fetching is distinguished from an empty thread');
+assert(html.includes('View profile'));assert(html.includes('Opening invitation'));assert(html.includes('role="log"'));assert(html.includes('aria-label="Conversation with'));assert(html.includes('Message to'));assert(html.includes('Unfinished thought'));assert(html.includes('Add to draft'));assert(html.includes('it does not mean read'));assert(!html.includes('conversation-photo'),'private photos remain absent until consent');assert(html.includes('Loading conversation'),'initial fetching is distinguished from an empty thread');
 assert(html.includes('Start voice recording'));assert(html.includes('Send message'));assert(html.includes('class="chat-composer"'));
 console.log('Conversation labels, privacy, prompt actions, and initial loading render passed');
 
@@ -59,3 +59,26 @@ assert(exchangeHtml.includes('disabled="">Request exchange'),'explicit unchecked
 const legacyExchange=renderToStaticMarkup(React.createElement(View,{accountId:'test',me:{...examples[1],photoUploaded:true},connection:{id:'test',person:examples[1],photoMine:true,photosShared:true},api:noop,onBack:noop,onProfile:noop,onReport:noop,onBlock:noop,onClose:noop,onPhoto:noop,onCircle:noop,onRead:noop}));
 assert(legacyExchange.includes('Agree to ongoing sharing'));
 assert(legacyExchange.includes('Stop sharing'));
+
+const sharedRow=renderToStaticMarkup(React.createElement(View,{accountId:'test',me:{...examples[1],photoUploaded:true},connection:{id:'test',person:{...examples[1],hasPhoto:true},photoMine:true,photoOther:true,photosShared:true,photoOngoingMine:true,photoOngoingOther:true},api:noop,onBack:noop,onProfile:noop,onReport:noop,onBlock:noop,onClose:noop,onPhoto:async()=>true,onCircle:noop,onRead:noop}));
+assert(sharedRow.indexOf('shared-photo-shortcut')<sharedRow.indexOf('conversation-details'),'agreed photo is outside nested disclosures');
+assert(sharedRow.includes('Photos · Shared'));
+let state=[],hook=0;
+const fake="const useState=initial=>{const i=globalThis.__photoHooks.index++;const states=globalThis.__photoHooks.state;if(!(i in states))states[i]=initial;return [states[i],next=>states[i]=typeof next==='function'?next(states[i]):next];};const useRef=initial=>{const i=globalThis.__photoHooks.index++;const states=globalThis.__photoHooks.state;return states[i]??(states[i]={current:initial});};const useEffect=()=>{},useLayoutEffect=()=>{};";
+globalThis.__photoHooks={state:[],index:0};
+const {default:InteractiveView}=await import(compile(source.replace(/import \{useEffect,useLayoutEffect,useRef,useState\} from '[^']+';/,fake)));
+function elements(n){return !n||typeof n!=='object'?[]:[n,...React.Children.toArray(n.props?.children).flatMap(elements)];}
+let success=false,attempts=[];
+const props={accountId:'test',me:{...examples[1],photoUploaded:true},connection:{id:'test',person:{...examples[1],hasPhoto:true},photoMine:false,photosShared:false},api:noop,onBack:noop,onProfile:noop,onReport:noop,onBlock:noop,onClose:noop,onPhoto:async(...args)=>{attempts.push(args);return success;},onCircle:noop,onRead:noop};
+function view(){globalThis.__photoHooks.index=0;return elements(InteractiveView(props));}
+const button=label=>view().find(n=>n.type==='button'&&n.props.children===label);
+button('Share photos').props.onClick();
+view().find(n=>n.type==='input'&&n.props.type==='checkbox').props.onChange({target:{checked:true}});
+await button('Request exchange').props.onClick();
+assert(view().find(n=>n.type==='input'&&n.props.type==='checkbox').props.checked,'failed request preserves consent');
+assert(view().some(n=>n.props.role==='alert'&&String(n.props.children).includes('Your choice is kept')));
+success=true;await button('Request exchange').props.onClick();
+assert.deepEqual(attempts,[[true,true],[true,true]],'retry keeps the same explicit sharing choice');
+assert(!view().find(n=>n.type==='input'&&n.props.type==='checkbox').props.checked,'success clears the temporary checkbox');
+assert(view().find(n=>n.props.className==='photo-exchange-status').props.hidden,'success closes consent controls');
+delete globalThis.__photoHooks;

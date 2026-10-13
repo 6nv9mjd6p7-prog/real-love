@@ -9,6 +9,9 @@ import {locationKey,locationLabel,type BroadLocationPoint} from './location';
 export default function LocationEditor({accountId,form,setForm,me,busy}:{accountId:string;form:any;setForm:(value:any)=>void;me:any;busy:boolean}){
  const inputId=useId(),listId=useId(),skipSearch=useRef(false);
  const [query,setQuery]=useState(''),[results,setResults]=useState<BroadLocationPoint[]>([]),[searching,setSearching]=useState(false),[finding,setFinding]=useState(false),[locating,setLocating]=useState(false),[retry,setRetry]=useState(0),[message,setMessage]=useState(''),[connectionKey,setConnectionKey]=useState('');
+ const [activeOption,setActiveOption]=useState(-1),[suggestionsClosed,setSuggestionsClosed]=useState(false);
+ const listVisible=results.length>0&&!suggestionsClosed;
+ useEffect(()=>{setActiveOption(-1);setSuggestionsClosed(false);},[results]);
  const confirmed=!!me?.locationConfirmed&&locationKey(form)===locationKey(me)&&!form.confirmLocation;
  const selected=locationLabel(form),hasDistancePoint=typeof form.areaLat==='number'&&typeof form.areaLon==='number'&&!!form.locationPlaceId;
 
@@ -22,7 +25,7 @@ export default function LocationEditor({accountId,form,setForm,me,busy}:{account
  function choose(place:BroadLocationPoint){
   const canConfirm=!!connectionKey&&locationKey(place)===connectionKey;
   setForm((previous:any)=>({...previous,city:place.city,region:place.region,country:place.country,areaLat:place.areaLat,areaLon:place.areaLon,locationPlaceId:place.locationPlaceId,confirmLocation:canConfirm}));
-  setQuery('');setResults([]);setMessage(canConfirm?'Selected from place data. Save your profile to confirm this area from your connection.':'Selected from place data. Nearby matching uses this area point, not an exact home or live location.');
+  setQuery('');setResults([]);setActiveOption(-1);setSuggestionsClosed(true);setMessage(canConfirm?'Selected from place data. Save your profile to confirm this area from your connection.':'Selected from place data. Nearby matching uses this area point, not an exact home or live location.');
  }
  async function find(){
   if(finding)return;setFinding(true);setMessage('');
@@ -47,10 +50,10 @@ export default function LocationEditor({accountId,form,setForm,me,busy}:{account
 
  return <div className="location-editor">
   <div className="location-search"><label htmlFor={inputId}>City or general area (required)</label>
-   <input id={inputId} data-profile-field="city" type="search" disabled={busy} autoComplete="off" maxLength={120} value={query} placeholder={selected||'Start typing a city, town, or general area'} role="combobox" aria-autocomplete="list" aria-expanded={results.length>0} aria-controls={listId} onChange={event=>{skipSearch.current=false;setQuery(event.target.value);setMessage('');setConnectionKey('');}}/>
+   <input id={inputId} data-profile-field="city" type="search" disabled={busy} autoComplete="off" maxLength={120} value={query} placeholder={selected||'Start typing a city, town, or general area'} role="combobox" aria-autocomplete="list" aria-expanded={listVisible} aria-controls={listVisible?listId:undefined} aria-activedescendant={listVisible&&activeOption>=0?listId+'-'+activeOption:undefined} onKeyDown={e=>{if(e.nativeEvent?.isComposing)return;if(e.key==='Escape'){e.preventDefault();setSuggestionsClosed(true);setActiveOption(-1);}else if((e.key==='ArrowDown'||e.key==='ArrowUp')&&results.length){e.preventDefault();setSuggestionsClosed(false);setActiveOption(i=>e.key==='ArrowDown'?(i+1)%results.length:(i<=0?results.length-1:i-1));}else if(e.key==='Enter'&&query.trim()){e.preventDefault();if(listVisible&&activeOption>=0)choose(results[activeOption]);else setMessage('Choose a suggested place with the arrow keys and Enter, or select it below.');}}} onChange={event=>{skipSearch.current=false;setQuery(event.target.value);setActiveOption(-1);setSuggestionsClosed(false);setMessage('');setConnectionKey('');}}/>
    <p className="field-help">Choose a suggestion instead of saving free text, so the app can validate the place and use it for nearby matching.</p>
    {searching&&<span className="field-help" role="status">Finding real places…</span>}
-   {results.length>0&&<div className="location-results" id={listId} role="listbox" aria-label="Location suggestions">{results.map(place=><button type="button" role="option" key={place.locationPlaceId+locationKey(place)} disabled={busy} onClick={()=>choose(place)}><strong>{place.city}</strong><span>{[place.region,place.country].filter((x,i,a)=>i===0||x!==a[i-1]).join(', ')}</span></button>)}</div>}
+   {listVisible&&<div className="location-results" id={listId} role="listbox" aria-label="Location suggestions">{results.map((place,index)=><button id={listId+'-'+index} aria-selected={activeOption===index} onMouseEnter={()=>setActiveOption(index)} onMouseDown={e=>e.preventDefault()} type="button" role="option" key={place.locationPlaceId+locationKey(place)} disabled={busy} onClick={()=>choose(place)}><strong>{place.city}</strong><span>{[place.region,place.country].filter((x,i,a)=>i===0||x!==a[i-1]).join(', ')}</span></button>)}</div>}
    {message&&<p className="field-help" role="status">{message}</p>}
    {!searching&&query.trim().length>=2&&!results.length&&message&&<button type="button" className="text-button" disabled={busy} onClick={()=>setRetry(x=>x+1)}>Retry suggestions</button>}
   </div>

@@ -57,3 +57,5 @@ assert.deepEqual(progress,[1,2],'valid Continue actions emit completed signup st
 globalThis.__profileStep=1;await ProgressEditor({...props,me:null,form:{...form,name:''},onProgress:n=>progress.push(n)}).props.onSubmit({preventDefault(){}});assert.deepEqual(progress,[1,2],'invalid fields do not emit completion');
 await ProgressEditor({...props,onProgress:n=>progress.push(n),onSave:async()=>saved++}).props.onSubmit({preventDefault(){}});assert.deepEqual(progress,[1,2],'returning profile edits do not emit signup completion');assert.equal(saved,1);
 console.log('Profile overview, section destinations, dedicated photos, save separation, and signup communication passed (render checks).');
+
+for(const step of [0,1,2,3,4,5]){globalThis.__profileStep=step;const dirty=renderToStaticMarkup(React.createElement(Editor,{...props,changed:true}));assert(dirty.includes('profile-save-bar'));assert(dirty.includes('Save changes'));assert(dirty.includes('Unsaved profile answers'));}

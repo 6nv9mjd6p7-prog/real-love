@@ -28,3 +28,10 @@ const app=readFileSync('app/love-app.tsx','utf8');
 assert(app.includes("nav('Privacy & settings')"),'settings remains reachable');
 assert(!app.includes("<button onClick={()=>nav('Circles')}>Circles"),'Circles is no longer nested under Discover');
 console.log('Four primary tabs, circle route highlighting, badge ownership and navigation actions passed.');
+
+assert.equal(mainDestination('notifications'),'notifications');assert.equal(mainDestination('review'),'review');
+const special=renderToStaticMarkup(React.createElement(Navigation,{current:'notifications',onNavigate:()=>{},requests:2,unread:3,reviewAlerts:8}));
+assert(special.includes('3 msg'));assert(special.includes('2 req'));
+assert(special.includes('aria-label="3 unread messages"'));assert(special.includes('aria-label="2 connection requests"'));
+assert(!special.includes('aria-current="page"'),'notifications does not highlight My profile');
+assert(!special.includes('Profiles awaiting approval'),'reviewer badges stay out of My profile');

@@ -28,3 +28,8 @@ Compare comment-stripped TypeScript output with the exact original GitHub blobs 
 The repository now includes the fixes for findings 1–5: unique campaign review events with guarded dependent writes, scoped cursor pagination, paused/restricted proposer withdrawal, photo-reset guards, explicit ongoing photo sharing, and the latest journey/design refinements. Earlier findings above are retained as review history, not descriptions of the current code.
 
 The merge preserves existing GitHub comments and documentation. Updated comments describe ongoing photo consent and scoped campaign behavior. The explanatory TypeScript compiles to the same executable output as live source commit `9aa8affa723fd504f818d568b51aeebd918ecf1c`. Existing test files, TypeScript, and the production build validate the combined source. This GitHub update does not itself redeploy the hosted app.
+
+
+## UX follow-up: version 82
+
+Applied all nine screen-review improvements: correct navigation context, separated inbox badges, persistent profile-answer saving, directly accessible photo state and agreed image, consent retry recovery, keyboard location suggestions, visible active filters, cofounder next actions, and a three-step campaign proposal with a review summary. See `docs/ux-improvements.md`. Source synchronization retains explanatory comments. All 42 test files, TypeScript, and production build passed. Browser and device QA remain unverified.
