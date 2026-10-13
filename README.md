@@ -31,7 +31,7 @@ See [Sites runtime setup](docs/SITES_RUNTIME.md) for managed/portable developmen
 - [Native iPhone setup and limitations](IOS_NATIVE_SETUP.md)
 - `.openai/hosting.json` identifies the hosted project and its D1/R2 bindings.
 
-GitHub and the hosted Sites source are separate copies. Pushing here does not establish that the live site contains the same commit. Reconcile source differences before publishing, especially the fixes listed in the repository review.
+This source was synchronized with live version 81 (`9aa8affa723fd504f818d568b51aeebd918ecf1c`) while preserving explanatory comments. GitHub and hosted Sites remain separate copies; later edits can diverge again. Pushing here does not deploy the hosted app.
 
 ## Privacy boundaries
 

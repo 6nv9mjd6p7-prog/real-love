@@ -14,3 +14,13 @@ assert.deepEqual(recentActivityChats(chats).map(c=>c.id),['unread','new']);
 const render=p=>renderToStaticMarkup(React.createElement(Activity,{connections:[],requests:0,circleRequests:0,circleUpdates:0,onNavigate:()=>{},...p}));
 assert.equal(render({}),'');const html=render({connections:chats,requests:1,circleUpdates:2});assert.match(html,/2 unread messages/);assert.match(html,/Circle activity/);assert(!html.includes('PRIVATE PREVIEW'));assert(!html.includes('unavailable'));assert(!html.includes('pending'));
 console.log('Returning activity excludes unavailable contacts, prioritizes unread chats, omits private previews and hides empty state.');
+
+assert(!html.includes('<details'), 'Relevant activity is visible immediately');
+const requestsOnly=render({requests:1});
+assert.match(requestsOnly,/1 invitation to review/);
+assert(!requestsOnly.includes('All chats'), 'Do not show a chat shortcut with no available chats');
+assert(!requestsOnly.includes('Recent conversations'));
+assert.equal(render({connections:[chat('unavailable','2026-10-11',{available:false})]}),'');
+const circles=render({circleRequests:2,circleUpdates:3});
+assert.match(circles,/Circle requests/);
+assert(!circles.includes('Circle activity'), 'Prioritize circle decisions without duplicate circle shortcuts');

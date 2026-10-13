@@ -543,3 +543,39 @@ assert.equal((await workerAct('worker-a',{action:'message',circle:organizingCirc
 assert.equal((await workerAct('worker-a',{action:'admit',circle:organizingCircle.id,target:'worker-c'})).status,200);
 assert.equal((await workerAct('worker-c',{action:'conversation',circle:organizingCircle.id})).data.messages.length,0,'organizing circle history begins at admission');
 console.log('Union-organizing category, discovery separation, two-founder consent and admission history checks passed.');
+
+// Consent version 2 is explicit ongoing sharing; existing version 1 is never upgraded implicitly.
+for(const member of ['ongoing-a','ongoing-b','ongoing-legacy']){
+ sql.prepare('INSERT INTO safety_accounts (id,status,updated) VALUES (?,?,?)').run(member,'admitted',new Date().toISOString());
+ const photoKey='profile-photos/'+member+'.png';memory.set(photoKey,image);
+ sql.prepare('INSERT INTO profiles (id,data,active,updated) VALUES (?,?,1,?)').run(member,JSON.stringify({...draft(member),photoKey,photoPending:false}),new Date().toISOString());
+}
+for(const [connection,recipient] of [['ongoing-pair','ongoing-b'],['legacy-pair','ongoing-legacy']])sql.prepare("INSERT INTO connections (id,sender,recipient,status,kind,created,sender_photo,recipient_photo) VALUES (?,?,?,'accepted','Connect',?,1,1)").run(connection,'ongoing-a',recipient,new Date().toISOString());
+assert.equal((await get('ongoing-a')).data.connections.find(c=>c.id==='ongoing-pair').photoOngoingMine,false);
+assert.equal((await post('ongoing-a',{action:'photo_consent',connection:'ongoing-pair',share:true,ongoing:true})).status,200);
+assert.equal((await post('ongoing-b',{action:'photo_consent',connection:'ongoing-pair',share:true,ongoing:true})).status,200);
+// Only one member of the second connection opts in; replacement must still reset it.
+assert.equal((await post('ongoing-a',{action:'photo_consent',connection:'legacy-pair',share:true,ongoing:true})).status,200);
+async function replaceOngoingPhoto(){as('ongoing-a');return photo.POST(new Request('https://rl.test/api/photo',{method:'POST',headers:{Origin:'https://rl.test','Content-Type':'image/png'},body:image}));}
+assert.equal((await replaceOngoingPhoto()).status,200);
+let ongoingConnections=(await get('ongoing-a')).data.connections;
+assert.equal(ongoingConnections.find(c=>c.id==='ongoing-pair').photosShared,true);
+assert.equal(ongoingConnections.find(c=>c.id==='ongoing-pair').photoOngoingOther,true);
+assert.equal(ongoingConnections.find(c=>c.id==='legacy-pair').photosShared,false);
+as('ongoing-b');assert.equal((await photo.GET(new Request('https://rl.test/api/photo?member=ongoing-a'))).status,200);
+// Revocation remains effective through later replacements.
+assert.equal((await post('ongoing-b',{action:'photo_consent',connection:'ongoing-pair',share:false})).status,200);
+assert.equal((await replaceOngoingPhoto()).status,200);
+as('ongoing-b');assert.equal((await photo.GET(new Request('https://rl.test/api/photo?member=ongoing-a'))).status,403);
+// A stale failed replacement cannot reset any agreements.
+sql.prepare("UPDATE connections SET sender_photo=1,recipient_photo=1 WHERE id='legacy-pair'").run();
+globalThis.__beforeRun=(query)=>{if(query.startsWith("UPDATE profiles SET data=json_set(data,'$.photoKey'")){globalThis.__beforeRun=null;sql.prepare("UPDATE profiles SET data=json_set(data,'$.photoKey','concurrent-photo') WHERE id='ongoing-a'").run();}};
+assert.equal((await replaceOngoingPhoto()).status,409);globalThis.__beforeRun=null;
+assert.equal(sql.prepare("SELECT sender_photo FROM connections WHERE id='legacy-pair'").get().sender_photo,1);
+// Explicit removal clears ongoing agreements as well.
+await post('ongoing-a',{action:'photo_consent',connection:'ongoing-pair',share:true,ongoing:true});
+await post('ongoing-b',{action:'photo_consent',connection:'ongoing-pair',share:true,ongoing:true});
+as('ongoing-a');assert.equal((await photo.POST(new Request('https://rl.test/api/photo',{method:'POST',headers:{Origin:'https://rl.test','x-photo-action':'remove'}}))).status,200);
+assert.equal(sql.prepare("SELECT sender_photo FROM connections WHERE id='ongoing-pair'").get().sender_photo,0);
+assert.equal(sql.prepare("SELECT recipient_photo FROM connections WHERE id='ongoing-pair'").get().recipient_photo,0);
+console.log('Ongoing opt-in preserves replacements; legacy, mixed consent, revocation, removal, and failed replacement remain bounded.');

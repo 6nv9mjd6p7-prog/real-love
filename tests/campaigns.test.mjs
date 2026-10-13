@@ -89,3 +89,47 @@ assert.equal((await read('outsider')).data.campaigns.length,0);
 assert.equal((await post('author',{action:'delete'})).status,200);
 assert.equal((await read('reviewer')).data.campaigns.length,0,'deleted proposer content is not rendered');
 console.log('Campaign privacy, independent review, validation, private participation, feedback, expiry, suspension and deletion passed.');
+
+// Regression: a withdrawal immediately before the atomic review batch must
+// leave no review event and must not consume private feedback.
+const stamp=new Date().toISOString();
+function seedCampaign(key,created=stamp,data=payload,creator='outsider'){
+ sql.prepare("INSERT INTO campaigns (id,creator,data,status,version,created) VALUES (?,?,?,'active',1,?)").run(key,creator,JSON.stringify(data),created);
+}
+seedCampaign('race-withdraw');
+sql.prepare("INSERT INTO campaign_feedback VALUES ('race-feedback','race-withdraw','referee','correction','Keep this concern open until a valid review.','open',?)").run(stamp);
+globalThis.__beforeRun=(query)=>{if(query.startsWith('INSERT INTO campaign_updates')){globalThis.__beforeRun=null;sql.prepare("UPDATE campaigns SET status='withdrawn',version=version+1 WHERE id='race-withdraw'").run();}};
+const raceResult=await write('reviewer',{action:'review',campaign:'race-withdraw',version:1,decision:'publish_update',feedback:'race-feedback',reason:'This attempted review must not commit after withdrawal.',checked:true});
+assert.equal(raceResult.status,409);
+assert.equal(sql.prepare("SELECT COUNT(*) n FROM campaign_updates WHERE campaign='race-withdraw'").get().n,0,'stale review must not insert an event');
+assert.equal(sql.prepare("SELECT status FROM campaign_feedback WHERE id='race-feedback'").get().status,'open','stale review must not consume feedback');
+assert.equal(sql.prepare("SELECT status FROM campaigns WHERE id='race-withdraw'").get().status,'withdrawn');
+
+// Removal stays available independently of account participation eligibility.
+seedCampaign('paused-withdraw');sql.prepare("UPDATE profiles SET active=0 WHERE id='outsider'").run();
+assert.equal((await write('outsider',{action:'withdraw',campaign:'paused-withdraw'})).status,200);
+const withdrawnVersion=sql.prepare("SELECT version FROM campaigns WHERE id='paused-withdraw'").get().version;
+assert.equal((await write('outsider',{action:'withdraw',campaign:'paused-withdraw'})).status,200);
+assert.equal(sql.prepare("SELECT version FROM campaigns WHERE id='paused-withdraw'").get().version,withdrawnVersion,'withdrawal retries are idempotent');
+seedCampaign('suspended-withdraw');sql.prepare("UPDATE safety_accounts SET status='suspended' WHERE id='outsider'").run();
+assert.equal((await write('outsider',{action:'withdraw',campaign:'suspended-withdraw'})).status,200);
+assert.equal((await write('reviewer',{action:'withdraw',campaign:'suspended-withdraw'})).status,403,'reviewer cannot withdraw another member’s proposal');
+sql.prepare("UPDATE profiles SET active=1 WHERE id='outsider'").run();sql.prepare("UPDATE safety_accounts SET status='admitted' WHERE id='outsider'").run();
+
+async function readPage(who,scope,cursor){as(who);const params=new URLSearchParams({scope});if(cursor)params.set('cursor',cursor);const r=await campaigns.GET(new Request('https://rl.test/api/campaigns?'+params));return {status:r.status,data:await r.json()};}
+seedCampaign('older-joined','2019-01-01');sql.prepare("INSERT INTO campaign_participation VALUES ('older-joined','referee')").run();
+for(let i=0;i<100;i++)seedCampaign('expired-'+i,stamp,{...payload,reviewDate:'2020-01-01'});
+assert((await readPage('referee','mine')).data.campaigns.some(c=>c.id==='older-joined'),'older participation cannot be crowded out by discovery');
+const discover=await readPage('referee','explore');assert(discover.data.campaigns.some(c=>c.id==='older-joined'),'expiration filtering occurs before pagination');assert(!discover.data.campaigns.some(c=>c.id.startsWith('expired-')));
+for(let i=0;i<61;i++){seedCampaign('page-'+String(i).padStart(3,'0'));sql.prepare('INSERT INTO campaign_participation VALUES (?,?)').run('page-'+String(i).padStart(3,'0'),'referee');}
+let cursor=null,ids=[];
+do{const p=await readPage('referee','mine',cursor);assert.equal(p.status,200);ids.push(...p.data.campaigns.map(c=>c.id));cursor=p.data.nextCursor;}while(cursor);
+assert.equal(ids.length,62);assert.equal(new Set(ids).size,62,'cursor pages neither duplicate nor omit tied timestamps');
+assert(ids.includes('older-joined'));
+assert.equal((await readPage('outsider','review')).status,403);
+assert.equal((await readPage('referee','mine','invalid-json')).status,400);
+assert.equal((await readPage('referee','unsupported')).status,400);
+// An expired campaign's participant can still send a concern to reviewers.
+sql.prepare("INSERT INTO campaign_participation VALUES ('expired-0','referee')").run();
+assert.equal((await write('referee',{action:'feedback',campaign:'expired-0',kind:'report',body:'I participated and need to report an unresolved concern.'})).status,200);
+console.log('Regression checks passed: withdrawal race rollback, paused/suspended withdrawal, idempotency, scoped pagination and expired-campaign reporting.');

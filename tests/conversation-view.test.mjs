@@ -48,3 +48,14 @@ assert(app.includes('<ProfilePreviewPhoto memberId={me?.id} uploaded={!!(me as a
 console.log('Own profile preview displays saved or selected photo without changing sharing consent');
 
 assert(html.includes('How ')&&html.includes('communicates'));assert(html.includes('Ask before giving advice.'));assert(html.includes('Please ask directly.'));assert(html.includes('Conversation ideas'));assert(html.includes('Everyday'));assert(html.includes('Communicate'));assert(html.includes('What song have you had on repeat lately?'));assert(html.includes('No conversation identifier or message text is collected'));
+
+assert(html.includes('class="conversation-details"'),'secondary conversation information has one home');
+assert(!html.includes('class="communication-card" open'),'communication preferences do not expand automatically');
+const exchangeHtml=renderToStaticMarkup(React.createElement(View,{accountId:'test',me:{...examples[1],photoUploaded:true},connection:{id:'test',person:examples[1],photoMine:false,photosShared:false},api:noop,onBack:noop,onProfile:noop,onReport:noop,onBlock:noop,onClose:noop,onPhoto:noop,onCircle:noop,onRead:noop}));
+assert.equal((exchangeHtml.match(/>Request exchange<\/button>/g)||[]).length,1,'one photo exchange action');
+assert(!exchangeHtml.includes('>Request photo exchange</button>'),'duplicate photo actions removed');
+assert(exchangeHtml.includes('Share my current and future profile photos'));
+assert(exchangeHtml.includes('disabled="">Request exchange'),'explicit unchecked consent is required');
+const legacyExchange=renderToStaticMarkup(React.createElement(View,{accountId:'test',me:{...examples[1],photoUploaded:true},connection:{id:'test',person:examples[1],photoMine:true,photosShared:true},api:noop,onBack:noop,onProfile:noop,onReport:noop,onBlock:noop,onClose:noop,onPhoto:noop,onCircle:noop,onRead:noop}));
+assert(legacyExchange.includes('Agree to ongoing sharing'));
+assert(legacyExchange.includes('Stop sharing'));

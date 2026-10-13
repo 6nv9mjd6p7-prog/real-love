@@ -1,6 +1,6 @@
 # GitHub repository review — 2026-10-13
 
-Reviewed GitHub `main` at `1d303aafc7ad1eb9ce874728ac304060d152e13f`. This is a source review and documentation change, not a full security audit or browser/device test. The hosted source already contains later fixes; this change deliberately does not import or deploy them.
+Reviewed GitHub `main` at `1d303aafc7ad1eb9ce874728ac304060d152e13f`. This is a source review and documentation change, not a full security audit or browser/device test. The initial review compared an older GitHub snapshot with the live app. The synchronization below imports the verified live version 81 fixes while retaining explanatory comments.
 
 ## Findings
 
@@ -21,3 +21,10 @@ This is not a claim that every punctuation-only line, JSX attribute, generated f
 ## Validation
 
 Compare comment-stripped TypeScript output with the exact original GitHub blobs to verify the app code remains semantically unchanged by this documentation pass. Run the existing test files and TypeScript checks. Real browser/mobile behavior is outside this pass.
+
+
+## Resolution: synchronized with live version 81
+
+The repository now includes the fixes for findings 1–5: unique campaign review events with guarded dependent writes, scoped cursor pagination, paused/restricted proposer withdrawal, photo-reset guards, explicit ongoing photo sharing, and the latest journey/design refinements. Earlier findings above are retained as review history, not descriptions of the current code.
+
+The merge preserves existing GitHub comments and documentation. Updated comments describe ongoing photo consent and scoped campaign behavior. The explanatory TypeScript compiles to the same executable output as live source commit `9aa8affa723fd504f818d568b51aeebd918ecf1c`. Existing test files, TypeScript, and the production build validate the combined source. This GitHub update does not itself redeploy the hosted app.
