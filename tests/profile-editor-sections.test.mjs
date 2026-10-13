@@ -59,3 +59,16 @@ await ProgressEditor({...props,onProgress:n=>progress.push(n),onSave:async()=>sa
 console.log('Profile overview, section destinations, dedicated photos, save separation, and signup communication passed (render checks).');
 
 for(const step of [0,1,2,3,4,5]){globalThis.__profileStep=step;const dirty=renderToStaticMarkup(React.createElement(Editor,{...props,changed:true}));assert(dirty.includes('profile-save-bar'));assert(dirty.includes('Save changes'));assert(dirty.includes('Unsaved profile answers'));}
+
+// A typed replacement must be selected before either a first-time or existing profile can save.
+let state=[],index=0;globalThis.__pendingLocation={useState:x=>{const i=index++;if(!(i in state))state[i]=x;return [state[i],v=>state[i]=typeof v==='function'?v(state[i]):v];},useRef:x=>({current:x})};
+const pendingSource=source.replace(/import \{useState,useEffect,useRef,type ReactNode\} from '[^']+';/,"const {useState,useRef}=globalThis.__pendingLocation;const useEffect=()=>{};");
+const {default:PendingEditor}=await import(compile(pendingSource));
+function elements(n){return !n||typeof n!=='object'?[]:[n,...React.Children.toArray(n.props?.children).flatMap(elements)];}
+let saves=0;globalThis.__profileStep=1;
+const pendingProps={...props,changed:true,onSave:async()=>saves++};
+function pendingForm(){index=0;return PendingEditor(pendingProps);}
+elements(pendingForm()).find(n=>n.props.onPendingChange).props.onPendingChange(true);
+await pendingForm().props.onSubmit({preventDefault(){}});assert.equal(saves,0);assert(elements(pendingForm()).some(n=>String(n.props.children).includes('Choose the matching location suggestion before saving')));
+elements(pendingForm()).find(n=>n.props.onPendingChange).props.onPendingChange(false);await pendingForm().props.onSubmit({preventDefault(){}});assert.equal(saves,1);
+delete globalThis.__pendingLocation;

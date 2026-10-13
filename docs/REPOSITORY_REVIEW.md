@@ -33,3 +33,8 @@ The merge preserves existing GitHub comments and documentation. Updated comments
 ## UX follow-up: version 82
 
 Applied all nine screen-review improvements: correct navigation context, separated inbox badges, persistent profile-answer saving, directly accessible photo state and agreed image, consent retry recovery, keyboard location suggestions, visible active filters, cofounder next actions, and a three-step campaign proposal with a review summary. See `docs/ux-improvements.md`. Source synchronization retains explanatory comments. All 42 test files, TypeScript, and production build passed. Browser and device QA remain unverified.
+
+
+## Location correction: version 83
+
+Added explicit manual area editing, pending-search save guards, fresh high-accuracy device requests, accuracy messaging, confirmed candidate selection, stale-response protection, and canonical area-point matching. Internet estimates remain separate from device detection. See `docs/location-editing.md`. All 43 test files, TypeScript, and production build passed. Actual location accuracy still needs validation on the member's device.

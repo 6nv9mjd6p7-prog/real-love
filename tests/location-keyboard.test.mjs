@@ -28,7 +28,7 @@ press('ArrowUp');assert.equal(input().props['aria-activedescendant'],'place-1-0'
 assert(render().find(n=>n.props.role==='option'&&n.props['aria-selected']).props.id==='place-1-0');
 press('Escape');assert.equal(input().props['aria-expanded'],false);assert(!render().some(n=>n.props.role==='listbox'));
 press('ArrowUp');assert.equal(input().props['aria-activedescendant'],'place-1-1');
-press('Enter');assert.equal(form.locationPlaceId,'austin-mn');assert.equal(form.region,'Minnesota');assert.equal(input().props.value,'');
+press('Enter');assert.equal(form.locationPlaceId,'austin-mn');assert.equal(form.region,'Minnesota');assert.equal(input().props.value,'Austin, Minnesota, United States');
 assert(!input().props['aria-expanded']);
 delete globalThis.__loc;delete globalThis.__places;
 console.log('Location arrow navigation, selected option, Escape, Enter, and structured place selection passed.');

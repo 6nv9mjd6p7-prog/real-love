@@ -35,3 +35,18 @@ const reversed=await reverseBroadLocation(29.76,-95.37);
 assert.equal(reversed.city,'Houston');assert(calls[0].includes('/reverse?'),'browser-area lookup uses reverse geocoding');assert(calls[0].includes('layer=city'));
 globalThis.fetch=realFetch;
 console.log('Photon suggestions, guarded fallback search, short queries, and broad reverse lookup passed.');
+
+const nearestSource=readFileSync('app/location-search.ts','utf8').replace("from './location'",`from '${location}'`);
+const {reverseBroadLocations}=await import(compile(nearestSource));
+globalThis.fetch=async()=>Response.json({features:[
+ {geometry:{coordinates:[-95.37,29.76]},properties:{name:'Houston',state:'Texas',country:'United States',osm_type:'R',osm_id:1}},
+ {geometry:{coordinates:[-97.7431,30.2672]},properties:{name:'Austin',state:'Texas',country:'United States',osm_type:'R',osm_id:2}}
+]});
+const nearby=await reverseBroadLocations(30.27,-97.74);assert.equal(nearby[0].city,'Austin','distance overrides provider prominence ordering');assert.equal(nearby.length,2,'let the member confirm among candidates');assert.equal(nearby[0].areaLon,-97.7431,'retain canonical place point');
+// The HTTP response must not substitute the device coordinates for the selected area point.
+let routeSource=readFileSync('app/api/location/route.ts','utf8').replace("import {getChatGPTUser} from '../../chatgpt-auth';","const getChatGPTUser=async()=>({userId:'member',email:'member@example.test'});").replace("import {initializeAccount,quota,readInput,safetyHeaders,failure} from '../../safety';","const initializeAccount=async()=>{},quota=async()=>{},readInput=req=>req.json(),safetyHeaders={'Cache-Control':'no-store'},failure=e=>Response.json({error:e.message},{status:503});").replace("from '../../location-search'",`from '${compile(nearestSource)}'`);
+const locationApi=await import(compile(routeSource));
+let response=await locationApi.POST(new Request('https://rl.test/api/location',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'reverse',lat:30.271234,lon:-97.741234,expectedAccount:'member'})}));
+assert.equal(response.status,200);const payload=await response.json();assert.equal(payload.suggestions.length,2);assert.equal(payload.suggestion.areaLat,30.2672);assert.notEqual(payload.suggestion.areaLat,30.27,'do not store the rounded device position');
+response=await locationApi.POST(new Request('https://rl.test/api/location',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'reverse',lat:91,lon:0,expectedAccount:'member'})}));assert.equal(response.status,400);
+globalThis.fetch=realFetch;

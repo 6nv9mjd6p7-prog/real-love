@@ -4,7 +4,7 @@
  */
 import {getChatGPTUser} from '../../chatgpt-auth';
 import {initializeAccount,quota,readInput,safetyHeaders,failure} from '../../safety';
-import {reverseBroadLocation,searchBroadLocations} from '../../location-search';
+import {reverseBroadLocations,searchBroadLocations} from '../../location-search';
 
 async function userForLocation(){
  const user=await getChatGPTUser();if(!user)throw Object.assign(Error('Sign in to continue.'),{status:401});
@@ -28,6 +28,7 @@ export async function POST(req:Request){
   if(lat<-90||lat>90||lon<-180||lon>180||!Number.isFinite(lat)||!Number.isFinite(lon))return Response.json({error:'Location coordinates are invalid.'},{status:400,headers:safetyHeaders});
   await quota(user.userId,'location_reverse',10,60);
   const coarseLat=Math.round(lat*100)/100,coarseLon=Math.round(lon*100)/100;
-  const suggestion=await reverseBroadLocation(coarseLat,coarseLon);return Response.json({suggestion:{...suggestion,areaLat:coarseLat,areaLon:coarseLon}},{headers:safetyHeaders});
+  // Return provider area points, not the member's rounded device position, for profile matching.
+  const suggestions=await reverseBroadLocations(coarseLat,coarseLon);return Response.json({suggestion:suggestions[0],suggestions},{headers:safetyHeaders});
  }catch(error:any){if(error?.status===401)return Response.json({error:error.message},{status:401,headers:safetyHeaders});return failure(error);}
 }

@@ -58,11 +58,16 @@ export async function searchBroadLocations(query:string){
 }
 
 // Resolve device coordinates to a broad selectable place instead of saving the exact device location.
-export async function reverseBroadLocation(lat:number,lon:number){
+export async function reverseBroadLocations(lat:number,lon:number){
  const make=(filtered:boolean)=>{const url=new URL('https://photon.komoot.io/reverse');url.searchParams.set('lat',String(lat));url.searchParams.set('lon',String(lon));url.searchParams.set('limit',filtered?'8':'12');url.searchParams.set('radius','50');url.searchParams.set('lang','en');if(filtered){url.searchParams.append('layer','city');url.searchParams.append('layer','locality');url.searchParams.append('layer','district');}return url;};
  let results:BroadLocationPoint[]=[];
  try{results=photonSuggestions(await photon(make(true)));}catch{}
  if(!results.length){try{results=photonSuggestions(await photon(make(false)),true);}catch{throw Error('Current-area lookup is temporarily unavailable. Try again.');}}
  if(!results.length)throw Error('We could not identify a nearby city or general area. Search for your area instead.');
- return results[0];
+ // Providers can order by place prominence. Sort candidate area points by distance instead.
+ const distance=(p:BroadLocationPoint)=>{const rad=(n:number)=>n*Math.PI/180;const a=Math.sin(rad(p.areaLat-lat)/2)**2+Math.cos(rad(lat))*Math.cos(rad(p.areaLat))*Math.sin(rad(p.areaLon-lon)/2)**2;return 2*Math.atan2(Math.sqrt(a),Math.sqrt(Math.max(0,1-a)));};
+ return results.sort((a,b)=>distance(a)-distance(b));
 }
+
+// Retain the single-result helper for callers that need a default; the editor offers all candidates.
+export async function reverseBroadLocation(lat:number,lon:number){return (await reverseBroadLocations(lat,lon))[0];}

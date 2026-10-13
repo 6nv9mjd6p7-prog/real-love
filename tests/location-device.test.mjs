@@ -1,0 +1,21 @@
+import ts from 'typescript';import {readFileSync} from 'node:fs';import {createRequire} from 'node:module';import {pathToFileURL} from 'node:url';import assert from 'node:assert/strict';import React from 'react';
+const require=createRequire(import.meta.url);const compile=s=>'data:text/javascript;base64,'+Buffer.from(ts.transpileModule(s,{compilerOptions:{module:ts.ModuleKind.ESNext,jsx:ts.JsxEmit.ReactJSX}}).outputText.replace(/from ["']react\/jsx-runtime["']/g,`from '${pathToFileURL(require.resolve('react/jsx-runtime')).href}'`)).toString('base64');
+let state=[],index=0,ids=0;globalThis.__deviceHooks={useState:x=>{const i=index++;if(!(i in state))state[i]=x;return [state[i],next=>state[i]=typeof next==='function'?next(state[i]):next];},useRef:x=>{const i=index++;return state[i]??(state[i]={current:x});},useId:()=>`place-${ids++}`};
+const location=compile(readFileSync('app/location.ts','utf8'));const source=readFileSync('app/location-editor.tsx','utf8').replace("import {useEffect,useId,useRef,useState} from 'react';","const {useState,useRef,useId}=globalThis.__deviceHooks;const useEffect=()=>{};").replace("from './location'",`from '${location}'`);const {default:Editor}=await import(compile(source));
+function nodes(n){return !n||typeof n!=='object'?[]:[n,...React.Children.toArray(n.props?.children).flatMap(nodes)];}
+let form={city:'Old city',region:'Old region',country:'United States'},pending=false,success,error,options,requests=[];
+const originalNavigator=Object.getOwnPropertyDescriptor(globalThis,'navigator'),realFetch=globalThis.fetch;
+Object.defineProperty(globalThis,'navigator',{value:{geolocation:{getCurrentPosition(a,b,o){success=a;error=b;options=o;}}},configurable:true});
+globalThis.fetch=async(url,opt)=>{requests.push(JSON.parse(opt.body));return Response.json({suggestions:[{city:'Austin',region:'Texas',country:'United States',areaLat:30.2672,areaLon:-97.7431,locationPlaceId:'austin'}]});};
+function render(){index=0;ids=0;return nodes(Editor({accountId:'member',form,setForm:f=>form=typeof f==='function'?f(form):f,me:{city:'Old city',region:'Old region',country:'United States'},busy:false,onPendingChange:p=>pending=p}));}
+const button=s=>render().find(n=>n.type==='button'&&n.props.children===s);const input=()=>render().find(n=>n.props.role==='combobox');
+assert.equal(input().props.value,'Old city, Old region, United States','saved location is an editable value, not only a placeholder');assert(button('Change area'));
+input().props.onChange({target:{value:'Austin'}});assert.equal(pending,true);assert.equal(form.city,'Old city','typing does not silently invent a valid place');
+button('Use my current area').props.onClick();assert.equal(options.enableHighAccuracy,true);assert.equal(options.maximumAge,0);
+await success({coords:{latitude:30.271234,longitude:-97.741234,accuracy:50}});assert.equal(form.city,'Old city','detection does not overwrite the saved area');assert.equal(requests[0].lat,30.27);assert.equal(requests[0].lon,-97.74);assert(render().some(n=>n.props.role==='option'));
+render().find(n=>n.props.role==='option').props.onClick();assert.equal(form.city,'Austin');assert.equal(form.areaLat,30.2672);assert.equal(pending,false);
+button('Use my current area').props.onClick();let stale=success;input().props.onChange({target:{value:'Chicago'}});await stale({coords:{latitude:30.27,longitude:-97.74,accuracy:50}});assert.equal(requests.length,1,'late device lookup must not replace a manual correction');assert.equal(input().props.value,'Chicago');
+button('Use my current area').props.onClick();await success({coords:{latitude:30.27,longitude:-97.74,accuracy:50000}});assert.equal(requests.length,1,'a very coarse position is not presented as the current city');assert(render().some(n=>n.props.role==='status'&&String(n.props.children).includes('rough location')));assert.equal(form.city,'Austin');
+button('Use my current area').props.onClick();error({code:1});assert(render().some(n=>n.props.role==='status'&&String(n.props.children).includes('permission')));
+globalThis.fetch=realFetch;if(originalNavigator)Object.defineProperty(globalThis,'navigator',originalNavigator);else delete globalThis.navigator;delete globalThis.__deviceHooks;
+console.log('Location editing, fresh accurate request, candidate confirmation, privacy, stale detection, coarse readings, and denied permission passed.');
