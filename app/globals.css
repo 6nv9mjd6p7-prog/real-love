@@ -658,3 +658,13 @@ html[data-native-platform] footer{padding-bottom:max(22px,env(safe-area-inset-bo
 :root body :is([data-slot=checkbox],[data-slot=radio-group-item],[data-slot=slider-thumb]):focus{
   outline:3px solid #747df0;outline-offset:2px;
 }
+
+/* Clear, grouped profile choices and a memorable birth-date input. */
+.profile-choice-group,.birth-date-field{min-width:0;border:0;padding:0;margin:16px 0}
+.profile-choice-group legend,.birth-date-field legend{font-weight:600;margin-bottom:8px}
+.profile-choice-group .check-line{padding:8px 0;margin:0;align-items:center}
+.birth-date-parts{display:grid;grid-template-columns:1fr 1fr 1.5fr;gap:12px}
+.birth-date-parts label{min-width:0}
+.optional-prompt{padding:16px 0;border-top:1px solid var(--line)}
+.optional-prompt label{display:block}
+.profile-choice-group label.check-line input{margin:0}

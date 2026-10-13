@@ -29,7 +29,7 @@ nodes.find(n=>n.type==='button'&&n.props['aria-pressed']===true).props.onClick()
 const modelUrl=compile(readFileSync('app/model.ts','utf8'));const {examples}=await import(modelUrl);
 const rulesUrl=compile(readFileSync('app/rules.ts','utf8'));
 const guidelinesUrl=compile(readFileSync('app/guidelines.tsx','utf8').replace("from './rules'",`from '${rulesUrl}'`));
-const draftUrl=compile(readFileSync('app/profile-draft.ts','utf8'));
+const draftUrl=compile(readFileSync('app/profile-draft.ts','utf8').replace("from './model'",`from '${modelUrl}'`));
 const locationUrl=compile(readFileSync('app/location.ts','utf8'));
 const locationEditorUrl=compile(readFileSync('app/location-editor.tsx','utf8').replace("from './location'",`from '${locationUrl}'`));
 const sectionsUrl=compile(readFileSync('app/profile-sections.tsx','utf8'));

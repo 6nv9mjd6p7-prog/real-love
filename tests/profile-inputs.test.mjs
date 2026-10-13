@@ -1,0 +1,35 @@
+import ts from 'typescript';import {readFileSync} from 'node:fs';import {createRequire} from 'node:module';import {pathToFileURL} from 'node:url';import assert from 'node:assert/strict';import React from 'react';import {renderToStaticMarkup} from 'react-dom/server';
+const require=createRequire(import.meta.url),url=n=>pathToFileURL(require.resolve(n)).href;
+const compile=s=>'data:text/javascript;base64,'+Buffer.from(ts.transpileModule(s,{compilerOptions:{module:ts.ModuleKind.ESNext,jsx:ts.JsxEmit.ReactJSX}}).outputText.replace(/from ["']react\/jsx-runtime["']/g,`from '${url('react/jsx-runtime')}'`)).toString('base64');
+const modelUrl=compile(readFileSync('app/model.ts','utf8')),model=await import(modelUrl);
+const {ageFromBirthDate,normalizeProfile,profileAvailability,profileParticipation,matchesDiscovery,matchesProfileFilters,connectionContext,examples}=model;
+const today=new Date('2026-10-13T12:00:00Z');
+assert.equal(ageFromBirthDate('2000-10-13',today),26);assert.equal(ageFromBirthDate('2000-10-14',today),25);assert.equal(ageFromBirthDate('2000-10-12',today),26);
+for(const date of ['2001-02-29','2000-02-30','2000-00-10','2000-13-01','2000-01-00','2000-1-01','2027-01-01','not a date'])assert.equal(ageFromBirthDate(date,today),null,date);
+assert.equal(ageFromBirthDate('2000-02-29',new Date('2026-02-28T12:00:00Z')),25);assert.equal(ageFromBirthDate('2000-02-29',new Date('2026-03-01T12:00:00Z')),26);
+const legacy=normalizeProfile({...examples[1],birthDate:undefined});assert.deepEqual(profileAvailability(legacy),['Weekends']);assert.deepEqual(profileParticipation(legacy),[examples[1].startRole]);assert.equal(legacy.age,30,'no birth date is invented');
+assert(legacy.promptKeys.includes('care')&&legacy.promptKeys.includes('growth'),'all legacy prompt answers remain editable');
+const p={...examples[1],availability:'Weekday evenings, Weekends',availabilityChoices:['Weekday evenings','Weekends'],participation:[model.startRoles[0],model.startRoles[1]]};
+assert(matchesDiscovery(examples[0],p,{interestMode:'any',location:'any',radiusMiles:100,minAge:18,maxAge:99,activity:'',availability:'Weekends'}));
+assert(matchesProfileFilters(p,{startRole:model.startRoles[1]}));assert.equal(connectionContext({...examples[0],availabilityChoices:['Weekends']},p).availability,'Weekends');
+assert.equal(connectionContext({...examples[0],availabilityChoices:['Varies']},{...p,availabilityChoices:['Varies']}).availability,null,'varies is not an agreed schedule');
+const policy=await import(compile(readFileSync('app/photo-policy.ts','utf8')));const publicValue=policy.publicProfile({...p,birthDate:'1996-01-01',promptKeys:['care'],photoPending:false});assert(!('birthDate' in publicValue));assert(!('promptKeys' in publicValue));assert.deepEqual(publicValue.availabilityChoices,p.availabilityChoices);
+const draftUrl=compile(readFileSync('app/profile-draft.ts','utf8').replace("from './model'",`from '${modelUrl}'`));
+const stub=compile('export default function Stub(){return null;}');let hooks=[],index=0;globalThis.__profileHooks={useState:x=>{const i=index++;if(!(i in hooks))hooks[i]=x;return [hooks[i],v=>hooks[i]=typeof v==='function'?v(hooks[i]):v];},useRef:x=>({current:x}),useEffect:()=>{}};
+let source=readFileSync('app/profile-editor.tsx','utf8').replace("import {useState,useEffect,useRef,type ReactNode} from 'react';","const {useState,useEffect,useRef}=globalThis.__profileHooks;").replace("from './model'",`from '${modelUrl}'`).replace("from './profile-draft'",`from '${draftUrl}'`);for(const dep of ['profile-sections','guidelines','location-editor'])source=source.replace(`from './${dep}'`,`from '${stub}'`);
+const {default:Editor}=await import(compile(source));let form={...examples[1],birthDate:'1996-01-01',availabilityChoices:[],participation:[],promptKeys:[]},me={...form};
+const props={accountId:'member',setForm:x=>form=typeof x==='function'?x(form):x,consent:true,setConsent:()=>{},busy:false,onSave:async()=>{},onPreview:()=>{}};
+function render(step){hooks[0]=step;index=0;return Editor({...props,form,me});}function nodes(n){return !n||typeof n!=='object'?[]:[n,...React.Children.toArray(n.props?.children).flatMap(nodes)];}
+let tree=render(1),html=renderToStaticMarkup(tree);assert(html.includes('Date of birth (private'));assert(!html.includes('Age, 18+'));assert(html.includes('bday-year'));
+let month=nodes(tree).find(n=>n.type==='input'&&n.props.autoComplete==='bday-month');month.props.onChange({target:{value:'10'}});assert.equal(form.birthDate,'1996-10-01');assert.equal(form.age,ageFromBirthDate('1996-10-01'));
+month=nodes(render(1)).find(n=>n.type==='input'&&n.props.autoComplete==='bday-month');month.props.onChange({target:{value:''}});assert.equal(form.age,'','incomplete dates cannot silently keep a derived age');form={...form,birthDate:'1996-01-01',age:30};
+function check(text){return nodes(render(4)).find(n=>n.type==='label'&&React.Children.toArray(n.props.children).some(x=>typeof x==='string'&&x===text)).props.children[0];}
+check('Weekday evenings').props.onChange();check('Weekends').props.onChange();assert.deepEqual(form.availabilityChoices,['Weekday evenings','Weekends']);
+check(model.startRoles[0]).props.onChange();check(model.startRoles[1]).props.onChange();assert.equal(form.participation.length,2);
+assert(renderToStaticMarkup(render(4)).includes(examples[1].offer),'legacy answers are present in the editor');
+for(const [key] of model.profilePrompts)form[key]='';form.promptKeys=[];
+let picker=nodes(render(4)).find(n=>n.type==='select'&&n.props.children[0].props.children==='Choose a question');for(const key of ['care','question','growth']){picker.props.onChange({target:{value:key}});picker=nodes(render(4)).find(n=>n.type==='select'&&n.props.children[0].props.children==='Choose a question');}assert(picker.props.disabled,'three selected prompts prevents adding another');assert.equal(form.offer,'');
+html=renderToStaticMarkup(render(4));assert(html.includes('type="checkbox"'));assert(html.includes('type="radio"'));assert(html.includes('How you experience attraction'));assert(!html.includes('Sexual orientation'));
+assert(!model.profileGender({...form,gender:''}).includes('undefined'));
+delete globalThis.__profileHooks;
+console.log('Birth-date calendar boundaries and privacy, legacy answers, multi-choice matching, and editable controls passed.');

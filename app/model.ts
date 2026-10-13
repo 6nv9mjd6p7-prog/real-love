@@ -2,7 +2,7 @@
  * Shared profile types, option lists, demo fixtures, matching, and discovery filtering. Eligibility is distinct from ranking; private romantic preferences do not define friendship ranking.
  * Reading guide: docs/CODE_READING_GUIDE.md.
  */
-export type Profile={id:string;name:string;age:number;gender:string;genderDescription?:string;interested:string[];minAge:number;maxAge:number;city:string;region?:string;country?:string;locationConfirmed?:boolean;areaLat?:number|null;areaLon?:number|null;locationPlaceId?:string;distanceMiles?:number|null;remote:boolean;intentions:string[];orientation:string;aceOnly:boolean;expectation:string;affection:string;faith:string;about:string;responsibility:string;space:string;growth:string;interests:string[];active:boolean;discoverable?:boolean;demo?:boolean;background?:string;startRole?:string;care?:string;question?:string;perspective?:string;startIdea?:string;offer?:string;support?:string;firstStep?:string;availability?:string;activities?:string[];topics?:string[];hasPhoto?:boolean;introPrompt?:string;connectionBoundary?:string;communication?:string[];communicationNote?:string};
+export type Profile={id:string;name:string;age:number;birthDate?:string;availabilityChoices?:string[];participation?:string[];orientationDescription?:string;promptKeys?:string[];gender:string;genderDescription?:string;interested:string[];minAge:number;maxAge:number;city:string;region?:string;country?:string;locationConfirmed?:boolean;areaLat?:number|null;areaLon?:number|null;locationPlaceId?:string;distanceMiles?:number|null;remote:boolean;intentions:string[];orientation:string;aceOnly:boolean;expectation:string;affection:string;faith:string;about:string;responsibility:string;space:string;growth:string;interests:string[];active:boolean;discoverable?:boolean;demo?:boolean;background?:string;startRole?:string;care?:string;question?:string;perspective?:string;startIdea?:string;offer?:string;support?:string;firstStep?:string;availability?:string;activities?:string[];topics?:string[];hasPhoto?:boolean;introPrompt?:string;connectionBoundary?:string;communication?:string[];communicationNote?:string};
 const areaFold=(value:unknown)=>typeof value==='string'?value.normalize('NFKD').replace(/\p{M}/gu,'').trim().replace(/\s+/g,' ').toLowerCase():'';
 const structuredArea=(p:Partial<Profile>)=>p.city&&p.region&&p.country?[areaFold(p.city),areaFold(p.region),areaFold(p.country)].join('|'):'';
 const sameBroadArea=(a:Partial<Profile>,b:Partial<Profile>)=>structuredArea(a)&&structuredArea(b)?structuredArea(a)===structuredArea(b):!!areaFold(a.city)&&areaFold(a.city)===areaFold(b.city);
@@ -18,7 +18,8 @@ export const connectionBoundaries=['Friendship only','Open to romance over time'
 export const genders=['Woman','Man','Nonbinary','Self-described','Prefer not to say'];
 export const expectations=['Not wanted','Optional','Wanted eventually','Required','Unsure'];
 export const startRoles=['I have something I’d like to start','I’d like to help someone build','I’m looking for someone to explore ideas with'];
-export const availabilityOptions=['Flexible','Weekday evenings','Weekends','Occasional'];
+export const availabilityOptions=['Weekday daytime','Weekday evenings','Weekends','Varies','Flexible','Occasional'];
+export const editableAvailabilityOptions=['Weekday daytime','Weekday evenings','Weekends','Varies'];
 export const activityOptions=['Conversation','Reading together','Creating','Volunteering','Organizing','Skill exchange','Local meetups','Online calls'];
 export const interestGroups=[
  {name:'Power & society',topics:['Imperialism','Colonialism','Sociology','Inequality','Tribalism']},
@@ -31,10 +32,31 @@ export const interestGroups=[
  {name:'Learning & mentorship',topics:['Mentorship','Teaching','Learning','Skill exchange']},
  {name:'Everyday interests',topics:['Reading','Music','Art','Cooking','Nature','Long walks','Volunteering','Football','Writing','Travel','Film','Fitness']}
 ];
+// Birth dates are calendar dates; UTC avoids daylight-saving and date-string timezone shifts.
+export function ageFromBirthDate(value:unknown,today=new Date()):number|null{
+ if(typeof value!=='string'||!/^\d{4}-\d{2}-\d{2}$/.test(value))return null;
+ const [year,month,day]=value.split('-').map(Number),date=new Date(Date.UTC(year,month-1,day));
+ if(year<1900||date.getUTCFullYear()!==year||date.getUTCMonth()!==month-1||date.getUTCDate()!==day)return null;
+ const age=today.getUTCFullYear()-year-(today.getUTCMonth()+1<month||today.getUTCMonth()+1===month&&today.getUTCDate()<day?1:0);
+ return age>=0?age:null;
+}
+export function profileAvailability(p:Partial<Profile>){return Array.isArray(p.availabilityChoices)?p.availabilityChoices:p.availability?[p.availability]:[];}
+export function profileParticipation(p:Partial<Profile>){return Array.isArray(p.participation)?p.participation:p.startRole?[p.startRole]:[];}
+export const profilePrompts=[
+ ['care','What do you care about?','A concern, cause, or something you want to understand.'],
+ ['question','What question keeps coming back to you?','A question about yourself, society, or being human.'],
+ ['perspective','Your perspective—and what you’re still questioning','You don’t need a finished answer.'],
+ ['startIdea','What would you like to start, join, or explore?','A conversation, reading circle, project, or possibility.'],
+ ['offer','What could you offer?','Listening, hosting, a skill, curiosity, or showing up.'],
+ ['support','What would you appreciate from someone else?','A thinking partner, encouragement, consistency, or practical help.'],
+ ['responsibility','What does taking responsibility after hurting someone look like to you?','A short answer is enough.'],
+ ['space','When someone asks for space, how do you respond?','A short answer is enough.'],
+ ['growth','What are you actively working on in yourself?','A short answer is enough.']
+] as const;
 export function canonicalIntention(value:string){return value==='Build community'?'Build together':value;}
-// Supply defaults for older stored profiles so later filters can safely read newer optional fields.
-export function normalizeProfile(p:Profile):Profile{return {...p,region:p.region??'',country:p.country??'',areaLat:typeof p.areaLat==='number'?p.areaLat:null,areaLon:typeof p.areaLon==='number'?p.areaLon:null,locationPlaceId:p.locationPlaceId??'',genderDescription:p.genderDescription??'',communication:p.communication??[],communicationNote:p.communicationNote??'',discoverable:p.discoverable!==false,intentions:['Connect'],connectionBoundary:p.connectionBoundary??(p.intentions.includes('Romance')?'Open to romance over time':p.intentions.includes('Friendship')?'Friendship only':'Unsure'),background:p.background??'',startRole:p.startRole??startRoles[2],care:p.care??'',question:p.question??'',perspective:p.perspective??'',startIdea:p.startIdea??'',offer:p.offer??'',support:p.support??'',firstStep:p.firstStep??'',availability:p.availability??'Flexible',activities:p.activities??[],topics:p.topics??[]};}
 // Retained compatibility wrapper: every connection now uses the shared friendship eligibility rules.
+// Supply defaults for older stored profiles so later filters can safely read newer optional fields.
+export function normalizeProfile(p:Profile):Profile{return {...p,availabilityChoices:profileAvailability(p),participation:profileParticipation(p),promptKeys:Array.from(new Set([...(p.promptKeys??[]),...profilePrompts.filter(([key])=>p[key]?.trim()).map(([key])=>key)])),age:p.birthDate?ageFromBirthDate(p.birthDate)??p.age:p.age,region:p.region??'',country:p.country??'',areaLat:typeof p.areaLat==='number'?p.areaLat:null,areaLon:typeof p.areaLon==='number'?p.areaLon:null,locationPlaceId:p.locationPlaceId??'',genderDescription:p.genderDescription??'',communication:p.communication??[],communicationNote:p.communicationNote??'',discoverable:p.discoverable!==false,intentions:['Connect'],connectionBoundary:p.connectionBoundary??(p.intentions.includes('Romance')?'Open to romance over time':p.intentions.includes('Friendship')?'Friendship only':'Unsure'),background:p.background??'',startRole:p.startRole??'',care:p.care??'',question:p.question??'',perspective:p.perspective??'',startIdea:p.startIdea??'',offer:p.offer??'',support:p.support??'',firstStep:p.firstStep??'',availability:p.availability??'',activities:p.activities??[],topics:p.topics??[]};}
 export function eligibleForIntention(a:Profile,b:Profile,_kind:string){return eligible(a,b);}
 // Require both profiles active, reciprocal adult age preferences, and either mutual online openness or the supported nearby area.
 export function eligible(a:Profile,b:Profile){return a.active&&b.active&&a.id!==b.id&&b.age>=a.minAge&&b.age<=a.maxAge&&a.age>=b.minAge&&a.age<=b.maxAge&&((a.remote&&b.remote)||withinNearby(a,b,MAX_NEARBY_MILES));}
@@ -42,7 +64,7 @@ const shared=(a:string[],b:string[])=>Array.from(new Map(a.map(x=>[x.trim().toLo
 // Separate exact shared topics from related broad areas; two topics in one category are not automatically identical interests.
 export function interestOverlap(a:Profile,b:Profile){const left=Array.from(new Set([...a.interests,...a.topics??[]].map(x=>x.trim().toLowerCase()))),right=Array.from(new Set([...b.interests,...b.topics??[]].map(x=>x.trim().toLowerCase())));const exact=left.filter(x=>right.includes(x));const related=interestGroups.filter(g=>!exact.some(x=>x===g.name.toLowerCase()||g.topics.some(t=>t.toLowerCase()===x))&&((left.includes(g.name.toLowerCase())&&g.topics.some(x=>right.includes(x.toLowerCase())))||(right.includes(g.name.toLowerCase())&&g.topics.some(x=>left.includes(x.toLowerCase()))))).map(g=>g.name);return {exact,related};}
 // Combine shared-interest/activity signals into a score; the main ordering function below uses its own ordered comparisons.
-export function discoveryScore(a:Profile,b:Profile){const overlap=interestOverlap(a,b);return overlap.exact.length*5+overlap.related.length*2+shared(a.activities??[],b.activities??[]).length*2+(a.availability&&a.availability!=='Flexible'&&a.availability===b.availability?2:0);}
+export function discoveryScore(a:Profile,b:Profile){const overlap=interestOverlap(a,b);return overlap.exact.length*5+overlap.related.length*2+shared(a.activities??[],b.activities??[]).length*2+(profileAvailability(a).some(x=>!['Flexible','Varies','Occasional'].includes(x)&&profileAvailability(b).includes(x))?2:0);}
 export function reasons(a:Profile|undefined,b:Profile){if(!a)return ['Explore their interests and introduction'];const context=connectionContext(a,b),r:string[]=[];if(context.exact.length)r.push('Shared interests: '+context.exact.slice(0,3).join(', '));if(context.related.length)r.push('Related interest areas: '+context.related.slice(0,2).map(x=>x.area).join(', '));if(context.activities.length)r.push('Both open to '+context.activities.slice(0,2).map(x=>x.toLowerCase()).join(' and '));if(context.availability)r.push('Similar availability: '+context.availability.toLowerCase());if(context.sameArea)r.push('Same general area');else if(context.distanceMiles!==null&&context.distanceMiles<=MAX_NEARBY_MILES)r.push('Nearby: within '+Math.round(context.distanceMiles)+' miles');else if(context.online)r.push('Both open to online connection');return r.length?r.slice(0,3):['No exact or related interest overlap listed. Explore their introduction.'];}
 
 const base={gender:'Nonbinary',interested:genders,minAge:18,maxAge:99,city:'Austin',region:'Texas',country:'United States',areaLat:30.2672,areaLon:-97.7431,locationPlaceId:'demo:austin',remote:true,intentions:['Build together','Friendship'],orientation:'Prefer not to label',aceOnly:false,expectation:'Unsure',affection:'Ask first. Affection is something to discuss.',faith:'Different worldviews are welcome.',responsibility:'Listen to the impact, apologize specifically, and agree on what changes.',space:'Respect the request. Ask once about a check-in, without demanding a reply.',growth:'Practicing clearer boundaries and making time for people.',active:true,demo:true,background:'',startRole:startRoles[0],care:'',question:'',perspective:'',startIdea:'',offer:'',support:'',firstStep:'',availability:'Weekends',activities:['Conversation','Online calls'],topics:[],hasPhoto:false};
@@ -59,7 +81,7 @@ export const profileLocation=(p:Profile)=>locationLabel(p)||p.city.trim();
 export function compareDiscovery(a:Profile,left:Profile,right:Profile){const l=interestOverlap(a,left),r=interestOverlap(a,right),ld=candidateDistance(a,left),rd=candidateDistance(a,right);return r.exact.length-l.exact.length||r.related.length-l.related.length||Number(sameArea(a,right))-Number(sameArea(a,left))||(ld!==null&&rd!==null?ld-rd:ld!==null?-1:rd!==null?1:0)||discoveryScore(a,right)-discoveryScore(a,left)||left.id.localeCompare(right.id);}
 export type DiscoveryFilters={interestMode:'mine'|'any';location:'any'|'local'|'online';radiusMiles:number;minAge:number;maxAge:number;activity:string;availability:string};
 // Apply the user's selected filters without widening them automatically when results are empty.
-export function matchesDiscovery(a:Profile|null,p:Profile,f:DiscoveryFilters){const overlap=a?interestOverlap(a,p):null,nearby=a?withinNearby(a,p,f.radiusMiles):true,online=!!a&&a.remote&&p.remote,location=!a||f.location==='local'?nearby:f.location==='online'?online:nearby||online;return (!a||f.interestMode==='any'||!!(overlap!.exact.length+overlap!.related.length))&&location&&p.age>=f.minAge&&p.age<=f.maxAge&&(!f.activity||(p.activities??[]).includes(f.activity))&&(!f.availability||p.availability===f.availability);}
+export function matchesDiscovery(a:Profile|null,p:Profile,f:DiscoveryFilters){const overlap=a?interestOverlap(a,p):null,nearby=a?withinNearby(a,p,f.radiusMiles):true,online=!!a&&a.remote&&p.remote,location=!a||f.location==='local'?nearby:f.location==='online'?online:nearby||online;return (!a||f.interestMode==='any'||!!(overlap!.exact.length+overlap!.related.length))&&location&&p.age>=f.minAge&&p.age<=f.maxAge&&(!f.activity||(p.activities??[]).includes(f.activity))&&(!f.availability||profileAvailability(p).includes(f.availability));}
 
 // Match either a topic or its named broad group against the profile's shared interests.
 export function profileHasInterest(p:Profile,topic:string){const key=topic.trim().toLowerCase(),group=interestGroups.find(g=>g.name.toLowerCase()===key);return [...p.interests,...p.topics??[]].some(x=>x.trim().toLowerCase()===key||group?.topics.some(t=>t.toLowerCase()===x.trim().toLowerCase()));}
@@ -76,10 +98,11 @@ export function connectionContext(a:Profile,b:Profile){
  const exact=theirs.filter(x=>overlap.exact.includes(interestKey(x)));
  const related=overlap.related.map(area=>{const group=interestGroups.find(g=>g.name===area)!;const keys=group.topics.map(interestKey);return {area,mine:mine.filter(x=>interestKey(x)===interestKey(area)||keys.includes(interestKey(x))),theirs:theirs.filter(x=>interestKey(x)===interestKey(area)||keys.includes(interestKey(x)))};});
  const activities=Array.from(new Set(shared(a.activities??[],b.activities??[])));
- const availability=a.availability&&b.availability&&a.availability!=='Flexible'&&a.availability===b.availability?a.availability:null;
+ const commonTimes=profileAvailability(a).filter(x=>!['Flexible','Varies','Occasional'].includes(x)&&profileAvailability(b).includes(x));
+ const availability=commonTimes.length?commonTimes.join(', '):null;
  const distanceMiles=candidateDistance(a,b);
  const discuss:string[]=[];
- if(a.availability&&b.availability&&a.availability!==b.availability)discuss.push('Availability: you list '+a.availability.toLowerCase()+'; they list '+b.availability.toLowerCase()+'. Agree on a time together.');
+ if(profileAvailability(a).length&&profileAvailability(b).length&&!availability)discuss.push('Availability: you list '+profileAvailability(a).join(', ').toLowerCase()+'; they list '+profileAvailability(b).join(', ').toLowerCase()+'. Agree on a time together.');
  if(a.activities?.length&&b.activities?.length&&!activities.length)discuss.push('You listed different activities. Ask what you would both enjoy doing.');
  if(a.expectation&&b.expectation&&a.expectation!=='Unsure'&&b.expectation!=='Unsure'&&a.expectation!==b.expectation)discuss.push('You list different sexual expectations for a possible future relationship. Discuss them only if relevant; starting a friendship creates no sexual expectation.');
  return {exact,related,activities,availability,distanceMiles,sameArea:sameArea(a,b),online:a.remote&&b.remote,discuss};
@@ -92,7 +115,7 @@ export function newDiscoveryPeople<T extends {id:string}>(people:T[],connections
 }
 
 // Respect nondisclosure and self-description instead of exposing internal placeholder values as identity labels.
-export function profileGender(p:Pick<Profile,'gender'|'genderDescription'>){return p.gender==='Prefer not to say'||p.gender==='Self-described'&&!p.genderDescription?.trim()?'Gender not shared':p.gender==='Self-described'?p.genderDescription!.trim():p.gender;}
+export function profileGender(p:Pick<Profile,'gender'|'genderDescription'>){return !p.gender||p.gender==='Prefer not to say'||p.gender==='Self-described'&&!p.genderDescription?.trim()?'Gender not shared':p.gender==='Self-described'?p.genderDescription!.trim():p.gender;}
 
 export const profileTextFields=[
  ['background','Race or cultural background'],['genderDescription','Self-described gender'],['name','Chosen name'],['city','City or general area'],['about','Introduction'],['care','What they care about'],['question','A question they carry'],['perspective','Their perspective'],['startIdea','What they want to explore'],['offer','What they can offer'],['support','What they would appreciate'],['responsibility','Taking responsibility'],['space','Respecting space'],['growth','What they are working on'],['faith','Faith or worldview'],['affection','Affection and boundaries'],['firstStep','Something to do together'],['communicationNote','Communication in their own words']
@@ -100,7 +123,7 @@ export const profileTextFields=[
 export type ProfileTextField=typeof profileTextFields[number][0];
 export type ProfileAnswerRule={field:ProfileTextField;mode:'contains'|'shared'|'not-shared';value:string};
 export type ExtraProfileFilters={gender?:string;orientation?:string;expectation?:string;startRole?:string;introPrompt?:string;photo?:'available'|'none';communication?:string[];activities?:string[];answers?:ProfileAnswerRule[]};
-export const orientationOptions=['Asexual','Gray-asexual','Demisexual','Allosexual','Exploring','Prefer not to label'];
+export const orientationOptions=['Asexual','Gray-asexual','Demisexual','Allosexual','Exploring','Self-described','Prefer not to label'];
 export const introPromptOptions=['A little about me','I could talk for hours about…','Something I’m curious about…'];
 // Validate persisted filter values before using them; browser storage is not trusted input.
 export function normalizeProfileFilters(value:unknown):ExtraProfileFilters{
@@ -116,15 +139,15 @@ export function sharedProfileAnswer(p:Profile,key:ProfileTextField){if(key==='ge
 // Match explicit optional filters against shared answers; missing answers have their own filter semantics.
 export function matchesProfileFilters(p:Profile,f:ExtraProfileFilters){
  if(f.gender&&(f.gender==='Prefer not to say'?profileGender(p)!=='Gender not shared':p.gender!==f.gender||f.gender==='Self-described'&&!sharedProfileAnswer(p,'genderDescription')))return false;
- if(f.orientation&&p.orientation!==f.orientation||f.expectation&&p.expectation!==f.expectation||f.startRole&&p.startRole!==f.startRole||f.introPrompt&&p.introPrompt!==f.introPrompt)return false;
+ if(f.orientation&&p.orientation!==f.orientation||f.expectation&&p.expectation!==f.expectation||f.startRole&&!profileParticipation(p).includes(f.startRole)||f.introPrompt&&p.introPrompt!==f.introPrompt)return false;
  if(f.photo==='available'&&!p.hasPhoto||f.photo==='none'&&!!p.hasPhoto)return false;
  if(f.communication?.some(choice=>!p.communication?.includes(choice))||f.activities?.some(choice=>!p.activities?.includes(choice)))return false;
  return !f.answers?.some(rule=>{const text=sharedProfileAnswer(p,rule.field);return rule.mode==='shared'?!text:rule.mode==='not-shared'?!!text:!text||!searchFold(text).includes(searchFold(rule.value));});
 }
 // Build normalized searchable text from the public profile fields used by discovery.
-export function profileSearchText(p:Profile){return searchFold([...profileTextFields.map(([field])=>sharedProfileAnswer(p,field)),p.region??'',p.country??'',profileGender(p),p.orientation==='Prefer not to label'?'':p.orientation,p.expectation==='Unsure'?'':p.expectation,p.availability??'',p.startRole??'',p.introPrompt??'',...profileInterests(p),...p.activities??[],...p.communication??[]].join(' '));}
+export function profileSearchText(p:Profile){return searchFold([...profileTextFields.map(([field])=>sharedProfileAnswer(p,field)),p.region??'',p.country??'',profileGender(p),p.orientation==='Prefer not to label'?'':p.orientation,p.expectation==='Unsure'?'':p.expectation,...profileAvailability(p),...profileParticipation(p),p.orientationDescription??'',p.introPrompt??'',...profileInterests(p),...p.activities??[],...p.communication??[]].join(' '));}
 export function profileFilterLabels(f:ExtraProfileFilters){return [
- ...(['gender','orientation','expectation','startRole','introPrompt','photo'] as const).flatMap(key=>f[key]?[{key,label:({gender:'Gender',orientation:'Orientation',expectation:'Sexual expectations',startRole:'Participation',introPrompt:'Introduction prompt',photo:'Photo availability'}[key])+': '+(key==='photo'?(f.photo==='available'?'Uploaded':'Not uploaded'):f[key])}]:[]),
+ ...(['gender','orientation','expectation','startRole','introPrompt','photo'] as const).flatMap(key=>f[key]?[{key,label:({gender:'Gender',orientation:'Attraction',expectation:'Sexual expectations',startRole:'Participation',introPrompt:'Introduction prompt',photo:'Photo availability'}[key])+': '+(key==='photo'?(f.photo==='available'?'Uploaded':'Not uploaded'):f[key])}]:[]),
  ...(f.communication??[]).map(value=>({key:'communication:'+value,label:'Communication: '+value})),...(f.activities??[]).map(value=>({key:'activities:'+value,label:'Activity: '+value})),
  ...(f.answers??[]).map(rule=>({key:'answer:'+rule.field,label:profileTextFields.find(([field])=>field===rule.field)![1]+': '+(rule.mode==='contains'?rule.value:rule.mode==='shared'?'Shared':'Not shared')}))
  ];}
