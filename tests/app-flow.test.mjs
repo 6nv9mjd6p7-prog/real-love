@@ -473,3 +473,73 @@ for(const field of ['discovered','viewed','chatted','invited','accepted','messag
 assert.equal(measured.signupCohort.started-baseline.signupCohort.started,2);assert.equal(measured.signupCohort.basics-baseline.signupCohort.basics,2);assert.equal(measured.signupCohort.interests-baseline.signupCohort.interests,1);assert.equal(measured.signupCohort.saved-baseline.signupCohort.saved,1);
 assert(!JSON.stringify(measured).includes('journey-a'),'owner response returns totals, not member identifiers');
 console.log('Journey allowlist, authorization, deduplication, content omission, sender milestones and seven-day observation windows passed.');
+
+// Worker support reuses the same server-enforced membership and moderation boundary.
+const workerIds=['worker-a','worker-b','worker-c','worker-outsider'];
+for(const who of workerIds){
+ sql.prepare("INSERT INTO safety_accounts (id,status,updated) VALUES (?,'admitted',?)").run(who,new Date().toISOString());
+ sql.prepare('INSERT INTO profiles (id,data,active,updated) VALUES (?,?,1,?)').run(who,JSON.stringify({...draft(who),interested:[],minAge:18,maxAge:99}),new Date().toISOString());
+}
+sql.prepare("INSERT INTO connections (id,sender,recipient,status,kind,proposal,created) VALUES ('worker-connection','worker-a','worker-b','accepted','Connect','A friendly conversation',?)").run(new Date().toISOString());
+sql.prepare("INSERT INTO messages (id,connection,sender,body,created) VALUES ('worker-private','worker-connection','worker-a','PRIVATE FRIENDSHIP HISTORY',?)").run(new Date().toISOString());
+async function workerAct(who,body){as(who);const response=await circles.POST(request({expectedAccount:who,...body}));return {status:response.status,data:await response.json()};}
+async function workerList(who,worker=true){as(who);const response=await circles.GET(new Request('https://rl.test/api/circles'+(worker?'?scope=worker':'')));return {status:response.status,headers:response.headers,data:await response.json()};}
+const workerDraft={action:'propose',connection:'worker-connection',title:'Industry peers',description:'Peer discussion of work and mutual care.',tags:['Learning'],activity:'Read an official resource together.',category:'worker_industry',membershipRules:'For people seeking respectful industry discussion. Hosts review every request.',workerConsent:true};
+assert.equal((await workerList(null)).status,401);
+assert.equal((await workerAct('worker-a',{...workerDraft,workerConsent:false})).status,400);
+assert.equal((await workerAct('worker-a',{...workerDraft,category:'worker_workplace'})).status,400,'unsupported workplace category cannot bypass UI');
+sql.prepare("DELETE FROM safety_events WHERE actor='worker-a' AND kind='circle_propose'").run();
+assert.equal((await workerAct('worker-a',workerDraft)).status,200);
+const workerCircle=sql.prepare("SELECT * FROM circles WHERE category='worker_industry'").get();
+assert.equal(workerCircle.membership_rules,workerDraft.membershipRules);
+assert.equal((await workerList('worker-outsider')).data.circles.some(c=>c.id===workerCircle.id),false,'pending proposal stays with founders');
+assert.equal(sql.prepare('SELECT COUNT(*) AS n FROM circle_messages WHERE circle=?').get(workerCircle.id).n,0,'direct messages never copied');
+assert.equal((await workerAct('worker-b',{action:'approve',circle:workerCircle.id})).status,400);
+assert.equal((await workerAct('worker-b',{action:'approve',circle:workerCircle.id,workerConsent:true})).status,200);
+assert.equal((await workerList('worker-outsider',false)).data.circles.some(c=>c.id===workerCircle.id),false,'ordinary backend directory excludes worker circles');
+const workerListing=await workerList('worker-outsider');
+assert.equal(workerListing.headers.get('cache-control'),'no-store');
+assert(workerListing.data.circles.some(c=>c.id===workerCircle.id));
+assert(!JSON.stringify(workerListing.data).includes('worker-a'),'listing does not expose founder identity');
+assert.equal((await workerAct('worker-outsider',{action:'conversation',circle:workerCircle.id})).status,403);
+assert.equal((await workerAct('worker-c',{action:'request',circle:workerCircle.id})).status,400);
+assert.equal((await workerAct('worker-c',{action:'request',circle:workerCircle.id,workerConsent:true})).status,200);
+assert.equal((await workerAct('worker-c',{action:'conversation',circle:workerCircle.id})).status,403,'request is not admission');
+assert.equal((await workerAct('worker-a',{action:'message',circle:workerCircle.id,text:'Before new admission'})).status,200);
+assert.equal((await workerAct('worker-outsider',{action:'admit',circle:workerCircle.id,target:'worker-c'})).status,403,'only host can admit');
+assert.equal((await workerAct('worker-a',{action:'admit',circle:workerCircle.id,target:'worker-c'})).status,200);
+let workerConversation=await workerAct('worker-c',{action:'conversation',circle:workerCircle.id});
+assert.equal(workerConversation.status,200);assert.equal(workerConversation.data.messages.length,0,'new member cannot read earlier messages');
+assert.equal((await workerAct('worker-c',{action:'message',circle:workerCircle.id,text:'Glad to learn together'})).status,200);
+assert.equal((await workerAct('worker-a',{action:'conversation',circle:workerCircle.id})).data.messages.length,2);
+assert(!JSON.stringify((await get('worker-outsider')).data.people).includes('Industry peers'),'friendship profiles contain no worker participation');
+sql.prepare("INSERT INTO blocks (actor,target) VALUES ('worker-a','worker-outsider')").run();
+assert.equal((await workerList('worker-outsider')).data.circles.some(c=>c.id===workerCircle.id),false,'blocked applicant cannot discover circle');
+assert.equal((await workerAct('worker-outsider',{action:'request',circle:workerCircle.id,workerConsent:true})).status,403);
+assert.equal((await workerAct('worker-b',{action:'remove',circle:workerCircle.id,target:'worker-c'})).status,200);
+assert.equal((await workerAct('worker-c',{action:'conversation',circle:workerCircle.id})).status,403);
+assert.equal((await workerAct('worker-c',{action:'message',circle:workerCircle.id,text:'Must not be sent'})).status,403);
+assert.equal((await workerAct('worker-c',{action:'request',circle:workerCircle.id,workerConsent:true})).status,403);
+assert.equal((await workerAct('worker-a',{action:'close',circle:workerCircle.id})).status,200);
+assert.equal((await workerAct('worker-b',{action:'conversation',circle:workerCircle.id})).status,403);
+console.log('Worker proposals, consent, backend discovery filtering, admission, history isolation, profile privacy, blocks, removal and closing passed.');
+
+// Union organizing uses a durable category and the existing worker consent boundary.
+sql.prepare("DELETE FROM safety_events WHERE actor='worker-a' AND kind='circle_propose'").run();
+const organizingDraft={...workerDraft,category:'worker_organizing',title:'Hospitality organizing learners',tags:[],workerConsent:true};
+assert.equal((await workerAct('worker-a',{...organizingDraft,workerConsent:false})).status,400);
+assert.equal((await workerAct('worker-a',organizingDraft)).status,200);
+const organizingCircle=sql.prepare("SELECT * FROM circles WHERE category='worker_organizing'").get();
+assert.equal(organizingCircle.tags,'[]','organizing classification survives without topic tags');
+assert(!(await workerList('worker-c')).data.circles.some(c=>c.id===organizingCircle.id),'proposal is not visible before both founders agree');
+assert.equal((await workerAct('worker-b',{action:'approve',circle:organizingCircle.id})).status,400);
+assert.equal((await workerAct('worker-b',{action:'approve',circle:organizingCircle.id,workerConsent:true})).status,200);
+assert((await workerList('worker-c')).data.circles.some(c=>c.id===organizingCircle.id),'organizing circles appear in worker discovery after approval');
+assert(!(await workerList('worker-c',false)).data.circles.some(c=>c.id===organizingCircle.id),'organizing circle stays out of general discovery');
+assert.equal((await workerAct('worker-c',{action:'conversation',circle:organizingCircle.id})).status,403);
+assert.equal((await workerAct('worker-c',{action:'request',circle:organizingCircle.id})).status,400);
+assert.equal((await workerAct('worker-c',{action:'request',circle:organizingCircle.id,workerConsent:true})).status,200);
+assert.equal((await workerAct('worker-a',{action:'message',circle:organizingCircle.id,text:'Let us agree on a broad concern.'})).status,200);
+assert.equal((await workerAct('worker-a',{action:'admit',circle:organizingCircle.id,target:'worker-c'})).status,200);
+assert.equal((await workerAct('worker-c',{action:'conversation',circle:organizingCircle.id})).data.messages.length,0,'organizing circle history begins at admission');
+console.log('Union-organizing category, discovery separation, two-founder consent and admission history checks passed.');

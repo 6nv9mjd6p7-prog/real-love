@@ -1,0 +1,26 @@
+import ts from 'typescript';
+import {readFileSync} from 'node:fs';
+import {createRequire} from 'node:module';
+import {pathToFileURL} from 'node:url';
+import assert from 'node:assert/strict';
+import React from 'react';
+import {renderToStaticMarkup} from 'react-dom/server';
+const require=createRequire(import.meta.url);
+const source=readFileSync('app/worker-support.tsx','utf8').replace("from 'react'",`from '${pathToFileURL(require.resolve('react')).href}'`);
+const js=ts.transpileModule(source,{compilerOptions:{module:ts.ModuleKind.ESNext,jsx:ts.JsxEmit.ReactJSX}}).outputText.replace(/from ["']react\/jsx-runtime["']/,`from '${pathToFileURL(require.resolve('react/jsx-runtime')).href}'`);
+const {default:Support,workerResources}=await import('data:text/javascript;base64,'+Buffer.from(js).toString('base64'));
+const html=renderToStaticMarkup(React.createElement(Support,{onCircles:()=>{}}));
+for(const label of ['Work &amp; Worker Support','Explore worker circles','External help only','No representation offered here','not enroll','There is no employer field','not end-to-end encrypted','Not available:','United States'])assert(html.includes(label),label);
+assert(!html.includes('<form'),'resource hub does not collect workplace disclosures');
+assert(!html.includes('iframe'),'no provider embeds leak a visit before clicking');
+for(const resource of workerResources){assert(new URL(resource.url).protocol==='https:');assert(html.includes(resource.url));}
+assert.equal((html.match(/rel="noopener noreferrer"/g)||[]).length,workerResources.length+1);
+assert.equal((html.match(/referrerPolicy="no-referrer"/g)||[]).length,workerResources.length+1);
+const circles=readFileSync('app/circles.tsx','utf8');
+assert(circles.includes("fetch(workerArea?'/api/circles?scope=worker':'/api/circles')"));
+assert(circles.includes("category:workerArea?workerCategory:'friendship'"));
+assert(circles.includes('required disabled={busy} checked={workerConsent}'));
+const nativeSource=ts.transpileModule(readFileSync('app/native-links.ts','utf8'),{compilerOptions:{module:ts.ModuleKind.ESNext}}).outputText;
+const {allowedAppRoute}=await import('data:text/javascript;base64,'+Buffer.from(nativeSource).toString('base64'));
+assert.equal(allowedAppRoute('circles/work'),'circles/work');
+console.log('Worker hub disclosure, resource links, no collection or embeds, explicit consent and native routing passed.');

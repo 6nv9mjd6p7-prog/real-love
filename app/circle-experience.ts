@@ -1,4 +1,4 @@
-export type CircleSummary={id:string;title:string;description:string;tags:string[];activity:string;status:string;membership:string|null;role:string|null;canApprove:boolean;awaitingYourAgreement?:boolean;count:number;restricted?:boolean;reportTarget?:string;joinRequests?:number};
+export type CircleSummary={category?:string;membershipRules?:string;id:string;title:string;description:string;tags:string[];activity:string;status:string;membership:string|null;role:string|null;canApprove:boolean;awaitingYourAgreement?:boolean;count:number;restricted?:boolean;reportTarget?:string;joinRequests?:number};
 export type CircleSection='Discover'|'Joined'|'Requests';
 export function circleStatus(c:CircleSummary){
  if(c.status==='pending')return c.awaitingYourAgreement||c.canApprove?'Your agreement needed':'Awaiting the other founder';

@@ -9,7 +9,7 @@ const require=createRequire(import.meta.url);
 let source=readFileSync('app/main-navigation.tsx','utf8').replace("from 'lucide-react'",`from '${pathToFileURL(require.resolve('lucide-react')).href}'`);
 const js=ts.transpileModule(source,{compilerOptions:{module:ts.ModuleKind.ESNext,jsx:ts.JsxEmit.ReactJSX}}).outputText.replace(/from ["']react\/jsx-runtime["']/,`from '${pathToFileURL(require.resolve('react/jsx-runtime')).href}'`);
 const {default:Navigation,mainDestination}=await import('data:text/javascript;base64,'+Buffer.from(js).toString('base64'));
-for(const route of ['circles','circles/requests','circles/group-id'])assert.equal(mainDestination(route),'circles');
+for(const route of ['circles','circles/requests','circles/group-id','circles/work'])assert.equal(mainDestination(route),'circles');
 for(const route of ['conversations','conversations/sent','chat/chat-id'])assert.equal(mainDestination(route),'conversations');
 assert.equal(mainDestination('saved'),'discover');assert.equal(mainDestination('settings'),'settings');
 let destination;

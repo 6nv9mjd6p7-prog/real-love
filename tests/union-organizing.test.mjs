@@ -1,0 +1,22 @@
+import ts from 'typescript';
+import {readFileSync} from 'node:fs';
+import {createRequire} from 'node:module';
+import {pathToFileURL} from 'node:url';
+import assert from 'node:assert/strict';
+import React from 'react';
+import {renderToStaticMarkup} from 'react-dom/server';
+const require=createRequire(import.meta.url);
+const compile=s=>'data:text/javascript;base64,'+Buffer.from(ts.transpileModule(s,{compilerOptions:{module:ts.ModuleKind.ESNext,jsx:ts.JsxEmit.ReactJSX}}).outputText.replace(/from ["']react\/jsx-runtime["']/,`from '${pathToFileURL(require.resolve('react/jsx-runtime')).href}'`)).toString('base64');
+const source=readFileSync('app/worker-support.tsx','utf8').replace("import {useState} from 'react';","const useState=initial=>[initial,()=>{}];");
+const {default:Support}=await import(compile(source));
+let started=false;
+function elements(node){if(!node||typeof node!=='object')return [];return [node,...React.Children.toArray(node.props?.children).flatMap(elements)];}
+const props={onCircles:()=>{},onOrganize:()=>started=true,canOrganize:true};
+const tree=Support(props),nodes=elements(tree),start=nodes.find(n=>n.type==='button'&&n.props.children==='Start union organizing');
+assert(start&&!start.props.disabled);start.props.onClick();assert(started);
+const disabled=elements(Support({...props,canOrganize:false})).find(n=>n.type==='button'&&n.props.children==='Start union organizing');assert(disabled.props.disabled);
+const html=renderToStaticMarkup(tree);assert(html.includes('not a legally recognized union'));assert(html.includes('listing becomes discoverable'));assert(html.includes('https://aflcio.org/formaunion/contact'));
+const routes=readFileSync('app/love-app.tsx','utf8');assert(routes.includes("organizing={route==='circles/organize'}"));
+const nativeSource=ts.transpileModule(readFileSync('app/native-links.ts','utf8'),{compilerOptions:{module:ts.ModuleKind.ESNext}}).outputText;
+const {allowedAppRoute}=await import('data:text/javascript;base64,'+Buffer.from(nativeSource).toString('base64'));assert.equal(allowedAppRoute('circles/organize'),'circles/organize');
+console.log('Union entry action, active-state gating, organizing route, privacy wording and native link passed.');
