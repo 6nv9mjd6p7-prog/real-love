@@ -596,3 +596,11 @@ html[data-native-platform] footer{padding-bottom:max(22px,env(safe-area-inset-bo
 @media(max-width:720px){.profile-save-bar{bottom:82px;flex-wrap:wrap;padding:12px}.profile-save-bar .inline-actions{width:100%}.profile-save-bar button{flex:1}.topbar-actions{flex-wrap:wrap}.nav-item .count{font-size:.65rem;margin-left:3px;padding-inline:4px}.nav-item .request-count{margin-left:0}.photo-status-row>div:first-child{gap:4px;flex-direction:column;align-items:flex-start}.shared-photo-shortcut img{width:48px;height:48px}}
 @media(max-width:720px){html[data-native-platform] .app-shell>.sidebar .nav-item{position:relative}html[data-native-platform] .app-shell>.sidebar .nav-item .count{top:0;right:1px;transform:none;font-size:.55rem;margin:0}html[data-native-platform] .app-shell>.sidebar .nav-item:has(.request-count) .count:not(.request-count){right:auto;left:1px}html[data-native-platform] .profile-save-bar{bottom:calc(76px + env(safe-area-inset-bottom))}}
 @media(max-width:720px){.sidebar nav .nav-item .count{font-size:.55rem;right:1px;margin:0}.sidebar nav .nav-item:has(.request-count) .count:not(.request-count){right:auto;left:1px}}
+
+/* Location search is a standalone input, outside the label/input form selectors. */
+.location-search>label{display:block;font-weight:600;margin-bottom:8px}
+.location-search>input{display:block;box-sizing:border-box;width:100%;min-height:48px;margin-top:0;padding:12px 14px;border:1.5px solid #9293b0;border-radius:10px;background:#fbfcff;color:var(--ink);font-size:1rem;line-height:1.5;appearance:auto;cursor:text}
+.location-search>input::placeholder{color:#686a7e;opacity:1}
+.location-search>input:focus{border-color:var(--indigo);outline:3px solid #747df0;outline-offset:2px;background:white}
+.location-search>input:disabled{background:#eeeff4;cursor:wait}
+.location-search>.field-help{margin-top:8px}
