@@ -1,3 +1,7 @@
+/**
+ * Shows the admission queue state and optional approval alerts. Compact mode avoids repeating the full joining journey on other screens.
+ * Reading guide: docs/CODE_READING_GUIDE.md.
+ */
 'use client';
 import {useState} from 'react';
 export default function ApprovalStatus({compact=false,paused,onPreview,onEdit,onDemo,onAlerts,onStatus,onCheck}:{compact?:boolean;paused:boolean;onPreview:()=>void;onEdit:()=>void;onDemo:()=>void;onAlerts:()=>void;onStatus:()=>void;onCheck:()=>Promise<void>}){

@@ -1,3 +1,7 @@
+/**
+ * Server-rendered email sign-in entry. Reads authentication configuration on each request and passes only the legacy account information needed by the form.
+ * Reading guide: docs/CODE_READING_GUIDE.md.
+ */
 import {emailAuthConfig} from '../email-auth';
 import {getLegacyUser} from '../chatgpt-auth';
 import EmailSignIn from './sign-in';

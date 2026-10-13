@@ -1,3 +1,7 @@
+/**
+ * Renders one message, its reply preview, reactions, and permitted edit/delete controls. Ownership flags come from the server; rendering a button is not authorization.
+ * Reading guide: docs/CODE_READING_GUIDE.md.
+ */
 'use client';
 import {useEffect,useRef,useState} from 'react';
 import {reactionOptions,EDIT_WINDOW_MS,DELETE_WINDOW_MS,MAX_MESSAGE_EDITS,messageChangeAllowed,swipeReply,type MessageExtras,type MessageReaction,type ReplyPreview} from './chat-tools';

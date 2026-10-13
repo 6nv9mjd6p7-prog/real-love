@@ -1,3 +1,7 @@
+/**
+ * Three-step initial profile form and section-based editing for existing members. Draft edits remain local until Save; photos use their separate upload flow.
+ * Reading guide: docs/CODE_READING_GUIDE.md.
+ */
 'use client';
 import {useState,useEffect,useRef,type ReactNode} from 'react';
 import {profileSetupError,profileValidationIssue} from './profile-draft';

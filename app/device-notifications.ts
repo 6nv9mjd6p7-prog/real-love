@@ -1,3 +1,7 @@
+/**
+ * Tracks which account owns this device subscription and disables it on sign-out. A browser subscription must not silently carry across accounts.
+ * Reading guide: docs/CODE_READING_GUIDE.md.
+ */
 const ownerKey='real-love-notification-account';
 export function notificationOwner(){try{return localStorage.getItem(ownerKey);}catch{return null;}}
 export function rememberNotificationOwner(account:string){try{if(account)localStorage.setItem(ownerKey,account);else localStorage.removeItem(ownerKey);}catch{}}

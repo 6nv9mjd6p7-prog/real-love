@@ -1,2 +1,6 @@
+/**
+ * Detects self-review and relationship conflicts before a moderator can handle a case. Callers still enforce reviewer admission and role.
+ * Reading guide: docs/CODE_READING_GUIDE.md.
+ */
 import {db} from './safety';
 export async function caseConflict(reviewer:string,r:any){if(reviewer===r.actor||reviewer===r.target)return true;for(const person of [r.actor,r.target].filter(Boolean)){if(await db().prepare('SELECT id FROM connections WHERE (sender=? AND recipient=?) OR (sender=? AND recipient=?) LIMIT 1').bind(reviewer,person,person,reviewer).first())return true;if(await db().prepare('SELECT actor FROM blocks WHERE (actor=? AND target=?) OR (actor=? AND target=?)').bind(reviewer,person,person,reviewer).first())return true;}const ctx=JSON.parse(r.context||'{}');if(['circle','circle_message'].includes(ctx.type)&&ctx.scope){const circle=await db().prepare('SELECT founder_a,founder_b FROM circles WHERE id=?').bind(ctx.scope).first<any>();if(circle&&[circle.founder_a,circle.founder_b].includes(reviewer))return true;if(await db().prepare("SELECT member FROM circle_members WHERE circle=? AND member=? ").bind(ctx.scope,reviewer).first())return true;}if(await db().prepare('SELECT actor FROM blocks WHERE (actor=? AND target=?) OR (actor=? AND target=?)').bind(reviewer,r.target,r.target,reviewer).first())return true;return false;}

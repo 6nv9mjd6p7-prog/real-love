@@ -1,3 +1,7 @@
+/**
+ * Explains actual shared interests, activities, and availability. It offers conversation context rather than a compatibility or character score.
+ * Reading guide: docs/CODE_READING_GUIDE.md.
+ */
 'use client';
 import {HeartHandshake} from 'lucide-react';
 import {connectionContext,profileLocation,type Profile} from './model';

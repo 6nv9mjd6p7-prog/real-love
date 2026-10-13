@@ -1,3 +1,7 @@
+/**
+ * Shared text and voice composer for direct and circle conversations. Parent callbacks own sending and draft updates.
+ * Reading guide: docs/CODE_READING_GUIDE.md.
+ */
 'use client';
 import {useEffect,useId,useState,type RefObject,type FormEvent} from 'react';
 import {Send, X} from 'lucide-react';

@@ -1,3 +1,7 @@
+/**
+ * Loads private in-app activity and manages optional device push subscriptions. Account checks and request gates prevent stale responses from crossing account boundaries.
+ * Reading guide: docs/CODE_READING_GUIDE.md.
+ */
 'use client';
 import NotificationToggle from './notification-toggle';
 import {Capacitor} from '@capacitor/core';

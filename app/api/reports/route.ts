@@ -1,3 +1,7 @@
+/**
+ * Creates reports from content the reporter may access and captures specific evidence. Evidence access and retention are separate from ordinary conversation access.
+ * Reading guide: docs/CODE_READING_GUIDE.md.
+ */
 import {eligible,normalizeProfile} from '../../model';
 import {env} from 'cloudflare:workers';
 import {getChatGPTUser} from '../../chatgpt-auth';

@@ -1,3 +1,7 @@
+/**
+ * Direct-message screen. Polls authorized history, preserves drafts and scroll position, acknowledges visible messages, and delegates relationship actions to the app shell.
+ * Reading guide: docs/CODE_READING_GUIDE.md.
+ */
 'use client';
 import ConversationIdeas from './conversation-ideas';
 import NotificationToggle from './notification-toggle';

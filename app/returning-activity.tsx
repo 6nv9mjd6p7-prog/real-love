@@ -1,3 +1,7 @@
+/**
+ * Selects up to two available accepted conversations, prioritizing unread activity, and renders request shortcuts. Empty activity returns no markup.
+ * Reading guide: docs/CODE_READING_GUIDE.md.
+ */
 'use client';
 type Chat={id:string;status:string;available?:boolean;unread?:number;person:{name:string};created?:string;lastMessage?:{created:string}|null};
 export function recentActivityChats(connections:Chat[]){return connections.filter(c=>c.status==='accepted'&&c.available!==false).sort((a,b)=>Number(!!b.unread)-Number(!!a.unread)||(Date.parse(b.lastMessage?.created||b.created||'')||0)-(Date.parse(a.lastMessage?.created||a.created||'')||0)).slice(0,2);}

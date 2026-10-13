@@ -1,3 +1,7 @@
+/**
+ * Circle listing and mutations. Enforces cofounder approval, host/member roles, block rules, and history visibility from the member's join point.
+ * Reading guide: docs/CODE_READING_GUIDE.md.
+ */
 import {messageRevision} from '../../message-revision';
 import {historyCursor} from '../../history-tools';
 import {notify,notifyCircle} from '../../notifications-server';

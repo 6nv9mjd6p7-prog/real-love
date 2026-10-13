@@ -1,3 +1,7 @@
+/**
+ * Reads and changes the selected notification preference without changing other notification channels.
+ * Reading guide: docs/CODE_READING_GUIDE.md.
+ */
 
 'use client';
 import {useEffect,useRef,useState} from 'react';

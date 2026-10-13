@@ -1,3 +1,7 @@
+/**
+ * Accessible photo thumbnail and expanded dialog. This component handles presentation; the photo API enforces access on every request.
+ * Reading guide: docs/CODE_READING_GUIDE.md.
+ */
 'use client';
 import {useEffect,useRef,useState,type ReactNode} from 'react';
 import {createPortal} from 'react-dom';

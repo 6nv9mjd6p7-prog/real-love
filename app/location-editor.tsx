@@ -1,3 +1,7 @@
+/**
+ * Searches and selects a broad place, optionally using device location. Selection updates profile fields; free-form typing alone is not a verified place choice.
+ * Reading guide: docs/CODE_READING_GUIDE.md.
+ */
 'use client';
 import {useEffect,useId,useRef,useState} from 'react';
 import {locationKey,locationLabel,type BroadLocationPoint} from './location';

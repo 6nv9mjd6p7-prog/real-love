@@ -1,3 +1,7 @@
+/**
+ * Server-only identity adapter. Resolves email sessions and legacy ChatGPT identity; authentication alone does not grant admission or moderation rights.
+ * Reading guide: docs/CODE_READING_GUIDE.md.
+ */
 import {getEmailUser} from './email-auth';
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";

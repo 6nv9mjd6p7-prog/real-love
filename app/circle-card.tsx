@@ -1,3 +1,7 @@
+/**
+ * Renders a circle summary and membership-specific actions. Hosts, applicants, and members see different controls; the API rechecks permissions.
+ * Reading guide: docs/CODE_READING_GUIDE.md.
+ */
 'use client';
 import {WorkerRules} from './worker-rules';
 import {Search} from 'lucide-react';

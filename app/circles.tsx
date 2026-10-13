@@ -1,3 +1,7 @@
+/**
+ * Circle discovery, proposals, membership requests, and group conversations. Separate request gates prevent an older list or conversation response from replacing newer state.
+ * Reading guide: docs/CODE_READING_GUIDE.md.
+ */
 'use client';
 import WorkerSupport from './worker-support';
 import {WorkerRules} from './worker-rules';

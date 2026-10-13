@@ -1,3 +1,7 @@
+/**
+ * Pure presentation helpers for circle status, request grouping, and search. These labels do not grant membership.
+ * Reading guide: docs/CODE_READING_GUIDE.md.
+ */
 export type CircleSummary={category?:string;membershipRules?:string;id:string;title:string;description:string;tags:string[];activity:string;status:string;membership:string|null;role:string|null;canApprove:boolean;awaitingYourAgreement?:boolean;count:number;restricted?:boolean;reportTarget?:string;joinRequests?:number};
 export type CircleSection='Discover'|'Joined'|'Requests';
 export function circleStatus(c:CircleSummary){

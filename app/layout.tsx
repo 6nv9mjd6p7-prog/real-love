@@ -1,3 +1,7 @@
+/**
+ * Root document layout, metadata, global styles, and shared runtime components. Page-specific state belongs in the app shell.
+ * Reading guide: docs/CODE_READING_GUIDE.md.
+ */
 import type { Metadata, Viewport } from "next";
 import InstallApp from "./install-app";
 import NativeRuntime from "./native-runtime";

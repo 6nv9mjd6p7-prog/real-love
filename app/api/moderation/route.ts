@@ -1,3 +1,7 @@
+/**
+ * Authorized reviewer actions and queues. Review conflicts, evidence access, audit entries, and account restrictions are enforced on the server.
+ * Reading guide: docs/CODE_READING_GUIDE.md.
+ */
 import {recordProductEvent} from '../../product-analytics';
 import {notify} from '../../notifications-server';
 import {photoReviewToken} from '../../photo-policy';

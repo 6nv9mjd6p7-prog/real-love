@@ -1,3 +1,7 @@
+/**
+ * Creates deduplicated in-app alerts and sends minimal push signals. Push payloads do not carry private conversation text or photos.
+ * Reading guide: docs/CODE_READING_GUIDE.md.
+ */
 import {env,waitUntil} from 'cloudflare:workers';
 import {activeMember} from './safety';
 import {validPushEndpoint,vapidAuthorization} from './web-push';
@@ -6,6 +10,7 @@ export function pushFailureMessage(reason?:PushFailure){
  const messages:Record<PushFailure,string>={unavailable:'Notifications are temporarily unavailable. Please try again later.',missing:'This device is no longer registered. Turn notifications off and enable them again.',expired:'This device’s subscription expired. Turn notifications off and enable them again.',authorization:'The notification service rejected the app’s credentials. Please try again later; re-enabling notifications will not fix this.',request:'The app’s notification request was rejected. Please try again later.',rate_limit:'The notification service is busy. Wait a minute and try again.',service:'The notification service is temporarily unavailable. Please try again later.',timeout:'The notification service took too long to respond. Please try again.',network:'The app could not reach the notification service. Please try again later.'};
  return messages[reason||'service'];
 }
+// Attempt delivery to the member's stored subscriptions and classify failures; push delivery is separate from the in-app alert.
 export async function pushTo(member:string,onlyEndpoint?:string){
  if(!env.DB||!env.WEB_PUSH_PRIVATE_JWK||!env.WEB_PUSH_PUBLIC_KEY)return {accepted:0,failed:0,reason:'unavailable' as PushFailure};
  const rows=await env.DB.prepare('SELECT endpoint FROM push_subscriptions WHERE member=?'+(onlyEndpoint?' AND endpoint=?':'')+' LIMIT 3').bind(...(onlyEndpoint?[member,onlyEndpoint]:[member])).all();
@@ -29,14 +34,17 @@ export async function pushTo(member:string,onlyEndpoint?:string){
   }catch(e){failed++;reason=stage==='sign'?'authorization':e instanceof Error&&(e.name==='TimeoutError'||e.name==='AbortError')?'timeout':'network';console.error('Push delivery failed',JSON.stringify({provider,stage,reason}));}
  }));return {accepted,failed,reason};
 }
+// Persist the deduplicated event before attempting device delivery so push failures do not erase in-app activity.
 export async function notify(member:string,actor:string,kind:string,scope:string,title:string,url:string,eventKey:string,accountEvent=false){
  try{if(!env.DB||member===actor)return;if(!accountEvent&&!await activeMember(member))return;if(actor&&await env.DB.prepare('SELECT actor FROM blocks WHERE (actor=? AND target=?) OR (actor=? AND target=?)').bind(member,actor,actor,member).first())return;
  const result=await env.DB.prepare('INSERT OR IGNORE INTO notifications (id,member,actor,kind,scope,title,url,created) VALUES (?,?,?,?,?,?,?,?)').bind(JSON.stringify([member,kind,eventKey]),member,actor,kind,scope,title,url,new Date().toISOString()).run();const preferenceScope=(kind.startsWith('circle_')?'circle:':'direct:')+scope;const muted=await env.DB.prepare("SELECT id FROM notification_preferences WHERE member=? AND muted=1 AND (scope=? OR (scope='reactions' AND ? IN ('reaction','circle_reaction')))").bind(member,preferenceScope,kind).first();if(result.meta.changes&&!muted)waitUntil(pushTo(member).catch(()=>({accepted:0,failed:1})));
  }catch{console.warn('Notification could not be queued.');}
 }
+// Notify eligible group recipients while respecting actor, membership, and notification preference rules.
 export async function notifyCircle(circle:string,actor:string,messageId:string){
  try{const rows=await env.DB!.prepare("SELECT member FROM circle_members WHERE circle=? AND status='accepted' AND member<>?").bind(circle,actor).all();await Promise.all(rows.results.map((x:any)=>notify(x.member,actor,'circle_message',circle,'New circle message','#circles/'+encodeURIComponent(circle),messageId)));}catch{console.warn('Circle notifications could not be queued.');}
 }
+// Send the admission event to the authorized reviewer audience rather than the general membership.
 export async function notifyReviewers(applicant:string,eventKey:string){
  try{const rows=await env.DB!.prepare('SELECT DISTINCT member FROM push_subscriptions WHERE reviewer=2 OR (reviewer=1 AND member IN (SELECT id FROM moderators))').all();await Promise.all(rows.results.map((x:any)=>notify(x.member,applicant,'review',applicant,'A profile is waiting for review','#review',eventKey)));}catch{console.warn('Review notification could not be queued.');}
 }

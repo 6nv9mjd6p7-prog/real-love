@@ -1,3 +1,7 @@
+/**
+ * Allowlisted native-app link routing. Separates internal routes, authentication, external links, and rejected destinations.
+ * Reading guide: docs/CODE_READING_GUIDE.md.
+ */
 export const productionOrigin = 'https://real-love-connections.fetes-rowboat-0k.chatgpt.site';
 
 const staticRoutes = new Set([

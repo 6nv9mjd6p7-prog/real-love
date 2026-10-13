@@ -1,3 +1,7 @@
+/**
+ * Protected photo reads and sanitized PNG uploads/removal. In this GitHub snapshot replacement resets both sharing flags; ongoing sharing exists only in the newer live source.
+ * Reading guide: docs/CODE_READING_GUIDE.md.
+ */
 import {RULES_VERSION,db,initializeAccount,activeMember,moderator,isOwner,quota,audit,failure} from '../../safety';
 import {caseConflict} from '../../moderation-policy';
 import {env} from 'cloudflare:workers';

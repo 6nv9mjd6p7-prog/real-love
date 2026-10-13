@@ -1,3 +1,7 @@
+/**
+ * Shows the owner's saved photo or local selected-file preview. Previewing does not change another member's sharing permission.
+ * Reading guide: docs/CODE_READING_GUIDE.md.
+ */
 'use client';
 import {useState} from 'react';
 import InteractivePhoto from './interactive-photo';

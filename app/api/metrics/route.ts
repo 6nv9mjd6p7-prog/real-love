@@ -1,3 +1,7 @@
+/**
+ * Accepts a limited set of account-linked product milestones and exposes aggregate reports only to the configured owner.
+ * Reading guide: docs/CODE_READING_GUIDE.md.
+ */
 import {getChatGPTUser} from '../../chatgpt-auth';
 import {db,isOwner,activeMember,quota,readInput,failure,safetyHeaders} from '../../safety';
 import {recordProductEvent} from '../../product-analytics';

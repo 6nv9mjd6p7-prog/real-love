@@ -1,3 +1,7 @@
+/**
+ * Optional campaign discovery, proposals, private participation, feedback, and reviewer UI. The server determines visibility and who may review each case.
+ * Reading guide: docs/CODE_READING_GUIDE.md.
+ */
 'use client';
 import {useCallback,useEffect,useState} from 'react';
 

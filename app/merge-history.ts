@@ -1,3 +1,9 @@
+/**
+ * Merges message pages without duplicate IDs and caches revision-aware windows. Authorization failures discard cached windows to avoid reusing inaccessible history.
+ * Reading guide: docs/CODE_READING_GUIDE.md.
+ */
+// Preserve page order while retaining the first occurrence of each message ID.
 export function mergeHistory<T extends {id:string}>(older:T[],latest:T[]){const seen=new Set<string>();return [...older,...latest].filter(m=>!seen.has(m.id)&&!!seen.add(m.id));}
 const snapshots=new WeakMap<Function,Map<string,any>>();
+// Use known revisions to reuse unchanged data, then fetch older pages until the visible history floor is covered.
 export async function readMessageWindow(api:(input:any)=>Promise<any>,input:any,floor:number|null){let cache=snapshots.get(api);if(!cache){cache=new Map();snapshots.set(api,cache);}const key=JSON.stringify([input,floor]),previous=cache.get(key);let latest:any;try{latest=await api({...input,...(previous?.revision?{knownRevision:previous.revision}:{})});}catch(e:any){if([401,403,404].includes(e.status))cache.clear();throw e;}if(latest.unchanged){if(!previous)throw Error('Refresh your conversation.');if(latest.readCursor===undefined||latest.readCursor===previous.readCursor)return previous;const result={...previous,readCursor:latest.readCursor};cache.set(key,result);return result;}let page=latest,messages=latest.messages;while(floor&&page.hasMore&&page.cursor&&page.cursor>floor){const next=await api({...input,before:page.cursor});if(next.cursor&&next.cursor>=page.cursor)throw Error('Message history did not advance.');messages=mergeHistory(next.messages,messages);page=next;}const result={...latest,messages,cursor:page.cursor,hasMore:page.hasMore};cache.set(key,result);if(cache.size>5)cache.delete(cache.keys().next().value!);return result;}

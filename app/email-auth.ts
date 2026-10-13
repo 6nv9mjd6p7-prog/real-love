@@ -1,3 +1,7 @@
+/**
+ * Server-side email authentication and session helpers. Credentials remain in environment bindings; account linking preserves the established member identity.
+ * Reading guide: docs/CODE_READING_GUIDE.md.
+ */
 import {env} from 'cloudflare:workers';
 import {headers} from 'next/headers';
 import {SafetyError,db} from './safety';

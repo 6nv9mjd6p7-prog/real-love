@@ -1,3 +1,7 @@
+/**
+ * Per-account notifications, read state, channel preferences, and device subscription management. Validates subscription endpoints before storing or testing them.
+ * Reading guide: docs/CODE_READING_GUIDE.md.
+ */
 import {env} from 'cloudflare:workers';
 import {getChatGPTUser} from '../../chatgpt-auth';
 import {quota,readInput,failure,safetyHeaders,moderator,isOwner} from '../../safety';

@@ -1,3 +1,7 @@
+/**
+ * Account-scoped timing and dismissal rules for the optional support prompt. Browser storage failures must not block the app.
+ * Reading guide: docs/CODE_READING_GUIDE.md.
+ */
 const PREFIX='real-love-support-v1:';
 export const SUPPORT_DELAY_MS=24*60*60*1000;
 function key(account:string){return PREFIX+encodeURIComponent(account);}

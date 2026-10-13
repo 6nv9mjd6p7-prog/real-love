@@ -1,3 +1,7 @@
+/**
+ * Browser installation guidance and install-prompt handling. Device capabilities determine whether an install button or manual instructions are shown.
+ * Reading guide: docs/CODE_READING_GUIDE.md.
+ */
 'use client';
 import { Capacitor } from '@capacitor/core';
 import { useEffect, useState } from 'react';

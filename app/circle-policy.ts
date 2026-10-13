@@ -1,3 +1,7 @@
+/**
+ * Checks whether a join request is still available under account and block rules before exposing it to a host.
+ * Reading guide: docs/CODE_READING_GUIDE.md.
+ */
 import {env} from 'cloudflare:workers';
 import {activeMember} from './safety';
 // A request is actionable only while its applicant can interact and has no

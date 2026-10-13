@@ -1,3 +1,7 @@
+/**
+ * Protected audio reads, bounded upload validation, and message attachment. Cleans up uploaded storage objects if the message operation fails.
+ * Reading guide: docs/CODE_READING_GUIDE.md.
+ */
 import {recordTwoWay} from '../../product-analytics';
 import {env} from 'cloudflare:workers';
 import {getChatGPTUser} from '../../chatgpt-auth';

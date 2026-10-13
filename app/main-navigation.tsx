@@ -1,3 +1,7 @@
+/**
+ * Maps nested routes to four main destinations and displays request/unread badges. Route selection affects presentation only.
+ * Reading guide: docs/CODE_READING_GUIDE.md.
+ */
 'use client';
 import {Compass,MessageCircle,Users,UserRound} from 'lucide-react';
 export function mainDestination(route:string){

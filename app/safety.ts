@@ -1,18 +1,34 @@
+/**
+ * Shared server safety boundary: admission, moderator roles, request validation, quotas, audit records, retention cleanup, and safe error responses.
+ * Reading guide: docs/CODE_READING_GUIDE.md.
+ */
 import {env} from 'cloudflare:workers';
 import {RULES_VERSION} from './rules';
 export {RULES_VERSION,reportReasons} from './rules';
 export class SafetyError extends Error{constructor(message:string,public status=403){super(message);}}
 export const safetyHeaders={'Cache-Control':'no-store','X-Content-Type-Options':'nosniff','Referrer-Policy':'no-referrer'};
 export const db=()=>{if(!env.DB)throw new SafetyError('Storage is unavailable.',503);return env.DB;};
+// The configured owner email is a role check, not a substitute for authenticating the request.
 export function isOwner(u:{email:string}){return !!env.PILOT_OWNER_EMAIL&&u.email.toLowerCase()===env.PILOT_OWNER_EMAIL.toLowerCase();}
+// INSERT OR IGNORE creates first-use state without overwriting an existing restriction or admission decision.
 export async function initializeAccount(u:{userId:string;email:string}){await db().prepare('INSERT OR IGNORE INTO safety_accounts (id,status,updated) VALUES (?,?,?)').bind(u.userId,isOwner(u)?'admitted':'pending',new Date().toISOString()).run();}
+// An expired temporary restriction can return to admitted; other statuses remain unchanged.
 export async function account(id:string){const a=await db().prepare('SELECT * FROM safety_accounts WHERE id=?').bind(id).first<any>();if(a?.status==='restricted'&&a.until&&a.until<new Date().toISOString()){await db().prepare("UPDATE safety_accounts SET status='admitted',until='' WHERE id=? AND status='restricted'").bind(id).run();return {...a,status:'admitted',until:''};}return a??{status:'pending',notice:'Pilot admission and adult eligibility review are required.'};}
+// Admission is a separate decision from successfully signing in.
 export async function admitted(id:string){return (await account(id)).status==='admitted';}
+// Interaction requires admission, an active profile, and agreement to the current rules version.
 export async function activeMember(id:string){return await admitted(id)&&!!await db().prepare("SELECT id FROM profiles WHERE id=? AND active=1 AND json_extract(data,'$.rulesVersion')=?").bind(id,RULES_VERSION).first();}
+// A reviewer must still be admitted, even when their email matches the configured owner.
 export async function moderator(u:{userId:string;email:string}){return await admitted(u.userId)&&(isOwner(u)||!!await db().prepare('SELECT id FROM moderators WHERE id=?').bind(u.userId).first());}
+// Insert only while the rolling-window count is below the limit. The conditional SQL avoids a separate check-then-insert race.
 export async function quota(id:string,kind:string,max:number,seconds:number){const now=new Date().toISOString();const r=await db().prepare('INSERT INTO safety_events (id,actor,kind,created) SELECT ?,?,?,? WHERE (SELECT COUNT(*) FROM safety_events WHERE actor=? AND kind=? AND created>?)<?').bind(crypto.randomUUID(),id,kind,now,id,kind,new Date(Date.now()-seconds*1000).toISOString(),max).run();if(!r.meta.changes)throw new SafetyError('Please slow down. This action’s limit has been reached.',429);}
+// Check origin and content type, then enforce the size limit while streaming; Content-Length alone is not trustworthy.
 export async function readInput(req:Request){if(req.headers.get('origin')!==new URL(req.url).origin)throw new SafetyError('Request origin not allowed.');if(!req.headers.get('content-type')?.includes('application/json'))throw new SafetyError('Use a JSON request.',415);if(Number(req.headers.get('content-length')??0)>12000)throw new SafetyError('Request too large.',413);const reader=req.body?.getReader();if(!reader)throw new SafetyError('Request body required.',400);const chunks:Uint8Array[]=[];let length=0;while(true){const v=await reader.read();if(v.done)break;length+=v.value.length;if(length>12000){await reader.cancel();throw new SafetyError('Request too large.',413);}chunks.push(v.value);}const joined=new Uint8Array(length);let offset=0;for(const c of chunks){joined.set(c,offset);offset+=c.length;}try{const data=JSON.parse(new TextDecoder().decode(joined));if(!data||typeof data!=='object'||Array.isArray(data))throw Error();return data;}catch{throw new SafetyError('Invalid JSON request.',400);}}
+// This small pilot filter catches selected link/solicitation patterns. It is not comprehensive abuse detection.
 export function contentCheck(text:string){if(/(?:https?:\/\/|www\.)/i.test(text))throw new SafetyError('External links are disabled during this pilot. Describe your idea here.',400);if(/\b(?:send (?:me )?(?:nudes|dick pics)|looking for (?:a )?hookup|(?:buy|send) (?:me )?gift cards|guaranteed (?:crypto|investment) returns)\b/i.test(text))throw new SafetyError('This content conflicts with the community rules. Sexual solicitation and scam pitches are not allowed.',400);}
+// Store who performed a moderation action, its target, reason, and time for accountability.
 export async function audit(actor:string,action:string,target:string,reason:string){await db().prepare('INSERT INTO moderation_audit (id,actor,action,target,reason,created) VALUES (?,?,?,?,?,?)').bind(crypto.randomUUID(),actor,action,target,reason,new Date().toISOString()).run();}
+// Delete expired evidence objects before clearing their database references; retention cleanup runs when this helper is invoked.
 export async function cleanup(){const expired=await db().prepare("SELECT evidence FROM reports WHERE expires<>'' AND expires<?").bind(new Date().toISOString()).all();for(const r of expired.results as any[]){const evidence=JSON.parse(r.evidence);for(const key of [evidence.photoEvidenceKey,evidence.audioEvidenceKey])if(key&&env.BUCKET)await env.BUCKET.delete(key);}await db().batch([db().prepare('DELETE FROM safety_events WHERE created<?').bind(new Date(Date.now()-2*86400000).toISOString()),db().prepare("UPDATE reports SET evidence='{}',details='[Expired]',context='{}' WHERE expires<>'' AND expires<?").bind(new Date().toISOString()),db().prepare('DELETE FROM reports WHERE created<?').bind(new Date(Date.now()-180*86400000).toISOString()),db().prepare('DELETE FROM moderation_audit WHERE created<?').bind(new Date(Date.now()-180*86400000).toISOString())]);}
+// Expose deliberate SafetyError messages but replace unexpected exception details with a generic service error.
 export function failure(e:unknown){return Response.json({error:e instanceof SafetyError?e.message:'Could not complete this action. Please try again.'},{status:e instanceof SafetyError?e.status:503,headers:safetyHeaders});}

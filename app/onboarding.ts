@@ -1,3 +1,7 @@
+/**
+ * Chooses one next step from account, profile, rules, pause, and invitation state. Earlier checks take precedence over later suggestions.
+ * Reading guide: docs/CODE_READING_GUIDE.md.
+ */
 type State={me:{active:boolean;rulesVersion?:string}|null;account:{status?:string;notice?:string}|null;canConnect:boolean;incoming:number;sent:number;rulesVersion:string};
 export function onboardingNext(s:State){
  if(s.account?.status&& !['pending','admitted'].includes(s.account.status))return {kind:'restricted',title:'Account '+s.account.status,detail:s.account.notice||'Connection is unavailable. You can review your account status, report, appeal, or delete your profile in Privacy & settings.',action:'Open Privacy & settings',destination:'settings'};

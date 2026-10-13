@@ -1,3 +1,7 @@
+/**
+ * Normalizes and stores discovery choices by account and scope. Demo, Discover, and Saved preferences remain separate.
+ * Reading guide: docs/CODE_READING_GUIDE.md.
+ */
 import {activityOptions,availabilityOptions,normalizeProfileFilters,type ExtraProfileFilters} from './model';
 export type DiscoveryPreferences={interestMode:'mine'|'any';locationFilter:'any'|'local'|'online';radiusMiles:number;filterMinAge:number;filterMaxAge:number;category:string;activityFilter:string;availabilityFilter:string;aceFilter:boolean;search:string;profileFilters:ExtraProfileFilters};
 export const defaultDiscovery:DiscoveryPreferences={interestMode:'any',locationFilter:'any',radiusMiles:25,filterMinAge:18,filterMaxAge:99,category:'All interests',activityFilter:'',availabilityFilter:'',aceFilter:false,search:'',profileFilters:{}};

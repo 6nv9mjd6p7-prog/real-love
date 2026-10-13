@@ -1,3 +1,7 @@
+/**
+ * Main client shell. Owns account refresh, hash navigation, profile editing, discovery, relationship mutations, settings, and dialogs. The APIs remain the authority for privacy and access.
+ * Reading guide: docs/CODE_READING_GUIDE.md.
+ */
 'use client';
 import DiscoveryDetails from './discovery-details';
 import ApprovalStatus from './approval-status';

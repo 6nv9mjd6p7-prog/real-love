@@ -1,3 +1,7 @@
+/**
+ * Email code sign-in form. Requesting a code and verifying it are separate actions; successful verification navigates back to the app.
+ * Reading guide: docs/CODE_READING_GUIDE.md.
+ */
 'use client';
 import {useEffect,useState} from 'react';
 export default function EmailSignIn({legacy}:{legacy:{accountId:string;email:string}|null}){

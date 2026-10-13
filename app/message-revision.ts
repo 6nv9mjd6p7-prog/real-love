@@ -1,3 +1,7 @@
+/**
+ * Computes a revision for an authorized message scope so polling can avoid transferring unchanged history.
+ * Reading guide: docs/CODE_READING_GUIDE.md.
+ */
 // A revision covers edits, deletions, reactions, quote names and visibility.
 // Authorization still runs on every request before an unchanged response.
 export async function messageRevision(store:D1Database,kind:'direct'|'circle',scope:string,viewer:string){

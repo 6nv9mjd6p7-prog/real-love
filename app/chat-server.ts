@@ -1,3 +1,7 @@
+/**
+ * Shared database operations for replies, reactions, and message edits. Callers provide scope and access predicates so direct chats and circles enforce their own boundaries.
+ * Reading guide: docs/CODE_READING_GUIDE.md.
+ */
 import {env} from 'cloudflare:workers';
 import {reactionOptions,EDIT_WINDOW_MS,DELETE_WINDOW_MS,MAX_MESSAGE_EDITS,messageChangeAllowed} from './chat-tools';
 import {SafetyError,contentCheck} from './safety';

@@ -1,3 +1,7 @@
+/**
+ * Inbox summary for an accepted connection. Opening the row delegates navigation to the app shell.
+ * Reading guide: docs/CODE_READING_GUIDE.md.
+ */
 'use client';
 import type {ReactNode} from 'react';
 type Chat={person:{name:string};available?:boolean;unread?:number;lastMessage?:{mine:boolean;body:string;created:string}|null};

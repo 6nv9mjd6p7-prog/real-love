@@ -1,3 +1,7 @@
+/**
+ * Shared message metadata and fingerprint helpers. Fingerprints distinguish a retry of the same content from a different message.
+ * Reading guide: docs/CODE_READING_GUIDE.md.
+ */
 export const reactionOptions=[{emoji:'❤️',label:'Love'},{emoji:'👍',label:'Like'},{emoji:'👎',label:'Dislike'},{emoji:'😂',label:'Laugh'},{emoji:'‼️',label:'Emphasis'},{emoji:'❓',label:'Question'}] as const;
 export type MessageReaction={emoji:string;count:number;mine:boolean};
 export type ReplyPreview={id:string;body:string;name:string;mine:boolean};

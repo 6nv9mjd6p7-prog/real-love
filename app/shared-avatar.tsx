@@ -1,3 +1,7 @@
+/**
+ * Shows a photo only when the caller supplies mutual sharing and a usable photo flag. Otherwise renders a non-photo avatar; the image endpoint also checks access.
+ * Reading guide: docs/CODE_READING_GUIDE.md.
+ */
 
 'use client';
 import {useState,useEffect} from 'react';

@@ -1,3 +1,7 @@
+/**
+ * Initializes Capacitor behavior and native deep-link listeners. Browser sessions skip native-only behavior and listeners are cleaned up on unmount.
+ * Reading guide: docs/CODE_READING_GUIDE.md.
+ */
 'use client';
 
 import { App } from '@capacitor/app';

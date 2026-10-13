@@ -1,3 +1,7 @@
+/**
+ * Reviewer interface for admission, reports, and account actions. Server responses supply allowed cases; UI visibility is not an authorization boundary.
+ * Reading guide: docs/CODE_READING_GUIDE.md.
+ */
 'use client';
 import OwnerMetrics from './owner-metrics';
 import {useState,useEffect} from 'react';
