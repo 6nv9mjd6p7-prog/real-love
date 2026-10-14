@@ -73,3 +73,7 @@ Start with a test that demonstrates the intended permission or lifecycle rule. F
 ## Choosing an input control
 
 See [Choice control audit](choice-controls.md) for each screen and its rationale. Longer single-choice lists use dropdowns; short comparisons remain visible. Multiple answers use checkboxes, interests support search and chips, and places require structured combobox selection. UI controls do not replace server validation. Optional blank values mean unanswered, while birth dates stay outside public profile projections.
+
+## Navigation and return context
+
+`native-links.ts` parses worker/detail/list routes and manages account-scoped history markers. Back traverses known app entries or replaces a safe fallback. `campaign-navigation.ts` stores navigation-only snapshots for campaign tabs, details, and proposals. Unsent text uses tab drafts separately; consent is renewed on reopening. See [Navigation workflow](navigation-workflow.md) for the tested journeys and browser verification limits.

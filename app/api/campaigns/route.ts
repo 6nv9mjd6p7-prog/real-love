@@ -27,6 +27,9 @@ export async function GET(req?:Request){try{
  else if(scope==='explore'){filter='(?=1 AND '+publicFilter+')';values=[active?1:0,today];}
  else if(scope==='review'){filter="(status='pending' OR (status='active' AND json_extract(data,'$.reviewDate')<?) OR (status NOT IN ('withdrawn','rejected') AND EXISTS (SELECT 1 FROM campaign_feedback f WHERE f.campaign=campaigns.id AND f.status='open')))";values=[today];}
  else{filter='(?=1 OR '+personal+' OR (?=1 AND '+publicFilter+'))';values=[reviewer?1:0,u.userId,u.userId,active?1:0,today];}
+ // A restored detail can be fetched without replaying pagination; scope authorization still applies.
+ const target=params.has('id')?z.string().min(1).max(100).parse(params.get('id')):null;
+ if(target){filter='('+filter+') AND id=?';values.push(target);}
  const after=cursor?' AND (created<? OR (created=? AND id<?))':'';
  if(cursor)values.push(cursor.created,cursor.created,cursor.id);
  const rows=await db().prepare("SELECT * FROM campaigns WHERE creator<>'' AND "+filter+after+' ORDER BY created DESC,id DESC LIMIT 26').bind(...values).all();

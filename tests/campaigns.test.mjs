@@ -133,3 +133,12 @@ assert.equal((await readPage('referee','unsupported')).status,400);
 sql.prepare("INSERT INTO campaign_participation VALUES ('expired-0','referee')").run();
 assert.equal((await write('referee',{action:'feedback',campaign:'expired-0',kind:'report',body:'I participated and need to report an unresolved concern.'})).status,200);
 console.log('Regression checks passed: withdrawal race rollback, paused/suspended withdrawal, idempotency, scoped pagination and expired-campaign reporting.');
+
+// Detail restoration uses the same scope authorization as paginated lists.
+async function readDetail(who,scope,id){as(who);const r=await campaigns.GET(new Request('https://rl.test/api/campaigns?'+new URLSearchParams({scope,id})));return {status:r.status,data:await r.json()};}
+const specific=await readDetail('referee','mine','older-joined');assert.equal(specific.status,200);assert.deepEqual(specific.data.campaigns.map(c=>c.id),['older-joined']);assert.equal(specific.data.nextCursor,null);
+seedCampaign('private-detail',stamp,payload,'author');sql.prepare("UPDATE campaigns SET status='pending' WHERE id='private-detail'").run();
+assert.equal((await readDetail('referee','explore','private-detail')).data.campaigns.length,0,'a detail ID cannot bypass publication scope');
+assert.equal((await readDetail('referee','mine','private-detail')).data.campaigns.length,0,'a detail ID cannot bypass ownership or participation');
+assert.equal((await readDetail('author','mine','private-detail')).data.campaigns[0].id,'private-detail');
+console.log('Campaign detail restoration retains list authorization and resolves older records without pagination.');

@@ -14,7 +14,7 @@ source=source.replace(/^import (.+) from '[^']+';$/gm,(_,bindings)=>{
  return names.map(name=>{
   if(['useState','useEffect','useLayoutEffect','useRef','useCallback'].includes(name))return `const ${name}=globalThis.__organizingHooks.${name};`;
   if(name==='LatestRequest')return 'class LatestRequest{begin(){return 1;}current(){return true;}cancel(){}}';
-  if(name==='useTabDraft')return 'const useTabDraft=()=>["",()=>{}];';
+  if(name==='useTabDraft')return 'const useTabDraft=()=>globalThis.__organizingHooks.useState("");';
   return `const ${name}=()=>[];`;
  }).join('\n');
 });
@@ -36,9 +36,12 @@ nodes.find(n=>n.type==='input'&&n.props.type==='checkbox').props.onChange({targe
 assert(!submit().props.disabled);
 elements(label('Circle name')).find(n=>n.type==='input').props.onChange({target:{value:'Hospitality organizing group'}});nodes=render();
 elements(label('What will you explore together?')).find(n=>n.type==='textarea').props.onChange({target:{value:'Learn about shared industry concerns and qualified organizing help.'}});nodes=render();
+const originalWindow=Object.getOwnPropertyDescriptor(globalThis,'window');Object.defineProperty(globalThis,'window',{value:{location:{hash:'#circles/organize'}},configurable:true});
 let posted;
 globalThis.fetch=async(_url,options)=>{if(options?.method==='POST')posted=JSON.parse(options.body);return {ok:true,json:async()=>options?.method==='POST'?{ok:true}:{accountId:'member',circles:[]}};};
 await form().props.onSubmit({preventDefault(){}});
 assert.equal(posted.category,'worker_organizing');assert.equal(posted.workerConsent,true);assert.equal(posted.connection,'available');assert.deepEqual(posted.tags,[]);assert.equal(posted.expectedAccount,'member');
 assert(!('employer' in posted));assert(!render().some(n=>n.type==='form'),'successful proposal closes the form');
 console.log('Organizing form opens, gates privacy and co-founder selection, excludes unavailable contacts, and submits a worker proposal without employer data.');
+
+if(originalWindow)Object.defineProperty(globalThis,'window',originalWindow);else delete globalThis.window;

@@ -16,7 +16,7 @@ const tree=Support(props),nodes=elements(tree),start=nodes.find(n=>n.type==='but
 assert(start&&!start.props.disabled);start.props.onClick();assert(started);
 const disabled=elements(Support({...props,canOrganize:false})).find(n=>n.type==='button'&&n.props.children==='Start union organizing');assert(disabled.props.disabled);
 const html=renderToStaticMarkup(tree);assert(html.includes('not a legally recognized union'));assert(html.includes('listing becomes discoverable'));assert(html.includes('https://aflcio.org/formaunion/contact'));
-const routes=readFileSync('app/love-app.tsx','utf8');assert(routes.includes("organizing={route==='circles/organize'}"));
+const routes=readFileSync('app/love-app.tsx','utf8');assert(routes.includes("organizing={circleRoute.organizing}"));
 const nativeSource=ts.transpileModule(readFileSync('app/native-links.ts','utf8'),{compilerOptions:{module:ts.ModuleKind.ESNext}}).outputText;
 const {allowedAppRoute}=await import('data:text/javascript;base64,'+Buffer.from(nativeSource).toString('base64'));assert.equal(allowedAppRoute('circles/organize'),'circles/organize');
 console.log('Union entry action, active-state gating, organizing route, privacy wording and native link passed.');
