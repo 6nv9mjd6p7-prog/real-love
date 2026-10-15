@@ -15,19 +15,19 @@ assert.equal(mainDestination('saved'),'discover');assert.equal(mainDestination('
 let destination;
 const tree=Navigation({current:'circles',onNavigate:r=>destination=r,circleRequests:3,requests:2,unread:1});
 const buttons=tree.props.children;
-assert.equal(buttons.length,4,'mobile keeps four primary destinations');
-assert.deepEqual(buttons.map(b=>b.props.children[1]),['Discover','Chats','Circles','My profile']);
+assert.equal(buttons.length,5,'all layouts share five primary destinations');
+assert.deepEqual(buttons.map(b=>b.props.children[1]),['Discover','Chats','Circles','My profile','Settings']);
 assert.equal(buttons[2].props['aria-current'],'page');assert(buttons.filter(b=>b.props['aria-current']).length===1);
 buttons[2].props.onClick();assert.equal(destination,'circles');
 assert.equal(buttons[0].props.children[2],false,'Discover no longer carries circle requests');
 assert.equal(buttons[2].props.children[2].props['aria-label'],'Circle requests');
 const html=renderToStaticMarkup(React.createElement(Navigation,{current:'circles',onNavigate:()=>{},circleRequests:3}));
 assert(html.includes('aria-label="Main navigation"'));assert(html.includes('aria-label="Circle requests"'));
-assert(!html.includes('Privacy &amp; settings'),'settings is a secondary destination');
+assert(html.includes('Settings'),'settings is available in the shared navigation');
 const app=readFileSync('app/love-app.tsx','utf8');
 assert(app.includes("nav('Privacy & settings')"),'settings remains reachable');
 assert(!app.includes("<button onClick={()=>nav('Circles')}>Circles"),'Circles is no longer nested under Discover');
-console.log('Four primary tabs, circle route highlighting, badge ownership and navigation actions passed.');
+console.log('Five shared primary destinations, circle route highlighting, badge ownership and navigation actions passed.');
 
 assert.equal(mainDestination('notifications'),'notifications');assert.equal(mainDestination('review'),'review');
 const special=renderToStaticMarkup(React.createElement(Navigation,{current:'notifications',onNavigate:()=>{},requests:2,unread:3,reviewAlerts:8}));

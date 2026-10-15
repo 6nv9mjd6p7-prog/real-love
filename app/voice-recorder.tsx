@@ -1,7 +1,3 @@
-/**
- * Manages microphone permission, recording, preview, upload, and cleanup. Stops media tracks and preserves a failed recording for retry rather than recording over it.
- * Reading guide: docs/CODE_READING_GUIDE.md.
- */
 'use client';
 import {useEffect,useRef,useState} from 'react';
 import {Mic, Square, Send, Trash2} from 'lucide-react';

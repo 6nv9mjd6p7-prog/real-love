@@ -1,7 +1,3 @@
-/**
- * Canonical rules version, report categories, and conduct text. Changing the rules version affects whether members must renew their agreement.
- * Reading guide: docs/CODE_READING_GUIDE.md.
- */
 export const RULES_VERSION='2026-10-02';
 export const reportReasons=['Sexual pressure','Harassment','Misleading intentions','Privacy concern','Scam or money request','Threats or hate','Underage concern','Host or leadership abuse','Other'];
 export const communityRules=[

@@ -98,3 +98,14 @@ Access checks included anonymous denial, wrong-scope denial, stale access reject
 3. Share messaging infrastructure, improve API outcomes, and clean up setup documentation/lint. Optimize data queries only after measuring representative workloads.
 
 Each change should have a small diff and explicit acceptance checks. Existing photo consent, access revocation, request acceptance, account isolation, and voice lifecycle tests remain regression gates.
+
+## October 15 code-review follow-up
+
+The current application, API routes, sign-in and account boundaries, D1 schema/migrations, notification and messaging flows, worker-support routes, native iOS configuration, and automated tests were rechecked before this release. The source review used strict TypeScript, ESLint, the full automated suite, and a production build as cross-checks; dependency internals and generated build artifacts are outside scope.
+
+- **Verified:** all 49 Node test files pass; `tsc --noEmit` passes; the Sites production build completes.
+- **Lint baseline:** ESLint reports 337 errors and 56 warnings. Most errors are existing explicit `any` annotations; the remaining set includes hook-rule findings in tests and other unused values. These need staged cleanup and have not been disabled or hidden.
+- **Applied:** package scripts now expose `npm run test` and `npm run typecheck`. The README now describes Real Love's actual app surfaces, D1/R2 architecture, privacy limits, and pinned pnpm install rather than the starter template.
+- **Release boundary:** no phone-browser, physical iOS/Android, authenticated two-account, email-provider, or live production-data test was run in this review. The release checklist still governs those pilot checks.
+
+Code comments were added or retained around security, consent, and non-obvious state transitions where they aid maintenance; comments were not mechanically added to every statement, because that obscures behavior and quickly becomes stale.

@@ -20,6 +20,7 @@ const circles=readFileSync('app/circles.tsx','utf8');
 assert(circles.includes("fetch(workerArea?'/api/circles?scope=worker':'/api/circles')"));
 assert(circles.includes("category:workerArea?workerCategory:'friendship'"));
 assert(circles.includes('required disabled={busy} checked={workerConsent}'));
+assert(circles.includes('Who can see these messages?')&&circles.includes('Chats and voice notes are not end-to-end encrypted')&&!circles.includes('Circle chat privacy &amp; history'),'circle privacy stays visible once without a duplicate disclosure');
 const nativeSource=ts.transpileModule(readFileSync('app/native-links.ts','utf8'),{compilerOptions:{module:ts.ModuleKind.ESNext}}).outputText;
 const {allowedAppRoute}=await import('data:text/javascript;base64,'+Buffer.from(nativeSource).toString('base64'));
 assert.equal(allowedAppRoute('circles/work'),'circles/work');

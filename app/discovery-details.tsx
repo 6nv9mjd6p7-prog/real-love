@@ -1,7 +1,3 @@
-/**
- * Optional filters over shared profile answers. Updates filter state through the parent instead of changing saved profile answers.
- * Reading guide: docs/CODE_READING_GUIDE.md.
- */
 'use client';
 import {useState} from 'react';
 import {genders,orientationOptions,expectations,startRoles,introPromptOptions,communicationOptions,activityOptions,profileTextFields,normalizeProfileFilters,type ExtraProfileFilters,type ProfileAnswerRule,type ProfileTextField} from './model';

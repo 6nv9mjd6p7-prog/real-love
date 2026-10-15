@@ -1,7 +1,3 @@
-/**
- * Browser installation guidance and install-prompt handling. Device capabilities determine whether an install button or manual instructions are shown.
- * Reading guide: docs/CODE_READING_GUIDE.md.
- */
 'use client';
 import { Capacitor } from '@capacitor/core';
 import { useEffect, useState } from 'react';
@@ -14,7 +10,7 @@ export default function InstallApp() {
   const [open, setOpen] = useState(false);
   const [ios, setIos] = useState(false);
   const [notice, setNotice] = useState('');
-  const [engaged, setEngaged] = useState(false);
+  const [busy, setBusy] = useState(false);
   useEffect(() => {
     if (Capacitor.isNativePlatform()) return;
     const display = window.matchMedia('(display-mode: standalone)');
@@ -23,26 +19,28 @@ export default function InstallApp() {
     setIos(/iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1));
     const capture = (event: Event) => { event.preventDefault(); setPrompt(event as InstallEvent); };
     const done = () => { setInstalled(true); setPrompt(null); setOpen(false); };
-    const engagement = () => setEngaged(true);
-    window.addEventListener('real-love-engaged', engagement);
     window.addEventListener('beforeinstallprompt', capture);
     window.addEventListener('appinstalled', done);
     display.addEventListener('change', check);
     if ('serviceWorker' in navigator && window.isSecureContext) navigator.serviceWorker.register('/sw.js', { scope: '/', updateViaCache: 'none' }).catch(() => {});
-    return () => { window.removeEventListener('real-love-engaged', engagement); window.removeEventListener('beforeinstallprompt', capture); window.removeEventListener('appinstalled', done); display.removeEventListener('change', check); };
+    return () => { window.removeEventListener('beforeinstallprompt', capture); window.removeEventListener('appinstalled', done); display.removeEventListener('change', check); };
   }, [nativeApp]);
   async function install() {
-    if (!prompt) return;
+    if (!prompt || busy) return;
+    setBusy(true);
     try { await prompt.prompt(); const choice = await prompt.userChoice; setPrompt(null); setNotice(choice.outcome === 'accepted' ? 'Installation requested. Follow your browser’s instructions.' : 'You can install later from your browser menu.'); }
     catch { setPrompt(null); setNotice('Use your browser menu to install Real Love.'); }
+    finally { setBusy(false); }
   }
-  if (nativeApp || installed || !engaged) return null;
+  // Installation is discoverable immediately; never depend on a one-time engagement event.
+  // Installed web apps and the native shell already have a home-screen entry.
+  if (nativeApp || installed) return null;
   return <section className="install-app" aria-label="Install Real Love">
-    <button className="text-button" aria-expanded={open} onClick={() => setOpen(!open)}>{open ? 'Close install guide' : 'Add Real Love to your phone'}</button>
-    {open && <div className="install-guide">
+    <button className="secondary" aria-controls="real-love-install-guide" aria-expanded={open} onClick={() => setOpen(!open)}>{open ? 'Close install guide' : 'Add Real Love to your phone'}</button>
+    {open && <div className="install-guide" id="real-love-install-guide">
       <h2>Keep Real Love on your home screen</h2>
-      {prompt ? <button className="primary" onClick={install}>Install Real Love</button> : ios ? <p>Open this website in Safari. Tap Share, choose Add to Home Screen, then tap Add. If shown, turn on Open as Web App.</p> : <p>Open your browser menu and look for Install app or Add to Home screen. On a computer, look for an install icon in the address bar. If your browser doesn’t offer installation, you can keep using the website.</p>}
-      <p>Open the site directly in your browser rather than inside another app. Sign-in and pilot admission still apply. Profiles and conversations need an internet connection.</p>
+      {prompt ? <button className="primary" disabled={busy} onClick={install}>{busy ? 'Opening installation…' : 'Install Real Love'}</button> : ios ? <p>Open this website in Safari. Tap Share, choose Add to Home Screen, then tap Add. If shown, turn on Open as Web App.</p> : <p>Open your browser menu and look for Install app or Add to Home screen. On a computer, look for an install icon in the address bar. If your browser doesn’t offer installation, you can keep using the website.</p>}
+      <p>Open the site directly in your browser rather than inside another app. Your account and access stay the same. Profiles and conversations need an internet connection.</p>
       {notice && <p role="status">{notice}</p>}
     </div>}
   </section>;

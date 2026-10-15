@@ -1,7 +1,3 @@
-/**
- * Selects profile answers that may be quoted in an invitation and translates invitation lifecycle state into human-readable labels.
- * Reading guide: docs/CODE_READING_GUIDE.md.
- */
 import {profileInterests,type Profile} from './model';
 export type InvitationContext={key:string;label:string;text:string};
 // Only public, voluntarily shared answers can become invitation context.

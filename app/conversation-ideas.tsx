@@ -1,7 +1,3 @@
-/**
- * Optional prompts for starting a conversation, listening, clarifying, and setting boundaries. Selecting a prompt helps compose text; it does not send a message.
- * Reading guide: docs/CODE_READING_GUIDE.md.
- */
 'use client';
 import {useState} from 'react';
 const ideas=[['Explore','What led you to that view?'],['Listen','Would you like me to listen or help think it through?'],['Clarify','I may have misunderstood. What did you mean?'],['Pace','What kind of pace works for you when staying in touch?'],['Set a boundary','I need some time. I’ll reach out when I’m ready.'],['Repair','I see how that affected you. Can we talk about it?']];

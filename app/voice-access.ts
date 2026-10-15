@@ -1,7 +1,3 @@
-/**
- * Checks direct or circle access before voice storage operations. Audio follows the same relationship and membership boundaries as text.
- * Reading guide: docs/CODE_READING_GUIDE.md.
- */
 import {env} from 'cloudflare:workers';
 import {RULES_VERSION,SafetyError,activeMember} from './safety';
 export async function voiceAccess(kind:string,scope:string,id:string){

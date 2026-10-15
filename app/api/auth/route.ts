@@ -1,7 +1,3 @@
-/**
- * Email code request, verification, linking, and logout endpoint. Same-origin requests and session handling protect account mutations.
- * Reading guide: docs/CODE_READING_GUIDE.md.
- */
 import {getLegacyUser} from '../../chatgpt-auth';
 import {createEmailSession,digest,providerRequest,readSessionToken,sessionCookie} from '../../email-auth';
 import {db,quota,readInput,failure,safetyHeaders,SafetyError} from '../../safety';

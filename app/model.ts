@@ -1,8 +1,4 @@
-/**
- * Shared profile types, option lists, demo fixtures, matching, and discovery filtering. Eligibility is distinct from ranking; private romantic preferences do not define friendship ranking.
- * Reading guide: docs/CODE_READING_GUIDE.md.
- */
-export type Profile={id:string;name:string;age:number;birthDate?:string;availabilityChoices?:string[];participation?:string[];orientationDescription?:string;promptKeys?:string[];gender:string;genderDescription?:string;interested:string[];minAge:number;maxAge:number;city:string;region?:string;country?:string;locationConfirmed?:boolean;areaLat?:number|null;areaLon?:number|null;locationPlaceId?:string;distanceMiles?:number|null;remote:boolean;intentions:string[];orientation:string;aceOnly:boolean;expectation:string;affection:string;faith:string;about:string;responsibility:string;space:string;growth:string;interests:string[];active:boolean;discoverable?:boolean;demo?:boolean;background?:string;startRole?:string;care?:string;question?:string;perspective?:string;startIdea?:string;offer?:string;support?:string;firstStep?:string;availability?:string;activities?:string[];topics?:string[];hasPhoto?:boolean;introPrompt?:string;connectionBoundary?:string;communication?:string[];communicationNote?:string};
+export type Profile={id:string;name:string;age:number;birthDate?:string;availabilityChoices?:string[];participation?:string[];orientationDescription?:string;promptKeys?:string[];gender:string;genderDescription?:string;interested:string[];minAge:number;maxAge:number;city:string;region?:string;country?:string;locationConfirmed?:boolean;areaLat?:number|null;areaLon?:number|null;locationPlaceId?:string;distanceMiles?:number|null;remote:boolean;intentions:string[];orientation:string;aceOnly:boolean;expectation:string;affection:string;faith:string;about:string;responsibility:string;space:string;growth:string;interests:string[];active:boolean;discoverable?:boolean;demo?:boolean;background?:string;startRole?:string;care?:string;question?:string;perspective?:string;startIdea?:string;offer?:string;support?:string;firstStep?:string;availability?:string;activities?:string[];topics?:string[];hasPhoto?:boolean;photoDescription?:string;introPrompt?:string;connectionBoundary?:string;communication?:string[];communicationNote?:string};
 const areaFold=(value:unknown)=>typeof value==='string'?value.normalize('NFKD').replace(/\p{M}/gu,'').trim().replace(/\s+/g,' ').toLowerCase():'';
 const structuredArea=(p:Partial<Profile>)=>p.city&&p.region&&p.country?[areaFold(p.city),areaFold(p.region),areaFold(p.country)].join('|'):'';
 const sameBroadArea=(a:Partial<Profile>,b:Partial<Profile>)=>structuredArea(a)&&structuredArea(b)?structuredArea(a)===structuredArea(b):!!areaFold(a.city)&&areaFold(a.city)===areaFold(b.city);
@@ -54,16 +50,11 @@ export const profilePrompts=[
  ['growth','What are you actively working on in yourself?','A short answer is enough.']
 ] as const;
 export function canonicalIntention(value:string){return value==='Build community'?'Build together':value;}
-// Retained compatibility wrapper: every connection now uses the shared friendship eligibility rules.
-// Supply defaults for older stored profiles so later filters can safely read newer optional fields.
 export function normalizeProfile(p:Profile):Profile{return {...p,availabilityChoices:profileAvailability(p),participation:profileParticipation(p),promptKeys:Array.from(new Set([...(p.promptKeys??[]),...profilePrompts.filter(([key])=>p[key]?.trim()).map(([key])=>key)])),age:p.birthDate?ageFromBirthDate(p.birthDate)??p.age:p.age,region:p.region??'',country:p.country??'',areaLat:typeof p.areaLat==='number'?p.areaLat:null,areaLon:typeof p.areaLon==='number'?p.areaLon:null,locationPlaceId:p.locationPlaceId??'',genderDescription:p.genderDescription??'',communication:p.communication??[],communicationNote:p.communicationNote??'',discoverable:p.discoverable!==false,intentions:['Connect'],connectionBoundary:p.connectionBoundary??(p.intentions.includes('Romance')?'Open to romance over time':p.intentions.includes('Friendship')?'Friendship only':'Unsure'),background:p.background??'',startRole:p.startRole??'',care:p.care??'',question:p.question??'',perspective:p.perspective??'',startIdea:p.startIdea??'',offer:p.offer??'',support:p.support??'',firstStep:p.firstStep??'',availability:p.availability??'',activities:p.activities??[],topics:p.topics??[]};}
 export function eligibleForIntention(a:Profile,b:Profile,_kind:string){return eligible(a,b);}
-// Require both profiles active, reciprocal adult age preferences, and either mutual online openness or the supported nearby area.
 export function eligible(a:Profile,b:Profile){return a.active&&b.active&&a.id!==b.id&&b.age>=a.minAge&&b.age<=a.maxAge&&a.age>=b.minAge&&a.age<=b.maxAge&&((a.remote&&b.remote)||withinNearby(a,b,MAX_NEARBY_MILES));}
 const shared=(a:string[],b:string[])=>Array.from(new Map(a.map(x=>[x.trim().toLowerCase(),x.trim()])).values()).filter(x=>b.some(y=>y.trim().toLowerCase()===x.trim().toLowerCase()));
-// Separate exact shared topics from related broad areas; two topics in one category are not automatically identical interests.
 export function interestOverlap(a:Profile,b:Profile){const left=Array.from(new Set([...a.interests,...a.topics??[]].map(x=>x.trim().toLowerCase()))),right=Array.from(new Set([...b.interests,...b.topics??[]].map(x=>x.trim().toLowerCase())));const exact=left.filter(x=>right.includes(x));const related=interestGroups.filter(g=>!exact.some(x=>x===g.name.toLowerCase()||g.topics.some(t=>t.toLowerCase()===x))&&((left.includes(g.name.toLowerCase())&&g.topics.some(x=>right.includes(x.toLowerCase())))||(right.includes(g.name.toLowerCase())&&g.topics.some(x=>left.includes(x.toLowerCase()))))).map(g=>g.name);return {exact,related};}
-// Combine shared-interest/activity signals into a score; the main ordering function below uses its own ordered comparisons.
 export function discoveryScore(a:Profile,b:Profile){const overlap=interestOverlap(a,b);return overlap.exact.length*5+overlap.related.length*2+shared(a.activities??[],b.activities??[]).length*2+(profileAvailability(a).some(x=>!['Flexible','Varies','Occasional'].includes(x)&&profileAvailability(b).includes(x))?2:0);}
 export function reasons(a:Profile|undefined,b:Profile){if(!a)return ['Explore their interests and introduction'];const context=connectionContext(a,b),r:string[]=[];if(context.exact.length)r.push('Shared interests: '+context.exact.slice(0,3).join(', '));if(context.related.length)r.push('Related interest areas: '+context.related.slice(0,2).map(x=>x.area).join(', '));if(context.activities.length)r.push('Both open to '+context.activities.slice(0,2).map(x=>x.toLowerCase()).join(' and '));if(context.availability)r.push('Similar availability: '+context.availability.toLowerCase());if(context.sameArea)r.push('Same general area');else if(context.distanceMiles!==null&&context.distanceMiles<=MAX_NEARBY_MILES)r.push('Nearby: within '+Math.round(context.distanceMiles)+' miles');else if(context.online)r.push('Both open to online connection');return r.length?r.slice(0,3):['No exact or related interest overlap listed. Explore their introduction.'];}
 
@@ -77,22 +68,16 @@ export const examples:Profile[]=[
 
 export const sameArea=(a:Profile,b:Profile)=>sameBroadArea(a,b);
 export const profileLocation=(p:Profile)=>locationLabel(p)||p.city.trim();
-// Apply ordered tie-breakers: shared topics, related areas, location, then activity/availability signals.
 export function compareDiscovery(a:Profile,left:Profile,right:Profile){const l=interestOverlap(a,left),r=interestOverlap(a,right),ld=candidateDistance(a,left),rd=candidateDistance(a,right);return r.exact.length-l.exact.length||r.related.length-l.related.length||Number(sameArea(a,right))-Number(sameArea(a,left))||(ld!==null&&rd!==null?ld-rd:ld!==null?-1:rd!==null?1:0)||discoveryScore(a,right)-discoveryScore(a,left)||left.id.localeCompare(right.id);}
 export type DiscoveryFilters={interestMode:'mine'|'any';location:'any'|'local'|'online';radiusMiles:number;minAge:number;maxAge:number;activity:string;availability:string};
-// Apply the user's selected filters without widening them automatically when results are empty.
 export function matchesDiscovery(a:Profile|null,p:Profile,f:DiscoveryFilters){const overlap=a?interestOverlap(a,p):null,nearby=a?withinNearby(a,p,f.radiusMiles):true,online=!!a&&a.remote&&p.remote,location=!a||f.location==='local'?nearby:f.location==='online'?online:nearby||online;return (!a||f.interestMode==='any'||!!(overlap!.exact.length+overlap!.related.length))&&location&&p.age>=f.minAge&&p.age<=f.maxAge&&(!f.activity||(p.activities??[]).includes(f.activity))&&(!f.availability||profileAvailability(p).includes(f.availability));}
 
-// Match either a topic or its named broad group against the profile's shared interests.
 export function profileHasInterest(p:Profile,topic:string){const key=topic.trim().toLowerCase(),group=interestGroups.find(g=>g.name.toLowerCase()===key);return [...p.interests,...p.topics??[]].some(x=>x.trim().toLowerCase()===key||group?.topics.some(t=>t.toLowerCase()===x.trim().toLowerCase()));}
 
 // Explain only explicit profile selections. These are conversation cues, not a character score.
 const interestKey=(value:string)=>value.trim().toLowerCase();
-// Merge current interests and legacy topics, deduplicating case-insensitively while preserving display text.
 export function profileInterests(p:Profile){return Array.from(new Map([...p.interests,...p.topics??[]].map(x=>[interestKey(x),x.trim()])).values()).filter(Boolean);}
-// Move exact shared topics to the front without dropping the person's other interests.
 export function orderedProfileInterests(p:Profile,me?:Profile|null){const all=profileInterests(p);if(!me)return all;const exact=interestOverlap(me,p).exact;return all.filter(x=>exact.includes(interestKey(x))).concat(all.filter(x=>!exact.includes(interestKey(x))));}
-// Return specific things two profiles share so the UI can explain why a conversation might be interesting.
 export function connectionContext(a:Profile,b:Profile){
  const overlap=interestOverlap(a,b),mine=profileInterests(a),theirs=profileInterests(b);
  const exact=theirs.filter(x=>overlap.exact.includes(interestKey(x)));
@@ -108,13 +93,11 @@ export function connectionContext(a:Profile,b:Profile){
  return {exact,related,activities,availability,distanceMiles,sameArea:sameArea(a,b),online:a.remote&&b.remote,discuss};
 }
 // Discover is for new connections; accepted contacts remain in the inbox.
-// Exclude people with existing non-closed connections; their conversations belong in Chats.
 export function newDiscoveryPeople<T extends {id:string}>(people:T[],connections:{status:string;person:{id:string}}[]){
  const connected=new Set(connections.filter(c=>c.status==='accepted').map(c=>c.person.id));
  return people.filter(p=>!connected.has(p.id));
 }
 
-// Respect nondisclosure and self-description instead of exposing internal placeholder values as identity labels.
 export function profileGender(p:Pick<Profile,'gender'|'genderDescription'>){return !p.gender||p.gender==='Prefer not to say'||p.gender==='Self-described'&&!p.genderDescription?.trim()?'Gender not shared':p.gender==='Self-described'?p.genderDescription!.trim():p.gender;}
 
 export const profileTextFields=[
@@ -126,7 +109,6 @@ export type ExtraProfileFilters={gender?:string;orientation?:string;expectation?
 // Seven optional attraction choices fit a compact single-choice dropdown; blank is not an identity label.
 export const orientationOptions=['Asexual','Gray-asexual','Demisexual','Allosexual','Exploring','Self-described','Prefer not to label'];
 export const introPromptOptions=['A little about me','I could talk for hours about…','Something I’m curious about…'];
-// Validate persisted filter values before using them; browser storage is not trusted input.
 export function normalizeProfileFilters(value:unknown):ExtraProfileFilters{
  const input=value&&typeof value==='object'?value as Record<string,unknown>:{};const result:ExtraProfileFilters={};
  for(const [key,options] of [['gender',genders],['orientation',orientationOptions],['expectation',expectations],['startRole',startRoles],['introPrompt',introPromptOptions]] as const)if(typeof input[key]==='string'&&options.includes(input[key] as string))result[key]=input[key] as string;
@@ -135,9 +117,7 @@ export function normalizeProfileFilters(value:unknown):ExtraProfileFilters{
  const answers=new Map<ProfileTextField,ProfileAnswerRule>();if(Array.isArray(input.answers))for(const rule of input.answers.slice(0,profileTextFields.length)){if(!rule||typeof rule!=='object'||!profileTextFields.some(([field])=>field===rule.field)||!['contains','shared','not-shared'].includes(rule.mode))continue;const text=typeof rule.value==='string'&&rule.value.length<=120?rule.value.trim():'';if(rule.mode==='contains'&&!text)continue;answers.set(rule.field,{field:rule.field,mode:rule.mode,value:rule.mode==='contains'?text:''});}if(answers.size)result.answers=Array.from(answers.values());return result;
 }
 function searchFold(value:string){return value.normalize('NFKD').replace(/\p{M}/gu,'').trim().toLowerCase();}
-// Only expose a self-described gender answer when that identity option is selected.
 export function sharedProfileAnswer(p:Profile,key:ProfileTextField){if(key==='genderDescription'&&p.gender!=='Self-described')return '';const value=p[key];return typeof value==='string'?value.trim():'';}
-// Match explicit optional filters against shared answers; missing answers have their own filter semantics.
 export function matchesProfileFilters(p:Profile,f:ExtraProfileFilters){
  if(f.gender&&(f.gender==='Prefer not to say'?profileGender(p)!=='Gender not shared':p.gender!==f.gender||f.gender==='Self-described'&&!sharedProfileAnswer(p,'genderDescription')))return false;
  if(f.orientation&&p.orientation!==f.orientation||f.expectation&&p.expectation!==f.expectation||f.startRole&&!profileParticipation(p).includes(f.startRole)||f.introPrompt&&p.introPrompt!==f.introPrompt)return false;
@@ -145,12 +125,10 @@ export function matchesProfileFilters(p:Profile,f:ExtraProfileFilters){
  if(f.communication?.some(choice=>!p.communication?.includes(choice))||f.activities?.some(choice=>!p.activities?.includes(choice)))return false;
  return !f.answers?.some(rule=>{const text=sharedProfileAnswer(p,rule.field);return rule.mode==='shared'?!text:rule.mode==='not-shared'?!!text:!text||!searchFold(text).includes(searchFold(rule.value));});
 }
-// Build normalized searchable text from the public profile fields used by discovery.
 export function profileSearchText(p:Profile){return searchFold([...profileTextFields.map(([field])=>sharedProfileAnswer(p,field)),p.region??'',p.country??'',profileGender(p),p.orientation==='Prefer not to label'?'':p.orientation,p.expectation==='Unsure'?'':p.expectation,...profileAvailability(p),...profileParticipation(p),p.orientationDescription??'',p.introPrompt??'',...profileInterests(p),...p.activities??[],...p.communication??[]].join(' '));}
 export function profileFilterLabels(f:ExtraProfileFilters){return [
  ...(['gender','orientation','expectation','startRole','introPrompt','photo'] as const).flatMap(key=>f[key]?[{key,label:({gender:'Gender',orientation:'Attraction',expectation:'Sexual expectations',startRole:'Participation',introPrompt:'Introduction prompt',photo:'Photo availability'}[key])+': '+(key==='photo'?(f.photo==='available'?'Uploaded':'Not uploaded'):f[key])}]:[]),
  ...(f.communication??[]).map(value=>({key:'communication:'+value,label:'Communication: '+value})),...(f.activities??[]).map(value=>({key:'activities:'+value,label:'Activity: '+value})),
  ...(f.answers??[]).map(rule=>({key:'answer:'+rule.field,label:profileTextFields.find(([field])=>field===rule.field)![1]+': '+(rule.mode==='contains'?rule.value:rule.mode==='shared'?'Shared':'Not shared')}))
  ];}
-// Remove one selected constraint while retaining the remaining filter choices.
 export function removeProfileFilter(f:ExtraProfileFilters,key:string){const next={...f};if(key.startsWith('answer:'))next.answers=f.answers?.filter(rule=>rule.field!==key.slice(7));else if(key.startsWith('communication:'))next.communication=f.communication?.filter(choice=>choice!==key.slice(14));else if(key.startsWith('activities:'))next.activities=f.activities?.filter(choice=>choice!==key.slice(11));else delete next[key as keyof ExtraProfileFilters];return normalizeProfileFilters(next);}

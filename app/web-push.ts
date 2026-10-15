@@ -1,7 +1,3 @@
-/**
- * Validates supported push endpoints and constructs VAPID authorization. Restricting endpoints prevents arbitrary server-side URL requests.
- * Reading guide: docs/CODE_READING_GUIDE.md.
- */
 // RFC 8292 VAPID. Empty push payloads keep private content off push providers.
 export function base64url(bytes:Uint8Array){return btoa(String.fromCharCode(...bytes)).replaceAll('+','-').replaceAll('/','_').replace(/=+$/,'');}
 export function validPushEndpoint(endpoint:unknown):endpoint is string{

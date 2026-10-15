@@ -1,13 +1,11 @@
-/**
- * Reads and changes the selected notification preference without changing other notification channels.
- * Reading guide: docs/CODE_READING_GUIDE.md.
- */
 
 'use client';
 import {useEffect,useRef,useState} from 'react';
 export default function NotificationToggle({accountId,scope='',channel='direct'}:{accountId:string;scope?:string;channel?:'direct'|'circle'|'reactions'}){
- const [muted,setMuted]=useState(false),[busy,setBusy]=useState(true),[error,setError]=useState(''),[ready,setReady]=useState(false),[retry,setRetry]=useState(0);const key=channel==='reactions'?'reactions':channel+':'+scope,version=useRef(0);
+ const [muted,setMuted]=useState(false),[busy,setBusy]=useState(true),[error,setError]=useState(''),[ready,setReady]=useState(false),[retry,setRetry]=useState(0);const key=channel==='reactions'?'reactions':channel+':'+(scope==='all'?'*':scope),version=useRef(0);
  useEffect(()=>{const ticket=++version.current;setBusy(true);setReady(false);setError('');fetch('/api/notifications',{cache:'no-store'}).then(async r=>{const d:any=await r.json();if(!r.ok||d.accountId!==accountId)throw Error('Alert settings could not load.');if(ticket===version.current){setMuted((d.mutedScopes||[]).includes(key));setReady(true);}}).catch(e=>{if(ticket===version.current)setError(e.message);}).finally(()=>{if(ticket===version.current)setBusy(false);});return()=>{version.current++;};},[accountId,key,retry]);
  async function save(){if(busy||!ready)return;const ticket=version.current,next=!muted;setBusy(true);setError('');try{const r=await fetch('/api/notifications',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'mute',expectedAccount:accountId,channel,scope,muted:next})});const d:any=await r.json();if(!r.ok)throw Error(d.error||'Alert settings could not save.');if(ticket===version.current)setMuted(next);}catch(e:any){if(ticket===version.current)setError(e.message);}finally{if(ticket===version.current)setBusy(false);}}
- return <div className="notification-toggle"><button type="button" className="secondary" disabled={busy||!ready} aria-pressed={ready?!muted:undefined} onClick={save}>{busy?'Updating alert settings…':channel==='reactions'?(muted?'Enable reaction alerts':'Mute reaction alerts'):(muted?'Unmute this conversation':'Mute this conversation')}</button><p className="field-help" role={error?'alert':'status'}>{error||'Controls phone alerts. Activity still appears in Notifications.'}</p>{error&&<button type="button" className="secondary" disabled={busy} onClick={()=>ready?save():setRetry(n=>n+1)}>Retry alert settings</button>}</div>;
+ const label=channel==='reactions'?(muted?'Enable reaction alerts':'Mute reaction alerts'):scope==='all'?channel==='direct'?(muted?'Enable chat and request alerts':'Mute all chat and request alerts'):(muted?'Enable circle alerts':'Mute all circle alerts'):(muted?'Unmute this conversation':'Mute this conversation');
+ const help=scope==='all'?'Only phone alerts are affected. Activity remains in your in-app inbox, Requests, or Circles.':'Controls phone alerts. Activity still appears in Notifications.';
+ return <div className="notification-toggle"><button type="button" className="secondary" disabled={busy||!ready} aria-pressed={ready?!muted:undefined} onClick={save}>{busy?'Updating alert settings…':label}</button><p className="field-help" role={error?'alert':'status'}>{error||help}</p>{error&&<button type="button" className="secondary" disabled={busy} onClick={()=>ready?save():setRetry(n=>n+1)}>Retry alert settings</button>}</div>;
 }

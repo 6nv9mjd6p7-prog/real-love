@@ -1,7 +1,3 @@
-/**
- * Initializes Capacitor behavior and native deep-link listeners. Browser sessions skip native-only behavior and listeners are cleaned up on unmount.
- * Reading guide: docs/CODE_READING_GUIDE.md.
- */
 'use client';
 
 import { App } from '@capacitor/app';
@@ -30,6 +26,18 @@ export default function NativeRuntime() {
     void StatusBar.setStyle({ style: Style.Light });
     void Keyboard.setResizeMode({ mode: KeyboardResize.Native });
     void Keyboard.setStyle({ style: KeyboardStyle.Light });
+    void Keyboard.addListener('keyboardWillShow', () => {
+      document.documentElement.dataset.keyboardOpen = 'true';
+    }).then(handle => {
+      if (alive) handles.push(handle);
+      else void handle.remove();
+    });
+    void Keyboard.addListener('keyboardDidHide', () => {
+      delete document.documentElement.dataset.keyboardOpen;
+    }).then(handle => {
+      if (alive) handles.push(handle);
+      else void handle.remove();
+    });
 
     void App.addListener('appUrlOpen', event => openDeepLink(event.url)).then(handle => {
       if (alive) handles.push(handle);
@@ -62,6 +70,7 @@ export default function NativeRuntime() {
     return () => {
       alive = false;
       delete document.documentElement.dataset.nativePlatform;
+      delete document.documentElement.dataset.keyboardOpen;
       document.removeEventListener('click', externalLink);
       handles.forEach(handle => void handle.remove());
     };

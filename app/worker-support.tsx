@@ -1,7 +1,3 @@
-/**
- * Optional worker-support entry and external resources. Separates peer circles from qualified help and formal representation.
- * Reading guide: docs/CODE_READING_GUIDE.md.
- */
 'use client';
 import {useState} from 'react';
 

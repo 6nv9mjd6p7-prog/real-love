@@ -1,7 +1,3 @@
-/**
- * Per-request server entry point. Resolves identity and sign-in capabilities before mounting the client app with an account-specific key.
- * Reading guide: docs/CODE_READING_GUIDE.md.
- */
 import {getChatGPTUser,getLegacyUser} from './chatgpt-auth';
 import {emailAuthConfig} from './email-auth';
 import LoveApp from './love-app';

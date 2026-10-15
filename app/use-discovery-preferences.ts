@@ -1,7 +1,3 @@
-/**
- * React adapter around validated discovery preferences. Restores the selected account/scope and saves later changes without mixing demo choices.
- * Reading guide: docs/CODE_READING_GUIDE.md.
- */
 'use client';
 import {useEffect,useState} from 'react';
 import {type DiscoveryPreferences,type PreferenceScope,defaultDiscovery,readDiscovery,writeDiscovery,clearDiscovery,preferenceStorage} from './discovery-preferences';

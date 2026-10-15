@@ -1,7 +1,3 @@
-/**
- * Pure presentation helpers for circle status, request grouping, and search. These labels do not grant membership.
- * Reading guide: docs/CODE_READING_GUIDE.md.
- */
 export type CircleSummary={category?:string;membershipRules?:string;id:string;title:string;description:string;tags:string[];activity:string;status:string;membership:string|null;role:string|null;canApprove:boolean;awaitingYourAgreement?:boolean;count:number;restricted?:boolean;reportTarget?:string;joinRequests?:number};
 export type CircleSection='Discover'|'Joined'|'Requests';
 export function circleStatus(c:CircleSummary){
@@ -19,7 +15,7 @@ export function circleRequestGroup(c:CircleSummary){
  return null;
 }
 export function circleGroups(circles:CircleSummary[],section:CircleSection,query:string){
- const matches=(c:CircleSummary)=>[c.title,c.description,c.activity,...c.tags].join(' ').toLowerCase().includes(query.trim().toLowerCase());
+ const matches=(c:CircleSummary)=>[c.title,c.description,c.membershipRules,c.activity,...c.tags].join(' ').toLowerCase().includes(query.trim().toLowerCase());
  if(section==='Requests')return ['Founder proposals','Requests to your circles','Your join requests'].map(title=>({title,circles:circles.filter(c=>circleRequestGroup(c)===title&&matches(c))})).filter(g=>g.circles.length);
  return [{title:section==='Joined'?'Your circles':'Explore circles',circles:circles.filter(c=>c.status==='open'&&(section!=='Joined'||c.membership==='accepted')&&matches(c))}];
 }

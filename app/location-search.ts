@@ -1,7 +1,3 @@
-/**
- * Translates Photon geocoding responses into bounded city/region/country suggestions. Filters out unsuitable results and limits provider requests.
- * Reading guide: docs/CODE_READING_GUIDE.md.
- */
 import {locationKey,type BroadLocationPoint} from './location';
 
 type PhotonFeature={geometry?:{coordinates?:unknown};properties?:Record<string,unknown>};
@@ -11,7 +7,6 @@ const text=(value:unknown,max:number)=>typeof value==='string'?value.trim().repl
 const number=(value:unknown)=>typeof value==='number'&&Number.isFinite(value)?value:null;
 const broadPlaceValues=new Set(['city','town','village','hamlet','suburb','neighbourhood','quarter','locality','borough','district']);
 
-// Validate provider-shaped input and keep bounded broad-place fields; do not pass the raw provider response to clients.
 export function photonSuggestions(payload:unknown,requireBroadPlace=false):BroadLocationPoint[]{
  const features=Array.isArray((payload as PhotonResponse)?.features)?(payload as {features:PhotonFeature[]}).features:[];
  const results:BroadLocationPoint[]=[],seen=new Set<string>();
@@ -30,7 +25,6 @@ export function photonSuggestions(payload:unknown,requireBroadPlace=false):Broad
  return results;
 }
 
-// Wrap provider fetches with bounded network behavior and error handling.
 async function photon(url:URL){
  const response=await fetch(url,{headers:{Accept:'application/geo+json','Accept-Language':'en'},signal:AbortSignal.timeout(5000)});
  if(!response.ok){await response.body?.cancel();throw Error('Place search is unavailable.');}
@@ -43,7 +37,6 @@ function searchUrl(query:string,filtered=true){
 }
 
 const cache=new Map<string,{until:number;results:BroadLocationPoint[]}>();
-// Search broad places first and use the defined fallback when the filtered search has no useful suggestions.
 export async function searchBroadLocations(query:string){
  const q=query.trim().replace(/\s+/g,' ').slice(0,120);if(q.length<2)return [];
  const key=q.toLocaleLowerCase();const existing=cache.get(key);if(existing&&existing.until>Date.now())return existing.results;
@@ -57,7 +50,6 @@ export async function searchBroadLocations(query:string){
  return results;
 }
 
-// Resolve device coordinates to a broad selectable place instead of saving the exact device location.
 export async function reverseBroadLocations(lat:number,lon:number){
  const make=(filtered:boolean)=>{const url=new URL('https://photon.komoot.io/reverse');url.searchParams.set('lat',String(lat));url.searchParams.set('lon',String(lon));url.searchParams.set('limit',filtered?'8':'12');url.searchParams.set('radius','50');url.searchParams.set('lang','en');if(filtered){url.searchParams.append('layer','city');url.searchParams.append('layer','locality');url.searchParams.append('layer','district');}return url;};
  let results:BroadLocationPoint[]=[];

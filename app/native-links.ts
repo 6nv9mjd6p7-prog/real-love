@@ -1,7 +1,3 @@
-/**
- * Allowlisted native-app link routing. Separates internal routes, authentication, external links, and rejected destinations.
- * Reading guide: docs/CODE_READING_GUIDE.md.
- */
 export const productionOrigin = 'https://real-love-connections.fetes-rowboat-0k.chatgpt.site';
 
 const staticRoutes = new Set([
@@ -75,11 +71,20 @@ export function replaceAppRoute(route:string,account:string,preserveParent=false
  window.dispatchEvent(new Event('hashchange'));
 }
 export function appBackDestination(fallback:string,account:string){if(typeof history==='undefined')return fallback;const marker=history.state?.realLoveNavigation;return marker?.account===account&&allowedAppRoute(marker.parent||'')?marker.parent:fallback;}
+// A restored history marker is not proof that the browser can traverse to its parent.
+// Wait for traversal, then replace the current route if the browser performed no action.
+let pendingBack:(()=>void)|null=null;
 export function backWithinApp(fallback:string,account:string,steps=1){
+ if(pendingBack)return;
  const marker=history.state?.realLoveNavigation;
- if(marker?.account===account&&marker.parent&&allowedAppRoute(marker.parent)&&marker.parent!==marker.route){if(steps===1)history.back();else history.go(-Math.max(1,steps));}
- else replaceAppRoute(fallback,account);
+ if(marker?.account!==account||!marker.parent||!allowedAppRoute(marker.parent)||marker.parent===marker.route){replaceAppRoute(fallback,account);return;}
+ const target=appBackDestination(fallback,account),initialHash=location.hash,initialState=history.state;
+ const finish=()=>{clearTimeout(timer);window.removeEventListener('popstate',finish);window.removeEventListener('hashchange',finish);pendingBack=null;};
+ const timer=setTimeout(()=>{finish();if(location.hash===initialHash&&history.state===initialState)replaceAppRoute(target,account);},700);
+ pendingBack=finish;
+ window.addEventListener('popstate',finish);window.addEventListener('hashchange',finish);
+ try{const count=Number.isSafeInteger(steps)?Math.max(1,steps):1;if(count===1)history.back();else history.go(-count);}catch{finish();replaceAppRoute(target,account);}
 }
 
-export function returnToAppRoute(target:string,account:string){if(appBackDestination('',account)===target)history.back();else replaceAppRoute(target,account);}
+export function returnToAppRoute(target:string,account:string){if(appBackDestination('',account)===target)backWithinApp(target,account);else replaceAppRoute(target,account);}
 export function routeBackLabel(route:string){if(route.startsWith('person/'))return 'profile';if(route==='circles/work')return 'Worker Support';if(route.startsWith('circles/work/'))return 'worker circles';if(route.startsWith('chat/')||route.startsWith('conversations'))return 'Chats';if(route==='notifications')return 'Notifications';if(route==='profile')return 'My profile';if(route==='circles/requests')return 'circle requests';if(route==='circles/joined')return 'joined circles';if(route.startsWith('circles'))return 'Circles';if(route==='saved')return 'Saved';if(route==='examples')return 'Examples';if(route==='settings')return 'Privacy & settings';if(route==='review')return 'Safety review';return 'Discover';}

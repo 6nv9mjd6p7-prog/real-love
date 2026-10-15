@@ -1,7 +1,3 @@
-/**
- * Read-only profile presentation with optional sections omitted when empty. Actions and access checks are supplied by the calling screen and API.
- * Reading guide: docs/CODE_READING_GUIDE.md.
- */
 'use client';
 import type {ReactNode} from 'react';
 import {Compass,MessageCircle,CalendarDays,Lightbulb,HeartHandshake,Shield,Search,ChevronDown,MapPin,UserRound} from 'lucide-react';

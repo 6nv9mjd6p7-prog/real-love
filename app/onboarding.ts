@@ -1,12 +1,8 @@
-/**
- * Chooses one next step from account, profile, rules, pause, and invitation state. Earlier checks take precedence over later suggestions.
- * Reading guide: docs/CODE_READING_GUIDE.md.
- */
 type State={me:{active:boolean;rulesVersion?:string}|null;account:{status?:string;notice?:string}|null;canConnect:boolean;incoming:number;sent:number;rulesVersion:string};
 export function onboardingNext(s:State){
  if(s.account?.status&& !['pending','admitted'].includes(s.account.status))return {kind:'restricted',title:'Account '+s.account.status,detail:s.account.notice||'Connection is unavailable. You can review your account status, report, appeal, or delete your profile in Privacy & settings.',action:'Open Privacy & settings',destination:'settings'};
  if(!s.me)return {kind:'profile',title:'Your first step: a short profile',detail:'Add your basics, 1–8 interests, and one short introduction. Photos and deeper answers can wait. Your profile stays private while admission is pending.',action:'Create my profile',destination:'profile'};
- if(s.account?.status==='pending')return {kind:'pending',title:'Your profile is waiting for review',detail:'Your profile is saved and private. A reviewer will check adult eligibility and your agreement to the app conduct rules. You can edit your profile or explore the demo meanwhile. This page checks for approval automatically while open; there is no guaranteed review time.',action:'Preview saved profile',destination:'preview'};
+ if(s.account?.status==='pending')return {kind:'pending',title:'Your profile is waiting for review',detail:'Your profile is saved and private. A reviewer will check adult eligibility and your agreement to the app conduct rules. You can edit your profile or explore the demo meanwhile. This page checks for approval automatically while open. You can opt in to device alerts or return later to check; review has no guaranteed timeline.',action:'Preview saved profile',destination:'preview'};
  if(s.me.rulesVersion!==s.rulesVersion)return {kind:'rules',title:'Review the updated app conduct rules',detail:'Open Introduction & privacy, review the rules, and save your agreement before connecting again.',action:'Review rules in my profile',destination:'profile'};
  if(!s.me.active)return {kind:'paused',title:'All interaction is paused',detail:'Resume in Privacy & settings when you choose. Your discovery visibility choice will be kept.',action:'Open Privacy & settings',destination:'settings'};
  if(!s.canConnect)return {kind:'unavailable',title:'Connection is unavailable',detail:'Review your account status in Privacy & settings before trying again.',action:'Open Privacy & settings',destination:'settings'};

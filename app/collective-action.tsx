@@ -1,7 +1,3 @@
-/**
- * Optional campaign discovery, proposals, private participation, feedback, and reviewer UI. The server determines visibility and who may review each case.
- * Reading guide: docs/CODE_READING_GUIDE.md.
- */
 'use client';
 import {appBackDestination,backWithinApp,routeBackLabel} from './native-links';
 import {readCampaignView,saveCampaignView} from './campaign-navigation';

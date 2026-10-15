@@ -1,0 +1,69 @@
+/* Shared visual foundations. Screen-specific rules belong in globals.css. */
+:root{--surface:#fff;--surface-soft:#f8f9fc;--border:var(--line);--border-strong:#d5d6e4;--accent:var(--indigo);--accent-soft:#eeedff;--focus-ring:#747df0;--danger:#9e3434;--space-1:4px;--space-2:8px;--space-3:12px;--space-4:16px;--space-5:20px;--space-6:24px;--space-8:32px;--control-size:48px;--control-radius:10px;--card-radius:16px;--panel-radius:16px;--site-utility-height:64px;--app-sidebar-width:238px}
+.app-shell{display:flex;min-height:calc(100vh - var(--site-utility-height))}
+.sidebar{width:var(--app-sidebar-width);flex:0 0 var(--app-sidebar-width);position:sticky;top:var(--site-utility-height);height:calc(100vh - var(--site-utility-height));background:var(--surface);border-right:1px solid var(--border);padding:34px 22px 20px;display:flex;flex-direction:column}
+.sidebar nav{display:flex;flex-direction:column;gap:6px}
+.sidebar .nav-item{display:flex;align-items:center;gap:12px;text-align:left;width:100%;padding:13px 15px;border-radius:10px;color:#68697e;font-size:.94rem;font-weight:500}
+.sidebar .nav-item:hover{background:#f6f5fc}
+.sidebar .nav-item.active{background:var(--accent-soft);color:var(--accent);font-weight:700}
+.sidebar .count{background:var(--indigo);color:white;border-radius:100px;padding:1px 6px;font-size:.75rem;margin-left:auto}
+.app-shell>main{flex:1;min-width:0}
+.app-shell .topbar{min-height:72px;height:auto;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:12px 36px;background:#ffffffd9;gap:12px}
+.app-shell .topbar>span{font-size:.75rem;letter-spacing:1.4px;color:var(--muted)}
+.app-shell .content{width:100%;max-width:1250px;margin:0 auto;padding:32px 36px 28px}
+.app-shell .page-heading{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:24px;gap:20px}
+.app-shell .page-heading p{max-width:48rem;color:var(--muted);margin-top:10px;line-height:1.65}
+.profile-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--space-5)}
+.person-card,.form-section,.care-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--card-radius)}
+.person-card{overflow:hidden;transition:box-shadow .18s ease}
+.person-card:hover{transform:none;box-shadow:0 3px 12px #25284410}
+.primary,.secondary,.danger{display:inline-flex;align-items:center;justify-content:center;gap:8px;max-width:100%;min-height:44px;padding:10px 18px;border-radius:var(--control-radius);font-size:.94rem;font-weight:600;text-align:center;line-height:1.35}
+.primary{background:var(--accent);color:white}.primary:hover{background:#3f458b}
+.secondary{border:1px solid var(--border-strong);background:var(--surface);color:var(--accent)}
+.danger{background:var(--danger);color:white}
+.empty-state{margin:20px 0;padding:36px 22px;text-align:center;border:1px dashed #d0d1df;border-radius:14px;background:#ffffffb5;color:var(--muted)}
+.empty-state svg{margin:0 auto 16px;color:#8586a0}.empty-state h2{margin-bottom:10px;color:var(--ink);font-size:1.375rem;line-height:1.35}.empty-state p{max-width:490px;margin:0 auto 21px;line-height:1.7}
+.form-section{padding:24px}.form-section h2{margin-bottom:18px}
+.care-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}
+.care-card{padding:24px}.care-card svg{margin-bottom:12px;color:#7676a4}.care-card h2{margin-bottom:12px}.care-card p{margin-bottom:14px;color:var(--muted);font-size:.94rem;line-height:1.75}
+.site-utility{position:relative;z-index:12;min-height:var(--site-utility-height);display:flex;align-items:center;gap:12px;padding:8px 20px;background:var(--surface);border-bottom:1px solid var(--border)}
+.site-utility .support-banner.support-top{flex:1 1 300px;min-width:0;display:flex;align-items:center;gap:12px;margin:0;padding:0;border:0;background:transparent}
+.site-utility .support-top>div{flex:1 1 auto;min-width:0}.site-utility .support-top h2{font-size:.9rem;line-height:1.25}.site-utility .support-top p{margin:2px 0 0;font-size:.75rem;line-height:1.25;color:var(--muted)}
+.site-utility .support-top>a,.site-utility .install-app>.secondary{min-height:40px;padding:7px 12px;border:1px solid var(--border-strong);border-radius:var(--control-radius);background:white;color:var(--accent);font-size:.8rem;font-weight:650;white-space:nowrap}
+.site-utility .install-app{flex:0 0 auto;margin:0;padding:0;border:0;background:transparent;text-align:left}
+.install-guide{position:absolute;z-index:40;right:16px;top:calc(100% - 2px);width:min(26rem,calc(100vw - 24px));padding:18px;background:white;border:1px solid var(--border);border-radius:0 0 14px 14px;box-shadow:0 12px 30px #18193624}
+.install-guide h2{font-size:1.1rem;margin-bottom:10px}.install-guide p{margin:10px 0;font-size:.875rem;line-height:1.6}
+.app-shell:has(.conversation-screen,.circle-conversation){height:calc(100vh - var(--site-utility-height));min-height:0}
+.app-shell:has(.conversation-screen,.circle-conversation)>.sidebar{height:100%}
+.notice{position:relative;z-index:3;display:flex;align-items:center;justify-content:space-between;gap:12px;max-height:5.5rem;overflow:auto;margin:0;padding:8px 24px;background:#e8edff;border-bottom:1px solid #cfdbff;font-size:.875rem;line-height:1.45}
+.loading-space{padding:20px 0}.loading-heading{display:grid;gap:12px;width:min(28rem,75%);margin:4px 0 22px}.loading-heading i,.loading-card i{display:block;border-radius:8px;background:linear-gradient(90deg,#eceef5 20%,#f7f8fb 38%,#eceef5 60%);background-size:220% 100%;animation:loading-shimmer 1.4s ease-in-out infinite}
+.loading-heading i:first-child{height:34px;width:65%}.loading-heading i:last-child{height:16px;width:100%}.loading-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:20px}.loading-card{min-height:210px;padding:20px;border:1px solid var(--border);border-radius:var(--card-radius);background:white}.loading-card i{height:14px;margin:12px 0}.loading-card i:first-child{width:55%;height:22px}.loading-card i:last-child{width:82%}
+@keyframes loading-shimmer{to{background-position:-220% 0}}
+@media(min-width:1500px){.app-shell .content{max-width:1400px}.profile-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(max-width:1000px){:root{--app-sidebar-width:195px}.sidebar{padding:28px 15px}.app-shell .topbar{padding-inline:24px}.app-shell .content{padding:28px 24px}.loading-grid{gap:14px}}
+@media(max-width:720px){:root{--site-utility-height:112px;--app-sidebar-width:100%}.app-shell{display:block;min-height:100vh}.sidebar{position:relative;top:auto;width:100%;height:auto;flex:0 0 auto;padding:15px 20px 9px;z-index:10;border-right:0;border-bottom:1px solid var(--border)}.sidebar nav{position:fixed;inset:auto 0 0;z-index:20;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:2px;margin:0;padding:6px max(6px,env(safe-area-inset-right)) calc(6px + env(safe-area-inset-bottom)) max(6px,env(safe-area-inset-left));background:white;border-top:1px solid var(--border)}.sidebar nav .nav-item{position:relative;display:flex;flex-direction:column;justify-content:center;align-items:center;flex:1 1 0;gap:3px;min-width:0;min-height:60px;padding:4px 2px;font-size:.75rem;text-align:center;line-height:1.2}.site-utility{align-content:center;align-items:center;flex-wrap:wrap;gap:6px 12px;padding:8px 14px}.site-utility .support-banner.support-top{flex:1 1 100%;min-height:36px}.site-utility .support-top p{display:none}.site-utility .install-app{display:flex;justify-content:flex-end;width:100%;min-height:36px}.site-utility .support-top>a,.site-utility .install-app>.secondary{width:auto;min-height:36px;padding:5px 10px;font-size:.78rem}.app-shell .content{padding:22px 16px 24px}.profile-grid,.care-grid,.loading-grid{grid-template-columns:minmax(0,1fr);gap:14px}.app-shell:has(.conversation-screen,.circle-conversation){height:calc(100dvh - var(--site-utility-height));min-height:0}.app-shell:has(.conversation-screen,.circle-conversation)>.sidebar{height:auto}.app-shell:has(.conversation-screen,.circle-conversation)>main{min-height:0}.loading-card{min-height:150px}.notice{max-height:4.5rem;padding:7px 14px}}
+@media(max-width:380px){.sidebar nav .nav-item{font-size:.67rem}.site-utility{padding-inline:10px}.site-utility .support-top h2{font-size:.82rem}.site-utility .support-top>a,.site-utility .install-app>.secondary{font-size:.73rem;padding-inline:8px}.sidebar .nav-item{font-size:.67rem!important;padding-inline:1px!important}.sidebar nav .nav-item svg{width:17px}}
+@media(prefers-reduced-motion:reduce){.loading-heading i,.loading-card i{animation:none}}
+html[data-native-platform] .site-utility{display:none!important}
+html[data-native-platform] .app-shell:has(.conversation-screen,.circle-conversation){height:100dvh}
+
+/* Shared sizing and spacing scale for repeated controls and content surfaces. */
+.app-shell .primary,.app-shell .secondary,.app-shell .danger{min-height:var(--control-size);border-radius:var(--control-radius)}
+.section-tabs button,.settings-shortcuts button{min-height:var(--control-size);border-radius:var(--control-radius)}
+.person-card,.form-section,.care-card,.empty-state,.admission-card,.entry-card,.circle-card,.campaign-card,.worker-intro,.discovery-preferences,.connection-summary{border-radius:var(--card-radius)}
+.form-section,.care-card,.circle-card,.campaign-card,.worker-intro,.discovery-preferences,.connection-summary{border-color:var(--border)}
+.chips>span,.choice-chips button,.active-filter-chips button{border-radius:8px}
+.modal-backdrop .profile-modal,.modal-backdrop .report-modal{border-radius:var(--panel-radius)}
+.entry-actions{display:flex;align-items:center;gap:var(--space-3);flex-wrap:wrap;margin:var(--space-4) 0 var(--space-3)}
+.entry-actions>.primary,.entry-actions>.secondary{min-width:11rem}
+.entry-actions>.secondary{background:var(--surface);border:1px solid var(--border-strong);color:var(--accent)}
+.entry-actions>.secondary:hover{background:var(--accent-soft);border-color:var(--accent)}
+@media(max-width:520px){.entry-actions{align-items:stretch}.entry-actions>.primary,.entry-actions>.secondary{flex:1 1 100%;min-width:0}}
+
+/* Keep every primary destination on one mobile tab row, including native shells. */
+@media(max-width:720px){.app-shell>.sidebar nav{display:grid!important;grid-template-columns:repeat(5,minmax(0,1fr))!important;grid-auto-flow:column;flex-flow:initial;flex-wrap:initial;width:100%}.app-shell>.sidebar nav .nav-item{width:100%;min-width:0;flex:initial;min-height:56px;padding:4px 1px;font-size:.72rem;line-height:1.15}}
+
+/* The composer has one focus ring; its embedded textarea stays visually simple. */
+.chat-composer:focus-within{border-color:var(--accent);box-shadow:0 0 0 3px #747df033}
+:root body .chat-composer .composer-controls>textarea{border:0!important;background:transparent!important;padding:10px 8px;min-height:48px;outline:0!important;box-shadow:none!important}
+:root body .chat-composer .composer-controls>textarea:focus{border:0!important;background:transparent!important;outline:0!important;box-shadow:none!important}

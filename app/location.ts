@@ -1,49 +1,38 @@
-/**
- * Normalizes broad areas, calculates area-to-area distance, and checks optional location confirmation expiry. These coordinates describe an area, not live tracking.
- * Reading guide: docs/CODE_READING_GUIDE.md.
- */
 export type BroadLocation={city:string;region:string;country:string};
 export type BroadLocationPoint=BroadLocation&{areaLat:number;areaLon:number;locationPlaceId:string};
 export const MAX_NEARBY_MILES=100;
 
 const fold=(value:unknown)=>typeof value==='string'?value.normalize('NFKD').replace(/\p{M}/gu,'').trim().replace(/\s+/g,' ').toLowerCase():'';
 
-// Combine normalized city, region, and country to distinguish cities with the same name.
 export function locationKey(value:Partial<BroadLocation>){
  const city=fold(value.city),region=fold(value.region),country=fold(value.country);
  return city&&region&&country?[city,region,country].join('|'):'';
 }
 
-// Older profiles may contain only city text; normalize that fallback without inventing coordinates.
 export function legacyAreaKey(value:{city?:string}){return fold(value.city);}
 
-// Compare full structured locations when possible and retain the legacy city-only fallback.
 export function sameBroadArea(a:Partial<BroadLocation>,b:Partial<BroadLocation>){
  const left=locationKey(a),right=locationKey(b);
  if(left&&right)return left===right;
  return !!legacyAreaKey(a)&&legacyAreaKey(a)===legacyAreaKey(b);
 }
 
-// Build a display label while removing adjacent duplicate parts such as city-state names.
 export function locationLabel(value:Partial<BroadLocation>){
  const parts=[value.city,value.region,value.country].map(x=>typeof x==='string'?x.trim():'').filter(Boolean);
  return parts.filter((x,i)=>i===0||fold(x)!==fold(parts[i-1])).join(', ');
 }
 
 const point=(value:{areaLat?:unknown;areaLon?:unknown})=>typeof value.areaLat==='number'&&Number.isFinite(value.areaLat)&&value.areaLat>=-90&&value.areaLat<=90&&typeof value.areaLon==='number'&&Number.isFinite(value.areaLon)&&value.areaLon>=-180&&value.areaLon<=180?[value.areaLat,value.areaLon] as const:null;
-// Use great-circle distance between broad-area points. Missing coordinates return null rather than zero miles.
 export function locationDistanceMiles(a:{areaLat?:unknown;areaLon?:unknown},b:{areaLat?:unknown;areaLon?:unknown}){
  const left=point(a),right=point(b);if(!left||!right)return null;
  const rad=(n:number)=>n*Math.PI/180,dLat=rad(right[0]-left[0]),dLon=rad(right[1]-left[1]),lat1=rad(left[0]),lat2=rad(right[0]);
  const h=Math.sin(dLat/2)**2+Math.cos(lat1)*Math.cos(lat2)*Math.sin(dLon/2)**2;
  return 3958.7613*2*Math.asin(Math.min(1,Math.sqrt(h)));
 }
-// Apply the distance bound when coordinates exist, otherwise fall back to same-area matching.
 export function withinMiles(a:Partial<BroadLocation>&{areaLat?:unknown;areaLon?:unknown},b:Partial<BroadLocation>&{areaLat?:unknown;areaLon?:unknown},miles:number){
  const distance=locationDistanceMiles(a,b);return distance===null?sameBroadArea(a,b):distance<=miles;
 }
 
-// Read optional Cloudflare request metadata and return only the broad location fields used by the app.
 export function connectionLocation(req:Request):BroadLocation|null{
  const cf=(req as Request&{cf?:{city?:unknown;region?:unknown;regionCode?:unknown;country?:unknown}}).cf;
  const text=(value:unknown,max:number)=>typeof value==='string'?value.trim().slice(0,max):'';
@@ -53,7 +42,6 @@ export function connectionLocation(req:Request):BroadLocation|null{
  return city&&region&&country?{city,region,country}:null;
 }
 
-// Confirmation is valid only for the same normalized place and a non-future timestamp within 90 days.
 export function locationIsConfirmed(value:Partial<BroadLocation>&{locationConfirmationKey?:string;locationConfirmedAt?:string},now=Date.now()){
  const time=Date.parse(value.locationConfirmedAt||'');
  return !!locationKey(value)&&value.locationConfirmationKey===locationKey(value)&&Number.isFinite(time)&&time<=now&&time>=now-90*86400000;

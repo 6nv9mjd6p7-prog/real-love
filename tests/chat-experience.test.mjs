@@ -10,11 +10,12 @@ function compile(source){let js=ts.transpileModule(source,{compilerOptions:{modu
 const toolsUrl=compile(readFileSync('app/chat-tools.ts','utf8'));
 const {messageFingerprint}=await import(toolsUrl);
 assert.notEqual(messageFingerprint('Hello','message-a'),messageFingerprint('Hello','message-b'),'different reply targets have distinct retry keys');
-const source=readFileSync('app/chat-bubble.tsx','utf8').replace("from './chat-tools'",`from '${toolsUrl}'`);
+const photoStub='data:text/javascript;base64,'+Buffer.from('export default function Photo(){return null;}').toString('base64');
+const source=readFileSync('app/chat-bubble.tsx','utf8').replace("from './chat-tools'",`from '${toolsUrl}'`).replace("from './interactive-photo'",`from '${photoStub}'`);
 const {default:Bubble}=await import(compile(source));
 const message={id:'test',body:'An answer\nwith a new line',created:new Date().toISOString(),mine:false,reply:{id:'original',body:'A question',name:'Friend',mine:false},reactions:[{emoji:'❤️',count:2,mine:true}]};
 const html=renderToStaticMarkup(React.createElement(Bubble,{message,name:'Friend',onReply(){},onReact(){},onReport(){}}));
-assert(html.includes('Reply to Friend'));assert(html.includes('A question'));assert(html.includes('Reply'));assert(html.includes('React'));assert(html.includes('Report'));assert(html.includes('your reaction'));assert(html.includes('aria-pressed="true"'));
+assert(html.includes('data-message-id="test"'),'chat messages expose a stable target for search navigation');assert(html.includes('Reply to Friend'));assert(html.includes('A question'));assert(html.includes('Reply'));assert(html.includes('React'));assert(html.includes('Report'));assert(html.includes('your reaction'));assert(html.includes('aria-pressed="true"'));
 const unavailable=renderToStaticMarkup(React.createElement(Bubble,{message:{...message,reply:null,replyUnavailable:true},name:'Friend',onReply(){},onReact(){}}));assert(unavailable.includes('Original message unavailable'));assert(!unavailable.includes('A question'));
 // Exercise pointer and explicit controls without asserting a browser rendering result.
 const fake=source.replace("import {useEffect,useRef,useState} from 'react';","let hook=0;const useEffect=()=>{};const useRef=x=>({current:x});const useState=x=>{const index=hook++;return [x,value=>{if(index===0)globalThis.__picker=value;}];};");
@@ -33,7 +34,7 @@ const draftUrl=compile(readFileSync('app/profile-draft.ts','utf8').replace("from
 const locationUrl=compile(readFileSync('app/location.ts','utf8'));
 const locationEditorUrl=compile(readFileSync('app/location-editor.tsx','utf8').replace("from './location'",`from '${locationUrl}'`));
 const sectionsUrl=compile(readFileSync('app/profile-sections.tsx','utf8'));
-const editorSource=readFileSync('app/profile-editor.tsx','utf8').replace("from './profile-sections'",`from '${sectionsUrl}'`).replace("from './model'",`from '${modelUrl}'`).replace("from './guidelines'",`from '${guidelinesUrl}'`).replace("from './profile-draft'",`from '${draftUrl}'`).replace("from './location-editor'",`from '${locationEditorUrl}'`).replace('useState(me?(consent?0:3):1)','useState(globalThis.__step)');
+const editorSource=readFileSync('app/profile-editor.tsx','utf8').replace("from './profile-sections'",`from '${sectionsUrl}'`).replace("from './model'",`from '${modelUrl}'`).replace("from './guidelines'",`from '${guidelinesUrl}'`).replace("from './profile-draft'",`from '${draftUrl}'`).replace("from './location-editor'",`from '${locationEditorUrl}'`).replace('useState(me?(consent?0:3):profileResumeStep(form))','useState(globalThis.__step)');
 const {default:Editor}=await import(compile(editorSource));
 const props={accountId:'test-account',form:examples[1],setForm(){},me:null,consent:true,setConsent(){},busy:false,onSave(){},onPreview(){},photoSetup:React.createElement('p',null,'Optional photo picker')};
 globalThis.__step=3;const signup=renderToStaticMarkup(React.createElement(Editor,props));assert(signup.includes('Optional photo picker'));assert(signup.includes('Privacy and agreement'));assert(!signup.includes('Faith or worldview'));assert(!signup.includes('Culture and background'),'new signup does not contain deeper questions');

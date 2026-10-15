@@ -1,7 +1,3 @@
-/**
- * Displays aggregate signup and approval counts and rates. A zero denominator is shown as unavailable rather than a misleading percentage.
- * Reading guide: docs/CODE_READING_GUIDE.md.
- */
 type Approval={approved:number;discovered:number;viewed:number;chatted:number;invited:number;accepted:number;messaged:number;conversations:number;returned:number};
 type Signup={started:number;basics:number;interests:number;saved:number};
 export function journeyRate(count:number,total:number){return total>0?Math.round(100*count/total)+'%':'—';}

@@ -1,7 +1,3 @@
-/**
- * React lifecycle wrapper around support-prompt eligibility and dismissal persistence.
- * Reading guide: docs/CODE_READING_GUIDE.md.
- */
 'use client';
 import {useEffect,useState} from 'react';
 import {clearSupportPrompts,dismissSupportPrompt,supportPromptReady,supportStorage} from './support-prompt';

@@ -13,7 +13,7 @@ const p={...examples[1],availability:'Weekday evenings, Weekends',availabilityCh
 assert(matchesDiscovery(examples[0],p,{interestMode:'any',location:'any',radiusMiles:100,minAge:18,maxAge:99,activity:'',availability:'Weekends'}));
 assert(matchesProfileFilters(p,{startRole:model.startRoles[1]}));assert.equal(connectionContext({...examples[0],availabilityChoices:['Weekends']},p).availability,'Weekends');
 assert.equal(connectionContext({...examples[0],availabilityChoices:['Varies']},{...p,availabilityChoices:['Varies']}).availability,null,'varies is not an agreed schedule');
-const policy=await import(compile(readFileSync('app/photo-policy.ts','utf8')));const publicValue=policy.publicProfile({...p,birthDate:'1996-01-01',promptKeys:['care'],photoPending:false});assert(!('birthDate' in publicValue));assert(!('promptKeys' in publicValue));assert.deepEqual(publicValue.availabilityChoices,p.availabilityChoices);
+const policy=await import(compile(readFileSync('app/photo-policy.ts','utf8')));const publicValue=policy.publicProfile({...p,birthDate:'1996-01-01',promptKeys:['care'],photoPending:false});assert(!('birthDate' in publicValue));assert(!('promptKeys' in publicValue));assert(!('photoDescription' in policy.publicProfile({...p,photoDescription:'Private photo description'})),'photo descriptions remain outside public profile payloads');assert.deepEqual(publicValue.availabilityChoices,p.availabilityChoices);
 const draftUrl=compile(readFileSync('app/profile-draft.ts','utf8').replace("from './model'",`from '${modelUrl}'`));
 const stub=compile('export default function Stub(){return null;}');let hooks=[],index=0;globalThis.__profileHooks={useState:x=>{const i=index++;if(!(i in hooks))hooks[i]=x;return [hooks[i],v=>hooks[i]=typeof v==='function'?v(hooks[i]):v];},useRef:x=>({current:x}),useEffect:()=>{}};
 let source=readFileSync('app/profile-editor.tsx','utf8').replace("import {useState,useEffect,useRef,type ReactNode} from 'react';","const {useState,useEffect,useRef}=globalThis.__profileHooks;").replace("from './model'",`from '${modelUrl}'`).replace("from './profile-draft'",`from '${draftUrl}'`);for(const dep of ['profile-sections','guidelines','location-editor'])source=source.replace(`from './${dep}'`,`from '${stub}'`);
@@ -45,3 +45,11 @@ attraction().props.onChange({target:{value:''}});assert.equal(form.orientation,'
 assert(!model.profileGender({...form,gender:''}).includes('undefined'));
 delete globalThis.__profileHooks;
 console.log('Birth-date calendar boundaries and privacy, legacy answers, multi-choice matching, and editable controls passed.');
+
+const draftSource=readFileSync('app/profile-draft.ts','utf8').replace("from './model'",`from '${modelUrl}'`);
+const {profileResumeStep}=await import(compile(draftSource));
+const basics={name:'Someone',birthDate:'2000-01-01',city:'Austin',region:'Texas',country:'United States',interests:[]};
+assert.equal(profileResumeStep({}),1);
+assert.equal(profileResumeStep(basics),2);
+assert.equal(profileResumeStep({...basics,interests:['Music']}),3);
+assert.equal(profileResumeStep({...basics,birthDate:'2000-02-31',interests:['Music']}),1);

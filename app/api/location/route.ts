@@ -1,7 +1,3 @@
-/**
- * Authenticated broad-place search and reverse lookup. Returns suggestions rather than saving a profile automatically.
- * Reading guide: docs/CODE_READING_GUIDE.md.
- */
 import {getChatGPTUser} from '../../chatgpt-auth';
 import {initializeAccount,quota,readInput,safetyHeaders,failure} from '../../safety';
 import {reverseBroadLocations,searchBroadLocations} from '../../location-search';

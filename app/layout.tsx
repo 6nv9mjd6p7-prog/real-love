@@ -1,11 +1,9 @@
-/**
- * Root document layout, metadata, global styles, and shared runtime components. Page-specific state belongs in the app shell.
- * Reading guide: docs/CODE_READING_GUIDE.md.
- */
 import type { Metadata, Viewport } from "next";
 import InstallApp from "./install-app";
+import SupportBanner from "./support-banner";
 import NativeRuntime from "./native-runtime";
 import "./globals.css";
+import "./design-system.css";
 
 export const metadata: Metadata = {
   title: "Real Love — Begin together",
@@ -27,7 +25,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className="antialiased">{children}<NativeRuntime /><InstallApp /></body>
+      <body className="antialiased"><div className="site-utility" aria-label="Real Love options"><SupportBanner /><InstallApp /></div>{children}<NativeRuntime /></body>
     </html>
   );
 }

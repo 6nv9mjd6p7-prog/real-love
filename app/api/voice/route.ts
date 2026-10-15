@@ -1,7 +1,3 @@
-/**
- * Protected audio reads, bounded upload validation, and message attachment. Cleans up uploaded storage objects if the message operation fails.
- * Reading guide: docs/CODE_READING_GUIDE.md.
- */
 import {recordTwoWay} from '../../product-analytics';
 import {env} from 'cloudflare:workers';
 import {getChatGPTUser} from '../../chatgpt-auth';
@@ -36,7 +32,7 @@ async function audio(req:Request,key:string,type:string){
 export async function GET(req:Request){try{
  const user=await getChatGPTUser();if(!user)throw new SafetyError('Sign in to listen.',401);await initializeAccount(user);await quota(user.userId,'voice_read',120,60);const p=new URL(req.url).searchParams;
  if(p.has('report')){if(!await moderator(user))throw new SafetyError('Evidence unavailable.',403);const r=await db().prepare("SELECT * FROM reports WHERE id=? AND status='open'").bind(p.get('report')).first<any>();if(!r||(r.expires&&r.expires<=new Date().toISOString())||(!isOwner(user)&&await caseConflict(user.userId,r)))throw new SafetyError('Evidence unavailable.',403);const evidence=JSON.parse(r.evidence);if(!evidence.audioEvidenceKey)throw new SafetyError('Evidence unavailable.',404);await audit(user.userId,'view_reported_voice',r.target,'Reviewed specifically reported voice evidence');return audio(req,evidence.audioEvidenceKey,evidence.audioType);}
- const kind=p.get('kind')||'',scope=p.get('scope')||'',access=await voiceAccess(kind,scope,user.userId),row=await target(access,scope,p.get('message')||'',user.userId);if(!row.audio_key)throw new SafetyError('Voice note unavailable.',404);return audio(req,row.audio_key,row.audio_type);
+ const kind=p.get('kind')||'',scope=p.get('scope')||'',access=await voiceAccess(kind,scope,user.userId),row=await target(access,scope,p.get('message')||'',user.userId);if(!row.audio_key||!types.includes(row.audio_type))throw new SafetyError('Voice note unavailable.',404);return audio(req,row.audio_key,row.audio_type);
  }catch(e){return failure(e);}}
 export async function POST(req:Request){let key='';try{
  const user=await getChatGPTUser();if(!user)throw new SafetyError('Sign in to record.',401);

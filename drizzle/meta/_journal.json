@@ -134,6 +134,13 @@
       "when": 1791848994793,
       "tag": "0018_giant_orphan",
       "breakpoints": true
+    },
+    {
+      "idx": 19,
+      "version": "6",
+      "when": 1792105538921,
+      "tag": "0019_uneven_gladiator",
+      "breakpoints": true
     }
   ]
 }

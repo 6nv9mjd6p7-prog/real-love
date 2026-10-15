@@ -1,7 +1,3 @@
-/**
- * Campaign proposals, private participation, feedback, and independent review. Scoped pagination keeps personal activity accessible; a unique review event guards dependent writes.
- * Reading guide: docs/CODE_READING_GUIDE.md.
- */
 import {getChatGPTUser} from '../../chatgpt-auth';
 import {z} from 'zod';
 import {db,initializeAccount,quota,readInput,moderator,activeMember,failure,safetyHeaders,SafetyError} from '../../safety';
@@ -49,16 +45,13 @@ export async function POST(req:Request){try{
  const u=await getChatGPTUser();if(!u)return reply({error:'Sign in.'},401);await initializeAccount(u);const input=await readInput(req);
  if(input.expectedAccount!==u.userId)return reply({error:'Your account changed. Refresh before continuing.'},409);
  await quota(u.userId,'campaign_write',30,60);const id=u.userId,now=new Date().toISOString(),today=now.slice(0,10);
- // Remove only the acting member's participation, including when further interaction is unavailable.
  if(input.action==='leave'){await db().prepare('DELETE FROM campaign_participation WHERE campaign=? AND member=?').bind(String(input.campaign||''),id).run();return reply({ok:true});}
- // Ownership-checked withdrawal stays available even when interaction is paused or restricted.
  if(input.action==='withdraw'){
   const c=await db().prepare('SELECT creator FROM campaigns WHERE id=?').bind(String(input.campaign||'')).first<any>();
   if(!c||c.creator!==id)return reply({error:'Only the proposer can withdraw.'},403);
   await db().prepare("UPDATE campaigns SET status='withdrawn',version=version+1 WHERE id=? AND creator=? AND status<>'withdrawn'").bind(String(input.campaign),id).run();return reply({ok:true});
  }
  const reviewer=await moderator(u),active=await activeMember(id);if(!active&&!reviewer)return reply({error:'An active, admitted account is required.'},403);
- // Validate required proposal details and record an unpublished proposal awaiting independent review.
  if(input.action==='propose'){
   if(!active)return reply({error:'Activate your admitted profile to propose a campaign.'},403);
   const p=draft.parse(input.draft);if(input.consent!==true)return reply({error:'Acknowledge the campaign rules before submitting.'},400);
@@ -66,19 +59,16 @@ export async function POST(req:Request){try{
  }
  const c=await db().prepare('SELECT * FROM campaigns WHERE id=?').bind(String(input.campaign||'')).first<any>();if(!c)return reply({error:'Campaign unavailable.'},404);
  const data=JSON.parse(c.data);
- // Insert participation only while the campaign is active and its review date has not expired.
  if(input.action==='join'){
   if(!active||input.consent!==true)return reply({error:'Review the participation choices and confirm voluntary participation.'},400);
   const changed=await db().prepare("INSERT INTO campaign_participation (campaign,member) SELECT id,? FROM campaigns WHERE id=? AND status='active' AND json_extract(data,'$.reviewDate')>=? ON CONFLICT(campaign,member) DO NOTHING").bind(id,c.id,today).run();
   if(!changed.meta.changes&&!(await db().prepare("SELECT p.member FROM campaign_participation p JOIN campaigns c ON c.id=p.campaign WHERE p.campaign=? AND p.member=? AND c.status='active' AND json_extract(c.data,'$.reviewDate')>=?").bind(c.id,id,today).first()))return reply({error:'This campaign is not accepting participation. Refresh for its latest status.'},409);return reply({ok:true});
  }
- // Keep corrections, responses, and reports in the review flow instead of automatically publishing them.
  if(input.action==='feedback'){
   if(c.creator!==id&&!reviewer&&!visible(c,today)&&!await db().prepare('SELECT member FROM campaign_participation WHERE campaign=? AND member=?').bind(c.id,id).first())return reply({error:'Campaign unavailable.'},404);
   const p=z.object({kind:z.enum(['correction','response','report','update']),body:text(10,1800)}).parse(input);await quota(id,'campaign_feedback',5,86400);
   await db().prepare("INSERT INTO campaign_feedback (id,campaign,actor,kind,body,status,created) VALUES (?,?,?,?,?,'open',?)").bind(crypto.randomUUID(),c.id,id,p.kind,p.body,now).run();return reply({ok:true});
  }
- // Validate reviewer independence, expected version, and allowed state transitions before recording the decision.
  if(input.action==='review'){
   if(!reviewer||!await independent(id,c.creator))return reply({error:'An independent authorized reviewer must handle this campaign.'},403);
   const p=z.object({decision:z.enum(['approve','reject','pause','complete','publish_update','dismiss_feedback']),reason:text(20,1800),version:z.number().int(),feedback:z.string().max(100).optional(),reviewDate:z.string().optional(),checked:z.literal(true)}).parse(input);
