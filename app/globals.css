@@ -822,6 +822,22 @@ html[data-keyboard-open] .qa-keyboard>div:first-child span{float:right}
 @media(max-width:600px){.qa-preview-page{padding:12px}.qa-preview-heading{align-items:flex-start}.qa-preview-heading>.text-button{white-space:nowrap}.qa-preview-controls{flex-wrap:wrap;gap:10px}.qa-preview-stage{padding:8px}}
 
 /* Keep runtime interactions in classes/data attributes so the CSP can block inline styles. */
+[data-slot="sidebar-wrapper"]{--sidebar-width:16rem;--sidebar-width-icon:3rem}
+[data-slot="sidebar"][data-mobile="true"]{--sidebar-width:18rem}
+.toaster{--normal-bg:var(--popover);--normal-text:var(--popover-foreground);--normal-border:var(--border);--border-radius:var(--radius)}
+[data-slot="progress"]{appearance:none}
+[data-slot="progress"]::-webkit-progress-bar{border-radius:9999px;background:color-mix(in srgb,var(--primary) 20%,transparent)}
+[data-slot="progress"]::-webkit-progress-value{border-radius:9999px;background:var(--primary);transition:width .2s ease}
+[data-slot="progress"]::-moz-progress-bar{border-radius:9999px;background:var(--primary)}
+[data-slot="toggle-group"][data-spacing="0"]{gap:0}
+[data-slot="toggle-group"][data-spacing="1"]{gap:.25rem}
+[data-slot="toggle-group"][data-spacing="2"]{gap:.5rem}
+[data-slot="toggle-group"][data-spacing="3"]{gap:.75rem}
+[data-slot="toggle-group"][data-spacing="4"]{gap:1rem}
+[data-slot="toggle-group"][data-spacing="5"]{gap:1.25rem}
+[data-slot="toggle-group"][data-spacing="6"]{gap:1.5rem}
+[data-slot="toggle-group"][data-spacing="7"]{gap:1.75rem}
+[data-slot="toggle-group"][data-spacing="8"]{gap:2rem}
 .photo-viewport img.photo-zoom-100{width:100%;max-width:none}
 .photo-viewport img.photo-zoom-150{width:150%;max-width:none}
 .photo-viewport img.photo-zoom-200{width:200%;max-width:none}
