@@ -79,3 +79,8 @@ Open circle management from leave review now expands the management disclosure a
 ## Compact conversation options
 
 Circle conversations use a Back control beside the full wrapping title. Host management and circle tools share one compact options row; opening either disclosure gives its complete content the full width. Co-host invitations remain visible at full width, and the leave-review handover shortcut continues to open and focus management directly. No conversation content, activity tools, safety guidance, or access checks are removed. Existing transcript scrolling, composer behavior, and keyboard handling are unchanged. Focused component checks and TypeScript verification cover structure and behavior; browser/mobile QA remains outstanding.
+
+
+## Single mobile web header
+
+The mobile website combines its brand/home link, Safety review entry (when eligible), and notification control into one compact header. The former separate sidebar brand row is hidden at this breakpoint; the five labelled bottom destinations remain intact. The tagline remains in the header's accessible content and is visible on desktop. Notification names, unread counts and reviewer counts remain available. Header actions retain 44px targets and can wrap rather than overflow when text grows. Native and focused conversation visibility rules are unchanged. Automated checks and build validation do not replace mobile visual and touch QA.
