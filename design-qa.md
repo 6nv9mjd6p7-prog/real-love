@@ -159,3 +159,27 @@ All five section rows are visible in the checked desktop viewport; the last ends
 Seven relevant test files passed, including profile draft/input/section/filter/view checks, chat-experience rendering and design-system checks. The existing section test now locates preview/location controls semantically rather than relying on child positions. TypeScript and the production build passed. The final spacing-only adjustment passed the design-system check and a fresh production build. No application-origin errors appeared in the inspected browser log batch. Signup required fields, optional sections, consent and save separation are covered by render/validation checks; no new account or agreement was submitted in the live session.
 
 Phone rendering, touch/keyboard behavior at 320px/390px and screen-reader/device checks remain outstanding. Overall final result stays blocked for phone design acceptance; the desktop result is not a mobile compliance claim.
+
+## Privacy & settings compaction — v165 (2026-10-16)
+
+Final result: blocked for phone design acceptance; desktop scoped checks passed. Source: `app/love-app.tsx` and `app/design-system.css`, deployed source `743e2569bab301bbdb0819c5e010de9861f1372a`. Existing option 2 compact visual language extended to the settings overview.
+
+Evidence: `/workspace/scratch/real-love-settings-before.jpg` (1348 × 926), `/workspace/scratch/real-love-settings-after.jpg` (1363 × 936), and `/workspace/scratch/real-love-settings-comparison.jpg`. Baseline and implementation were inspected together on that comparison board. Both show the signed-in returning member at the top of Settings; baseline visibility is expanded by default, implementation begins collapsed. No privacy preferences were changed.
+
+Five fidelity surfaces:
+- Typography: compact 24px sans heading, readable group labels and 13px secondary summaries align with the other compact screens.
+- Spacing: four groups are available in one desktop overview; last group ends at y602.06. Shortcuts are 44px high. Long expanded content retains normal document scrolling; desktop horizontal overflow is absent.
+- Colors: existing indigo, neutral surface, muted text, borders and red deletion treatment remain.
+- Assets: existing brand and navigation icons retained; no assets added.
+- Copy: original detailed explanations and actions preserved. New summaries describe contents; visibility summary distinguishes full pause, hidden discovery and eligibility-dependent discovery. It does not claim admission or identity verification.
+
+Interaction verification on published v165:
+1. All four native groups begin collapsed, deletion remains separate and collapsed.
+2. Safety shortcut opens the correct group and moves focus to `settings-safety`. Safety controls, report receipts and appeal route remain available.
+3. Enter closes Safety; Space opens/closes Visibility, showing the original discovery and full-pause controls. No mutation buttons activated.
+4. Account shortcut exposes email sign-in, notifications, profile editing, existing reviewer action, draft disclosure and sign-out. Nothing submitted or cleared.
+5. Privacy shortcut exposes all five existing nested guidance disclosures. Restored all groups to collapsed afterward.
+
+Comparison history: baseline → compact overview → live screenshot and joint comparison; no further desktop P0/P1/P2 issue identified in this scoped pass. Settings render/action, design system, account lifecycle and draft-storage tests passed (4 files). TypeScript and production build passed. Inspected console batch contained browser-extension metadata errors only, with no application-origin errors.
+
+Limitations: no supported phone viewport resizing or local-preview browser skill is available in this session. 320px/390px visual acceptance, mobile touch/keyboard and screen-reader checks remain outstanding. CSS provides two-column wrapping shortcuts below 600px, but that is not a rendered phone test.

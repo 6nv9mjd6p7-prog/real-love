@@ -8,7 +8,7 @@ import {renderToStaticMarkup} from 'react-dom/server';
 const require=createRequire(import.meta.url);
 const source=readFileSync('app/love-app.tsx','utf8');
 const start=source.indexOf(" {route==='settings'&&")+" {route==='settings'&&".length;
-const end=source.indexOf('\n</div></>}',start)+'\n</div></>'.length;
+const end=source.indexOf('\n</div></div></>}',start)+'\n</div></div></>'.length;
 const fragment=source.slice(start,end);
 const moduleSource=`const Guidelines=()=>null,Shield=()=>null,EyeOff=()=>null,MessageCircle=()=>null,UserRound=()=>null;
 const empty={};
@@ -47,7 +47,7 @@ console.log('Settings grouping, shortcut focus, safety controls, account links, 
 for(const group of ['visibility','safety','account','privacy']){
  const disclosure=nodes.find(n=>n.type==='details'&&n.props.id==='settings-'+group);assert(disclosure,'complete settings group remains accessible');
  assert(elements(disclosure).some(n=>n.type==='summary'),'each group has a native keyboard-operated control');
- assert.equal(!!disclosure.props.open,group==='visibility','frequent visibility choices begin expanded');
+ assert.equal(!!disclosure.props.open,false,'settings overview begins compact with every group available');
 }
 let opened=false;globalThis.document={getElementById:id=>({tagName:'DETAILS',set open(value){opened=value;},focus:()=>focused=id,scrollIntoView:()=>scrolled=id})};
 button('Safety & reports').props.onClick();assert(opened,'settings shortcut opens its group before scrolling and focus');
