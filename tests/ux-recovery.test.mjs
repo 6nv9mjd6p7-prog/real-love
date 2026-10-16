@@ -10,7 +10,8 @@ globalThis.__uxState=()=>({hooks,index:index++,cleanups});
 const fake=`const useState=x=>{const {hooks,index}=globalThis.__uxState();if(!(index in hooks))hooks[index]=x;return [hooks[index],v=>hooks[index]=typeof v==='function'?v(hooks[index]):v];};const useRef=x=>{const {hooks,index}=globalThis.__uxState();return hooks[index]??(hooks[index]={current:x});};const useEffect=fn=>{const {hooks,index,cleanups}=globalThis.__uxState();if(!hooks[index]){hooks[index]=true;cleanups.push(fn());}};`;
 function compile(file,transform=x=>x){let source=transform(readFileSync(file,'utf8')).replace(/import \{useEffect,useRef,useState\} from 'react';/,fake);return 'data:text/javascript;base64,'+Buffer.from(ts.transpileModule(source,{compilerOptions:{module:ts.ModuleKind.ESNext,jsx:ts.JsxEmit.ReactJSX}}).outputText.replace(/from ["']react\/jsx-runtime["']/,`from '${pathToFileURL(require.resolve('react/jsx-runtime')).href}'`).replace(/from ["']lucide-react["']/,`from '${pathToFileURL(require.resolve('lucide-react')).href}'`)).toString('base64');}
 function nodes(n){return !n||typeof n!=='object'?[]:[n,...React.Children.toArray(n.props?.children).flatMap(nodes)];}
-const flush=async()=>{for(let i=0;i<8;i++)await Promise.resolve();};
+// Let fetch/Response.json cross a task boundary as well as draining state updates.
+const flush=async()=>{for(let i=0;i<8;i++)await Promise.resolve();await new Promise(resolve=>setImmediate(resolve));};
 const {default:Toggle}=await import(compile('app/notification-toggle.tsx'));
 let failSave=true,saves=[];const realFetch=globalThis.fetch;
 globalThis.fetch=async(url,options)=>{if(!options?.body)return Response.json({accountId:'alice',mutedScopes:[]});saves.push(JSON.parse(options.body));return failSave?Response.json({error:'Temporary failure'},{status:503}):Response.json({ok:true});};

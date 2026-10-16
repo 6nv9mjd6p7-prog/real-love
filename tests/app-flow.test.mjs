@@ -23,6 +23,7 @@ const revisionUrl=compile('app/message-revision.ts');
 const historyUrl=compile('app/history-tools.ts',s=>s.replace("from './safety'",`from '${safetyUrl}'`));const analyticsUrl=compile('app/product-analytics.ts');
 function replacements(s){return s.replace("from '../../message-revision'",`from '${revisionUrl}'`).replace("from '../../history-tools'",`from '${historyUrl}'`).replace("from '../../product-analytics'",`from '${analyticsUrl}'`).replace("from '../../voice-access'",`from '${voiceAccessUrl}'`).replace("from '../../notifications-server'",`from '${notificationServerUrl}'`).replace("from '../../web-push'",`from '${webPushUrl}'`).replace("from '../../chat-server'",`from '${chatServerUrl}'`).replace("import { env } from 'cloudflare:workers';","const env=globalThis.__rlEnv;").replace("import {env} from 'cloudflare:workers';","const env=globalThis.__rlEnv;").replace("import {getChatGPTUser} from '../../chatgpt-auth';","const getChatGPTUser=async()=>globalThis.__rlUser;").replace("from '../../circle-policy'",`from '${circlePolicyUrl}'`).replace("from '../../invitations'",`from '${invitationUrl}'`).replace("from '../../location'",`from '${locationUrl}'`).replace("from '../../model'",`from '${modelUrl}'`).replace("from '../../photo-policy'",`from '${policyUrl}'`).replace("from '../../safety'",`from '${safetyUrl}'`).replace("from '../../moderation-policy'",`from '${modPolicyUrl}'`).replace("from 'zod'",`from '${pathToFileURL(require.resolve('zod')).href}'`);}
 const voice=await import(compile('app/api/voice/route.ts',replacements));
+const chatImage=await import(compile('app/api/chat-image/route.ts',replacements));
 const notificationsApi=await import(compile('app/api/notifications/route.ts',replacements));const reports=await import(compile('app/api/reports/route.ts',replacements)),moderation=await import(compile('app/api/moderation/route.ts',replacements));const app=await import(compile('app/api/app/route.ts',replacements));const photo=await import(compile('app/api/photo/route.ts',replacements));const circles=await import(compile('app/api/circles/route.ts',replacements));
 function as(id){globalThis.__rlUser=id?{userId:id,email:id+'@test.invalid'}:null;}
 function request(body,origin='https://rl.test',cf=null){const value=new Request('https://rl.test/api/app',{method:'POST',headers:{'Content-Type':'application/json',Origin:origin},body:JSON.stringify(body)});if(cf)Object.defineProperty(value,'cf',{value:cf});return value;}
@@ -122,6 +123,8 @@ sql.prepare("DELETE FROM safety_events WHERE kind IN ('read','write','message') 
 
 async function voicePost(who,kind,scope,opts={}){as(who);return voice.POST(new Request('https://rl.test/api/voice',{method:'POST',headers:{Origin:'https://rl.test','Content-Type':'audio/webm','x-expected-account':who||'','x-voice-kind':kind,'x-voice-scope':scope,'x-voice-attempt':opts.attempt||crypto.randomUUID(),'x-voice-duration':'2000','x-voice-reply':opts.replyTo||'',...opts.headers},body:opts.body||new Uint8Array([0x1a,0x45,0xdf,0xa3,...Array(30).fill(0)])}));}
 async function voiceGet(who,url,headers={}){as(who);return voice.GET(new Request('https://rl.test'+url,{headers}));}
+async function chatImagePost(who,kind,scope,opts={}){as(who);const attempt=opts.attempt||crypto.randomUUID();const response=await chatImage.POST(new Request('https://rl.test/api/chat-image',{method:'POST',headers:{Origin:'https://rl.test','Content-Type':'image/png','x-expected-account':who||'','x-chat-image-kind':kind,'x-chat-image-scope':scope,'x-chat-image-attempt':attempt,'x-chat-image-caption':encodeURIComponent(opts.caption||'')},body:image}));return {response,attempt,id:JSON.stringify([scope,who,attempt])};}
+async function chatImageGet(who,url){as(who);return chatImage.GET(new Request('https://rl.test'+url));}
 // Server-authoritative time windows, ownership, revision conflict and retained evidence.
 const editKey=crypto.randomUUID(),editId=JSON.stringify([id,'alice',editKey]);
 assert.equal((await post('alice',{action:'message',connection:id,text:'Original version',clientMessageId:editKey})).status,200);
@@ -233,7 +236,15 @@ assert.equal((await circlePost('bob',groupAttempt)).status,200);assert.equal((aw
 assert.equal(sql.prepare('SELECT COUNT(*) AS n FROM circle_messages WHERE id=?').get(JSON.stringify([circle.id,'bob',groupKey])).n,1);
 assert.equal((await circlePost('bob',{...groupAttempt,text:'Different payload'})).status,409);
 sql.prepare('DELETE FROM circle_messages WHERE id=?').run(JSON.stringify([circle.id,'bob',groupKey]));
+const blockedImage=await chatImagePost('alice','circle',circle.id,{caption:'Private circle photo'});assert.equal(blockedImage.response.status,200);
+const blockedImageUrl='/api/chat-image?kind=circle&scope='+encodeURIComponent(circle.id)+'&message='+encodeURIComponent(blockedImage.id);
+assert.equal((await chatImageGet('charlie',blockedImageUrl)).status,200,'an admitted circle member can view an unblocked sender photo');
+const blockedVoice=crypto.randomUUID(),blockedVoiceId=JSON.stringify([circle.id,'alice',blockedVoice]);assert.equal((await voicePost('alice','circle',circle.id,{attempt:blockedVoice})).status,200);
+const blockedVoiceUrl='/api/voice?kind=circle&scope='+encodeURIComponent(circle.id)+'&message='+encodeURIComponent(blockedVoiceId);
+assert.equal((await voiceGet('charlie',blockedVoiceUrl)).status,200,'an admitted circle member can listen to an unblocked sender voice note');
 assert.equal((await post('charlie',{action:'block',target:'alice'})).status,200);
+assert.equal((await chatImageGet('charlie',blockedImageUrl)).status,404,'blocking a circle sender revokes that sender’s old photo URL');
+assert.equal((await voiceGet('charlie',blockedVoiceUrl)).status,403,'blocking a circle sender revokes that sender’s old voice URL');
 assert.equal((await circlePost('charlie',{action:'conversation',circle:circle.id})).status,200,'blocking does not remove the reporter from a circle');assert(!(await circlePost('charlie',{action:'conversation',circle:circle.id})).data.members.some(m=>m.id==='alice'));
 assert.equal((await circlePost('charlie',{action:'react',circle:circle.id,message:quoteBeforeJoin,emoji:'👍'})).status,403,'blocked or old messages cannot receive reactions');
 const childKey=crypto.randomUUID(),childId=JSON.stringify([circle.id,'bob',childKey]);
@@ -241,11 +252,29 @@ assert.equal((await circlePost('bob',{action:'message',circle:circle.id,text:'A 
 assert.equal((await circlePost('charlie',{action:'conversation',circle:circle.id})).data.messages.at(-1).reply,null,'blocked sender is not exposed through quotes');
 sql.prepare('DELETE FROM circle_messages WHERE id=?').run(childId);
 
+const retainedImage=await chatImagePost('bob','circle',circle.id,{caption:'Retained circle photo'});assert.equal(retainedImage.response.status,200);
+const retainedImageUrl='/api/chat-image?kind=circle&scope='+encodeURIComponent(circle.id)+'&message='+encodeURIComponent(retainedImage.id);
+const retainedVoice=crypto.randomUUID(),retainedVoiceId=JSON.stringify([circle.id,'bob',retainedVoice]);assert.equal((await voicePost('bob','circle',circle.id,{attempt:retainedVoice})).status,200);
+const retainedVoiceUrl='/api/voice?kind=circle&scope='+encodeURIComponent(circle.id)+'&message='+encodeURIComponent(retainedVoiceId);
+assert.equal((await chatImageGet('charlie',retainedImageUrl)).status,200,'a current member can view the photo before leaving');
+assert.equal((await voiceGet('charlie',retainedVoiceUrl)).status,200,'a current member can play the voice note before leaving');
 assert.equal((await circlePost('charlie',{action:'leave',circle:circle.id})).status,200,'can leave a blocked shared circle');
+assert.equal((await chatImageGet('charlie',retainedImageUrl)).status,403,'leaving revokes previously shared media URLs');
+assert.equal((await voiceGet('charlie',retainedVoiceUrl)).status,403,'leaving revokes previously shared voice URLs');
 assert.equal((await post('charlie',{action:'unblock',target:'alice'})).status,200);
 assert.equal((await circlePost('charlie',{action:'request',circle:circle.id})).status,200);
 assert.equal((await circlePost('bob',{action:'admit',circle:circle.id,target:'charlie'})).status,200);
+const removedImage=await chatImagePost('bob','circle',circle.id,{caption:'Photo before removal'});assert.equal(removedImage.response.status,200);
+const removedImageUrl='/api/chat-image?kind=circle&scope='+encodeURIComponent(circle.id)+'&message='+encodeURIComponent(removedImage.id);
+const removedVoice=crypto.randomUUID(),removedVoiceId=JSON.stringify([circle.id,'bob',removedVoice]);assert.equal((await voicePost('bob','circle',circle.id,{attempt:removedVoice})).status,200);
+const removedVoiceUrl='/api/voice?kind=circle&scope='+encodeURIComponent(circle.id)+'&message='+encodeURIComponent(removedVoiceId);
+assert.equal((await chatImageGet('charlie',removedImageUrl)).status,200,'re-admitted member can see media shared after rejoining');
+assert.equal((await voiceGet('charlie',removedVoiceUrl)).status,200,'re-admitted member can listen to voice shared after rejoining');
 assert.equal((await circlePost('bob',{action:'remove',circle:circle.id,target:'charlie'})).status,200);
+assert.equal((await chatImageGet('charlie',removedImageUrl)).status,403,'removal revokes media URLs issued during the new membership');
+assert.equal((await voiceGet('charlie',removedVoiceUrl)).status,403,'removal revokes voice URLs issued during the new membership');
+for(const mediaId of [blockedImage.id,retainedImage.id,removedImage.id]){const media=sql.prepare('SELECT attachment_key FROM circle_messages WHERE id=?').get(mediaId);if(media?.attachment_key)memory.delete(media.attachment_key);sql.prepare('DELETE FROM circle_messages WHERE id=?').run(mediaId);}
+for(const mediaId of [blockedVoiceId,retainedVoiceId,removedVoiceId]){const media=sql.prepare('SELECT audio_key FROM circle_messages WHERE id=?').get(mediaId);if(media?.audio_key)memory.delete(media.audio_key);sql.prepare('DELETE FROM circle_messages WHERE id=?').run(mediaId);}
 assert.equal((await circlePost('charlie',{action:'leave',circle:circle.id})).status,403,'removed members cannot downgrade their removal');
 assert.equal((await circlePost('charlie',{action:'request',circle:circle.id})).status,403,'removal cannot be evaded');
 assert.equal((await post('charlie',{action:'delete'})).status,200);
@@ -441,6 +470,9 @@ assert.equal((await circlePost('history-a',{action:'propose',connection:historyC
 const historyCircle=(await circleGet('history-b')).data.circles.find(c=>c.title==='History pages').id;assert.equal((await circlePost('history-b',{action:'approve',circle:historyCircle})).status,200);
 for(let i=0;i<210;i++)sql.prepare('INSERT INTO circle_messages (id,circle,sender,body,created) VALUES (?,?,?,?,?)').run('circle-history-'+i,historyCircle,'history-a','Earlier group message '+i,new Date().toISOString());
 assert.equal((await circlePost('history-c',{action:'request',circle:historyCircle})).status,200);assert.equal((await circlePost('history-a',{action:'admit',circle:historyCircle,target:'history-c'})).status,200);
+const newcomerSnapshot=await circlePost('history-c',{action:'conversation',circle:historyCircle});assert.equal(newcomerSnapshot.data.messages.length,0,'new circle members cannot see the conversation history from before joining');
+sql.prepare('UPDATE circle_messages SET body=? WHERE id=?').run('Changed before the member joined','circle-history-0');
+const hiddenHistoryRefresh=await circlePost('history-c',{action:'conversation',circle:historyCircle,knownRevision:newcomerSnapshot.data.revision});assert.equal(hiddenHistoryRefresh.data.unchanged,true,'changes to history hidden by the join cursor do not alter the new member’s revision fingerprint');
 const groupLatest=await circlePost('history-b',{action:'conversation',circle:historyCircle});assert.equal(groupLatest.data.messages.length,200);const groupEarlier=await circlePost('history-b',{action:'conversation',circle:historyCircle,before:groupLatest.data.cursor});assert.equal(groupEarlier.data.messages.length,10);assert.equal((await circlePost('history-c',{action:'conversation',circle:historyCircle,before:groupLatest.data.cursor})).data.messages.length,0);
 // Fetching circle history is read-only; acknowledgements cover only the viewed notification snapshot.
 const addCircleAlert=(key,member='history-b',scope=historyCircle,kind='circle_message')=>sql.prepare('INSERT INTO notifications (id,member,actor,kind,scope,title,url,created) VALUES (?,?,?,?,?,?,?,?)').run(key,member,'history-a',kind,scope,'Circle activity','#circles/'+scope,new Date().toISOString());
@@ -553,15 +585,83 @@ assert.equal(organizingCircle.tags,'[]','organizing classification survives with
 assert(!(await workerList('worker-c')).data.circles.some(c=>c.id===organizingCircle.id),'proposal is not visible before both founders agree');
 assert.equal((await workerAct('worker-b',{action:'approve',circle:organizingCircle.id})).status,400);
 assert.equal((await workerAct('worker-b',{action:'approve',circle:organizingCircle.id,workerConsent:true})).status,200);
-assert((await workerList('worker-c')).data.circles.some(c=>c.id===organizingCircle.id),'organizing circles appear in worker discovery after approval');
+assert(!(await workerList('worker-c')).data.circles.some(c=>c.id===organizingCircle.id),'approved organizing circles stay out of worker discovery');assert(!(await workerList('worker-c')).data.circles.some(c=>JSON.stringify(c).includes('Hospitality organizing learners')),'unlisted organizing details are not returned to outsiders');assert((await workerList('worker-a')).data.circles.some(c=>c.id===organizingCircle.id),'founders can still access their unlisted organizing circle');
 assert(!(await workerList('worker-c',false)).data.circles.some(c=>c.id===organizingCircle.id),'organizing circle stays out of general discovery');
-assert.equal((await workerAct('worker-c',{action:'conversation',circle:organizingCircle.id})).status,403);
-assert.equal((await workerAct('worker-c',{action:'request',circle:organizingCircle.id})).status,400);
-assert.equal((await workerAct('worker-c',{action:'request',circle:organizingCircle.id,workerConsent:true})).status,200);
+assert.equal((await workerAct('worker-c',{action:'conversation',circle:organizingCircle.id})).status,404,'direct-ID access does not reveal an unlisted organizing circle');
+assert.equal((await workerAct('worker-c',{action:'request',circle:organizingCircle.id})).status,404,'outsiders cannot request access to an unlisted organizing circle');
+assert.equal((await workerAct('worker-c',{action:'request',circle:organizingCircle.id,workerConsent:true})).status,404,'unlisted organizing circles cannot be joined through a direct-ID request');assert.equal((await workerAct('worker-c',{action:'conversation',circle:organizingCircle.id})).status,404,'a direct-ID conversation request does not reveal an unlisted circle');assert.equal(sql.prepare('SELECT COUNT(*) AS n FROM notifications WHERE member=? AND scope=?').get('worker-c',organizingCircle.id).n,0,'organizing activity does not create notifications for outsiders');
 assert.equal((await workerAct('worker-a',{action:'message',circle:organizingCircle.id,text:'Let us agree on a broad concern.'})).status,200);
-assert.equal((await workerAct('worker-a',{action:'admit',circle:organizingCircle.id,target:'worker-c'})).status,200);
-assert.equal((await workerAct('worker-c',{action:'conversation',circle:organizingCircle.id})).data.messages.length,0,'organizing circle history begins at admission');
+// A private invitation is visible only to its accepted-connection recipient and never exposes earlier messages.
+sql.prepare("INSERT INTO connections (id,sender,recipient,status,kind,created) VALUES ('worker-invite-connection','worker-a','worker-c','accepted','Connect',?)").run(new Date().toISOString());
+assert.equal((await workerAct('worker-outsider',{action:'invite',circle:organizingCircle.id,target:'worker-c'})).status,404,'unlisted circle IDs stay hidden from nonmembers');
+assert.equal((await workerAct('worker-a',{action:'invite',circle:organizingCircle.id,target:'worker-outsider'})).status,403,'hosts can invite only accepted connections');
+const inviteResult=await workerAct('worker-a',{action:'invite',circle:organizingCircle.id,target:'worker-c'});assert.equal(inviteResult.status,200);
+assert.equal((await workerAct('worker-a',{action:'invite',circle:organizingCircle.id,target:'worker-c'})).status,409,'duplicate pending invitations are rejected');
+const invitedListing=(await workerList('worker-c')).data.circles.find(c=>c.id===organizingCircle.id);assert.equal(invitedListing.membership,'invited');assert(invitedListing.inviteId);
+assert(!(await workerList('worker-outsider')).data.circles.some(c=>c.id===organizingCircle.id),'other outsiders cannot discover an invite-only circle');
+assert.equal((await workerAct('worker-c',{action:'accept_invite',circle:organizingCircle.id,inviteId:invitedListing.inviteId})).status,400,'invite acceptance requires explicit access consent');
+assert.equal((await workerAct('worker-c',{action:'accept_invite',circle:organizingCircle.id,inviteId:invitedListing.inviteId,workerConsent:true})).status,200);
+const invitedConversation=await workerAct('worker-c',{action:'conversation',circle:organizingCircle.id});assert.equal(invitedConversation.status,200);assert.equal(invitedConversation.data.messages.length,0,'invitees cannot read earlier circle history');
+assert.equal((await workerAct('worker-c',{action:'message',circle:organizingCircle.id,text:'Joining from the invitation'})).status,200,'accepted invitees can participate');
+assert.equal((await workerAct('worker-a',{action:'conversation',circle:organizingCircle.id})).data.messages.length,2,'the founders and new invitee can see newly posted messages');
 console.log('Union-organizing category, discovery separation, two-founder consent and admission history checks passed.');
+
+// Old chat media URLs must re-check sender blocks and current circle membership.
+sql.prepare("DELETE FROM safety_events WHERE actor IN ('worker-a','worker-b','worker-c') AND kind IN ('circle_propose','circle_approve','circle_request','circle_admit','circle_leave','circle_remove')").run();
+const mediaCircleDraft={...workerDraft,title:'Media access regression',category:'worker_industry',workerConsent:true};
+assert.equal((await workerAct('worker-a',mediaCircleDraft)).status,200);
+const mediaCircle=sql.prepare("SELECT * FROM circles WHERE title='Media access regression'").get();
+assert.equal((await workerAct('worker-b',{action:'approve',circle:mediaCircle.id,workerConsent:true})).status,200);
+assert.equal((await workerAct('worker-c',{action:'request',circle:mediaCircle.id,workerConsent:true})).status,200);
+assert.equal((await workerAct('worker-a',{action:'admit',circle:mediaCircle.id,target:'worker-c'})).status,200);
+const blockedPhoto=await chatImagePost('worker-a','circle',mediaCircle.id);assert.equal(blockedPhoto.response.status,200);
+const blockedPhotoUrl='/api/chat-image?kind=circle&scope='+encodeURIComponent(mediaCircle.id)+'&message='+encodeURIComponent(blockedPhoto.id);
+const blockedAudio=crypto.randomUUID(),blockedAudioId=JSON.stringify([mediaCircle.id,'worker-a',blockedAudio]);assert.equal((await voicePost('worker-a','circle',mediaCircle.id,{attempt:blockedAudio})).status,200);
+const blockedAudioUrl='/api/voice?kind=circle&scope='+encodeURIComponent(mediaCircle.id)+'&message='+encodeURIComponent(blockedAudioId);
+assert.equal((await chatImageGet('worker-c',blockedPhotoUrl)).status,200);assert.equal((await voiceGet('worker-c',blockedAudioUrl)).status,200);
+assert.equal((await post('worker-c',{action:'block',target:'worker-a'})).status,200);
+assert.equal((await chatImageGet('worker-c',blockedPhotoUrl)).status,404,'blocking the media sender invalidates their existing photo URL');assert.equal((await voiceGet('worker-c',blockedAudioUrl)).status,403,'blocking the media sender invalidates their existing voice URL');
+assert.equal((await post('worker-c',{action:'unblock',target:'worker-a'})).status,200);
+const leavePhoto=await chatImagePost('worker-b','circle',mediaCircle.id);assert.equal(leavePhoto.response.status,200);
+const leavePhotoUrl='/api/chat-image?kind=circle&scope='+encodeURIComponent(mediaCircle.id)+'&message='+encodeURIComponent(leavePhoto.id);
+const leaveAudio=crypto.randomUUID(),leaveAudioId=JSON.stringify([mediaCircle.id,'worker-b',leaveAudio]);assert.equal((await voicePost('worker-b','circle',mediaCircle.id,{attempt:leaveAudio})).status,200);
+const leaveAudioUrl='/api/voice?kind=circle&scope='+encodeURIComponent(mediaCircle.id)+'&message='+encodeURIComponent(leaveAudioId);
+assert.equal((await chatImageGet('worker-c',leavePhotoUrl)).status,200);assert.equal((await voiceGet('worker-c',leaveAudioUrl)).status,200);
+assert.equal((await workerAct('worker-c',{action:'leave',circle:mediaCircle.id})).status,200);
+assert.equal((await chatImageGet('worker-c',leavePhotoUrl)).status,403,'leaving immediately revokes the old photo URL');assert.equal((await voiceGet('worker-c',leaveAudioUrl)).status,403,'leaving immediately revokes the old voice URL');
+assert.equal((await workerAct('worker-c',{action:'request',circle:mediaCircle.id,workerConsent:true})).status,200);
+assert.equal((await workerAct('worker-a',{action:'admit',circle:mediaCircle.id,target:'worker-c'})).status,200);
+const removedPhoto=await chatImagePost('worker-b','circle',mediaCircle.id);assert.equal(removedPhoto.response.status,200);
+const removedPhotoUrl='/api/chat-image?kind=circle&scope='+encodeURIComponent(mediaCircle.id)+'&message='+encodeURIComponent(removedPhoto.id);
+const removedAudio=crypto.randomUUID(),removedAudioId=JSON.stringify([mediaCircle.id,'worker-b',removedAudio]);assert.equal((await voicePost('worker-b','circle',mediaCircle.id,{attempt:removedAudio})).status,200);
+const removedAudioUrl='/api/voice?kind=circle&scope='+encodeURIComponent(mediaCircle.id)+'&message='+encodeURIComponent(removedAudioId);
+assert.equal((await chatImageGet('worker-c',removedPhotoUrl)).status,200);assert.equal((await voiceGet('worker-c',removedAudioUrl)).status,200);
+assert.equal((await workerAct('worker-a',{action:'remove',circle:mediaCircle.id,target:'worker-c'})).status,200);
+assert.equal((await chatImageGet('worker-c',removedPhotoUrl)).status,403,'host removal immediately revokes old photo access');assert.equal((await voiceGet('worker-c',removedAudioUrl)).status,403,'host removal immediately revokes old voice access');
+for(const messageId of [blockedPhoto.id,leavePhoto.id,removedPhoto.id]){const stored=sql.prepare('SELECT attachment_key FROM circle_messages WHERE id=?').get(messageId);if(stored?.attachment_key)memory.delete(stored.attachment_key);sql.prepare('DELETE FROM circle_messages WHERE id=?').run(messageId);}
+for(const messageId of [blockedAudioId,leaveAudioId,removedAudioId]){const stored=sql.prepare('SELECT audio_key FROM circle_messages WHERE id=?').get(messageId);if(stored?.audio_key)memory.delete(stored.audio_key);sql.prepare('DELETE FROM circle_messages WHERE id=?').run(messageId);}
+console.log('Chat media URLs re-check current circle membership and block state after block, leave, and removal.');
+
+// Account removal deletes private chat media objects and invalidates their old URLs.
+const deleteDirectPhoto=await chatImagePost('worker-a','direct','worker-connection');assert.equal(deleteDirectPhoto.response.status,200);
+const deleteDirectPhotoUrl='/api/chat-image?kind=direct&scope=worker-connection&message='+encodeURIComponent(deleteDirectPhoto.id);
+const deleteDirectVoice=crypto.randomUUID(),deleteDirectVoiceId=JSON.stringify(['worker-connection','worker-a',deleteDirectVoice]);assert.equal((await voicePost('worker-a','direct','worker-connection',{attempt:deleteDirectVoice})).status,200);
+const deleteDirectVoiceUrl='/api/voice?kind=direct&scope=worker-connection&message='+encodeURIComponent(deleteDirectVoiceId);
+const deleteCirclePhoto=await chatImagePost('worker-a','circle',mediaCircle.id);assert.equal(deleteCirclePhoto.response.status,200);
+const deleteCirclePhotoUrl='/api/chat-image?kind=circle&scope='+encodeURIComponent(mediaCircle.id)+'&message='+encodeURIComponent(deleteCirclePhoto.id);
+const deleteCircleVoice=crypto.randomUUID(),deleteCircleVoiceId=JSON.stringify([mediaCircle.id,'worker-a',deleteCircleVoice]);assert.equal((await voicePost('worker-a','circle',mediaCircle.id,{attempt:deleteCircleVoice})).status,200);
+const deleteCircleVoiceUrl='/api/voice?kind=circle&scope='+encodeURIComponent(mediaCircle.id)+'&message='+encodeURIComponent(deleteCircleVoiceId);
+for(const url of [deleteDirectPhotoUrl,deleteCirclePhotoUrl])assert.equal((await chatImageGet('worker-b',url)).status,200);
+for(const url of [deleteDirectVoiceUrl,deleteCircleVoiceUrl])assert.equal((await voiceGet('worker-b',url)).status,200);
+const deleteDirectPhotoKey=sql.prepare('SELECT attachment_key FROM messages WHERE id=?').get(deleteDirectPhoto.id).attachment_key;
+const deleteDirectVoiceKey=sql.prepare('SELECT audio_key FROM messages WHERE id=?').get(deleteDirectVoiceId).audio_key;
+const deleteCirclePhotoKey=sql.prepare('SELECT attachment_key FROM circle_messages WHERE id=?').get(deleteCirclePhoto.id).attachment_key;
+const deleteCircleVoiceKey=sql.prepare('SELECT audio_key FROM circle_messages WHERE id=?').get(deleteCircleVoiceId).audio_key;
+assert.equal((await post('worker-a',{action:'delete'})).status,200);
+for(const [who,url] of [['worker-b',deleteDirectPhotoUrl],['worker-b',deleteCirclePhotoUrl]])assert.notEqual((await chatImageGet(who,url)).status,200,'account removal invalidates saved photo URLs');
+for(const [who,url] of [['worker-b',deleteDirectVoiceUrl],['worker-b',deleteCircleVoiceUrl]])assert.notEqual((await voiceGet(who,url)).status,200,'account removal invalidates saved voice URLs');
+for(const key of [deleteDirectPhotoKey,deleteDirectVoiceKey,deleteCirclePhotoKey,deleteCircleVoiceKey])assert.equal(memory.has(key),false,'account removal deletes the stored chat media object');
+console.log('Account removal deletes direct and circle chat media and invalidates retained links.');
 
 // Consent version 2 is explicit ongoing sharing; existing version 1 is never upgraded implicitly.
 for(const member of ['ongoing-a','ongoing-b','ongoing-legacy']){
