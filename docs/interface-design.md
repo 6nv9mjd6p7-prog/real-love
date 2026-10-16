@@ -74,3 +74,8 @@ The website support and installation actions now share one compact mobile row. I
 ## Handover recovery path
 
 Open circle management from leave review now expands the management disclosure and focuses the co-host selector after the conversation finishes loading. The handover section precedes general editing for the remaining host. If there are no candidates, focus goes to its explanatory heading. The leave dialog does not restore focus over the destination. Paused hosts get a direct Settings link to resume before managing handover.
+
+
+## Compact conversation options
+
+Circle conversations use a Back control beside the full wrapping title. Host management and circle tools share one compact options row; opening either disclosure gives its complete content the full width. Co-host invitations remain visible at full width, and the leave-review handover shortcut continues to open and focus management directly. No conversation content, activity tools, safety guidance, or access checks are removed. Existing transcript scrolling, composer behavior, and keyboard handling are unchanged. Focused component checks and TypeScript verification cover structure and behavior; browser/mobile QA remains outstanding.

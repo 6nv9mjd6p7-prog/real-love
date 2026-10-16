@@ -31,8 +31,12 @@ function elements(node){if(!node||typeof node!=='object')return [];return [node,
 index=0;tree=Circles({accountId:'member',active:true,connections:[],onReport:()=>{}});
 const nodes=elements(tree),context=nodes.find(n=>n.props?.className==='chat-context-area');
 const contextChildren=React.Children.toArray(context.props.children);
-assert.equal(contextChildren.length,3,'header, compact management and tools disclosures own the upper chat area');
-const heading=contextChildren[0],management=contextChildren[1],tools=contextChildren[2];
+assert.equal(contextChildren.length,2,'header and one options row own the upper chat area');
+const heading=contextChildren[0],bar=contextChildren[1];
+assert.equal(bar.props.className,'circle-control-bar');
+assert.equal(bar.props['aria-label'],'Circle options');
+const [management,tools]=React.Children.toArray(bar.props.children);
+assert.equal(elements(heading).find(n=>n.type==='h1').props.title,circle.title,'full circle title remains available');
 assert.equal(management.props.circle.id,circle.id,'management is scoped to the current circle');
 assert.equal(heading.props.className,'chat-heading');assert(!elements(heading).some(n=>n.type==='button'&&n.props.children==='Leave circle'),'rare leave action does not crowd the mobile header');
 assert(elements(tools).some(n=>n.props?.className==='message-search'),'search belongs inside the tools disclosure');

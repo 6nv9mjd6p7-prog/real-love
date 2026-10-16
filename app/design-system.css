@@ -255,3 +255,23 @@ html[data-native-platform] .app-shell:has(.conversation-screen,.circle-conversat
  .site-utility:has(.install-guide){flex-wrap:wrap}
  .site-utility .install-app:has(.install-guide){flex-basis:100%;width:100%}
 }
+
+/* Conversation options share a compact row; expanded content keeps its full width.
+   This changes presentation only: transcript scrolling and keyboard behavior stay owned
+   by the existing conversation layout. */
+.app-shell .circle-conversation .chat-heading{display:grid;grid-template-columns:auto minmax(0,1fr);align-items:center;gap:12px;margin:0;padding:0 0 8px}
+.app-shell .circle-conversation .chat-heading h1{grid-column:2;grid-row:1;min-width:0;margin:0;font-family:Arial,Helvetica,sans-serif;font-size:1.125rem;font-weight:700;line-height:1.4;letter-spacing:0;white-space:normal;overflow-wrap:anywhere}
+.app-shell .circle-conversation .chat-heading>.circle-back{grid-column:1;grid-row:1;min-width:44px;min-height:44px;max-width:none;padding:8px;border:0;background:transparent;font-size:.8125rem;white-space:normal;text-align:left}
+.circle-control-bar{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 12px;border-bottom:1px solid var(--border);min-width:0}
+.circle-control-bar>.circle-management,.circle-control-bar>.circle-chat-tools{min-width:0;margin:0;border:0}
+.circle-control-bar>details>summary{position:static;min-height:44px;padding:10px 0;font-size:.875rem;line-height:1.5;background:transparent;color:var(--ink)}
+.circle-control-bar>.circle-chat-tools:not([open])>summary span{display:none}
+.circle-control-bar>details[open],.circle-control-bar>.circle-host-invitation{grid-column:1/-1}
+.circle-control-bar>details[open]{padding-bottom:12px}
+.circle-control-bar:not(:has(>.circle-management))>.circle-chat-tools{grid-column:1/-1}
+@media(max-width:720px){
+ .app-shell .circle-conversation .chat-heading{gap:8px;padding-bottom:4px}
+ .app-shell .circle-conversation .chat-heading h1{font-size:1rem}
+ .app-shell .circle-conversation .chat-heading>.circle-back{max-width:8rem;padding-inline:4px}
+ .circle-control-bar{gap:0 8px}
+}
