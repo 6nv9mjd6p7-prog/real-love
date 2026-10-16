@@ -235,7 +235,13 @@ function ChartTooltipContent({
                             }
                           )}
                         >
-                          <rect x="1" y="1" width="8" height="8" rx="1" fill={indicatorColor} />
+                          {indicator === "line" ? (
+                            <rect x="4" y="1" width="2" height="8" fill={indicatorColor} />
+                          ) : indicator === "dashed" ? (
+                            <path d="M5 1v8" stroke={indicatorColor} strokeWidth="2" strokeDasharray="2 1" />
+                          ) : (
+                            <rect x="1" y="1" width="8" height="8" rx="2" fill={indicatorColor} />
+                          )}
                         </svg>
                       )
                     )}
