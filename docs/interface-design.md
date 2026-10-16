@@ -94,3 +94,8 @@ Accepted conversations use separated list rows rather than individual bordered c
 ## Discovery card reading order
 
 Discovery cards begin with name and age, broad area and shared identity details, followed by interest actions and connection context. The shared-interest explanation no longer precedes the person’s name. Compact spacing retains readable text and 44px interest/bookmark targets. A way to connect and View profile share a footer row when space allows; opening the disclosure gives all first-step and availability text the full width. Narrow screens stack these actions. The complete profile remains accessible; no profile fields, filters, privacy controls or eligibility rules change. Browser/mobile QA remains outstanding.
+
+
+## Compact circle summaries
+
+Circle membership/proposal status sits alongside the title and wraps when needed. The next activity uses a separated text section rather than another coloured card. Purpose and activity text retain their complete content and line breaks. Tags, guidelines, worker privacy information, co-host reminders, join-request review and reporting remain accessible. Action targets remain at least 44px; proposal agreement, invitation consent and join-review flows are unchanged. Browser/mobile QA remains outstanding.

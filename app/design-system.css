@@ -324,3 +324,21 @@ html[data-native-platform] .app-shell:has(.conversation-screen,.circle-conversat
 .app-shell .compact-person .discovery-card-actions:has(>details[open])>.profile-link,
 .app-shell .compact-person .discovery-card-actions:not(:has(>details))>.profile-link{grid-column:1/-1;width:100%}
 @media(max-width:360px){.discovery-card-actions{grid-template-columns:minmax(0,1fr)}.app-shell .compact-person .discovery-card-actions>.profile-link{width:100%}}
+
+/* Circle summaries keep status and next activity close to their title and purpose. */
+.app-shell .circle-grid .circle-card{padding:14px;gap:8px}
+.circle-card-heading{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:4px 12px;min-width:0}
+.app-shell .circle-card-heading h2{flex:1 1 10rem;min-width:0;margin:0;font-size:1.0625rem;line-height:1.4;overflow-wrap:anywhere}
+.circle-card-heading>.circle-status{font-size:.75rem;line-height:1.5;font-weight:600;color:var(--accent);overflow-wrap:anywhere}
+.app-shell .circle-card .circle-purpose{font-size:.9375rem;line-height:1.5;white-space:pre-wrap}
+.app-shell .circle-card .interest-tags{display:flex;flex-wrap:wrap;gap:6px;margin:0}
+.app-shell .circle-card .interest-action{min-height:44px;padding:6px 8px;font-size:.8125rem;gap:5px;box-shadow:none}
+.app-shell .circle-card .first-step{padding:8px 0;margin:0;border:0;border-top:1px solid var(--border);border-bottom:1px solid var(--border);border-radius:0;background:transparent}
+.app-shell .circle-card .first-step>strong{font-size:.8125rem;color:var(--muted)}
+.app-shell .circle-card .first-step>p{margin-top:3px;font-size:.9375rem;line-height:1.5;white-space:pre-wrap}
+.app-shell .circle-card .circle-card-meta{margin:0;font-size:.8125rem;line-height:1.5}
+.app-shell .circle-card .inline-actions{margin-top:0;gap:8px}
+.app-shell .circle-card .inline-actions>.primary,.app-shell .circle-card .inline-actions>.secondary{min-height:44px;padding:8px 12px;font-size:.875rem}
+.app-shell .circle-card>details{margin:0;border:0;border-bottom:1px solid var(--border);border-radius:0;background:transparent;padding:0}
+.app-shell .circle-card>details>summary{min-height:44px;padding:10px 0;font-size:.875rem;line-height:1.5}
+.app-shell .circle-card>details[open]{padding-bottom:10px}
