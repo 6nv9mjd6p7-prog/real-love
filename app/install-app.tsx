@@ -36,7 +36,7 @@ export default function InstallApp() {
   // Installed web apps and the native shell already have a home-screen entry.
   if (nativeApp || installed) return null;
   return <section className="install-app" aria-label="Install Real Love">
-    <button className="secondary" aria-controls="real-love-install-guide" aria-expanded={open} onClick={() => setOpen(!open)}>{open ? 'Close install guide' : 'Add Real Love to your phone'}</button>
+    <button className="secondary" aria-label={open ? 'Close install guide' : 'Add Real Love to your phone'} aria-controls="real-love-install-guide" aria-expanded={open} onClick={() => setOpen(!open)}><span className="utility-label-full">{open ? 'Close install guide' : 'Add Real Love to your phone'}</span><span className="utility-label-short" aria-hidden="true">{open ? 'Close guide' : 'Add to phone'}</span></button>
     {open && <div className="install-guide" id="real-love-install-guide">
       <h2>Keep Real Love on your home screen</h2>
       {prompt ? <button className="primary" disabled={busy} onClick={install}>{busy ? 'Opening installation…' : 'Install Real Love'}</button> : ios ? <p>Open this website in Safari. Tap Share, choose Add to Home Screen, then tap Add. If shown, turn on Open as Web App.</p> : <p>Open your browser menu and look for Install app or Add to Home screen. On a computer, look for an install icon in the address bar. If your browser doesn’t offer installation, you can keep using the website.</p>}
