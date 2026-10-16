@@ -615,8 +615,8 @@ html[data-native-platform] footer{padding-bottom:max(22px,env(safe-area-inset-bo
 .location-search>.field-help{margin-top:8px}
 
 /* Apply the same affordance to fields regardless of their label or container.
-   Exclude native choice controls, sliders, hidden inputs, and input buttons. */
-:root body :is(input,textarea,select):not([type=checkbox]):not([type=radio]):not([type=range]):not([type=hidden]):not([data-input-otp]):not([type=button]):not([type=submit]):not([type=reset]):not([type=image]){
+   Exclude native choice controls, sliders, visually hidden inputs, and input buttons. */
+:root body :is(input,textarea,select):not(.sr-only):not([type=checkbox]):not([type=radio]):not([type=range]):not([type=hidden]):not([data-input-otp]):not([type=button]):not([type=submit]):not([type=reset]):not([type=image]){
   box-sizing:border-box;width:100%;max-width:100%;min-width:0;min-height:48px;
   border:1.5px solid var(--field-border);border-radius:var(--control-radius);
   background:#fbfcff;color:var(--ink);padding:12px 14px;

@@ -109,3 +109,8 @@ Admission checks, the applicant-specific reason, validation and approval stay to
 ## Compact notifications and alert settings
 
 Notification filters wrap into visible rows instead of requiring horizontal scrolling, while keeping their labels, selection states and unread counts. Event titles, full details, timestamps and specific destination labels remain visible. Rows use smaller gaps and type hierarchy; narrow screens place the destination label below the content rather than squeezing the event text. Unread emphasis and inward focus outlines remain. Device setup and activity preferences share one surface with separated disclosure rows. Notification access checks, marking read, destinations and device permissions are unchanged. Browser/mobile QA remains outstanding.
+
+
+## Hidden photo-picker overflow fix
+
+Signed-in browser testing found that the shared visible-field rule stretched the composer’s clipped photo input to the full document width and 48px height. Its absolute offset then extended the page’s horizontal scroll bounds. The visible-field sizing selector now excludes sr-only controls, allowing the existing 1px clipped input styling to apply. The accessible photo label and attachment button remain unchanged. This fixes the styling cause rather than hiding further overflow. Email-linking availability was also observed as a separate issue; existing ChatGPT-linked member access still worked.
