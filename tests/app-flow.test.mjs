@@ -1,5 +1,3 @@
-Warning: truncated output (original token count: 27274)
-Total output lines: 603
 
 import ts from 'typescript';
 import {readFileSync,readdirSync} from 'node:fs';
@@ -19,8 +17,7 @@ const DB={prepare(query){let values=[];return {bind(...v){values=v;return this;}
 globalThis.__rlEnv={DB,PILOT_OWNER_EMAIL:'referee@test.invalid',BUCKET:{async put(key,value){memory.set(key,new Uint8Array(value));},async head(key){const bytes=memory.get(key);return bytes?{size:bytes.length,httpEtag:'\"'+key+'\"'}:null;},async get(key,options){const bytes=memory.get(key);if(!bytes)return null;const range=options?.range;return {body:range?bytes.slice(range.offset,range.offset+range.length):bytes,size:bytes.length};},async delete(key){memory.delete(key);}}};
 const rulesUrl=compile('app/rules.ts');const safetyUrl=compile('app/safety.ts',s=>s.replace("import {env} from 'cloudflare:workers';",'const env=globalThis.__rlEnv;').replaceAll("from './rules'",`from '${rulesUrl}'`));const modPolicyUrl=compile('app/moderation-policy.ts',s=>s.replace("from './safety'",`from '${safetyUrl}'`));
 const circlePolicyUrl=compile('app/circle-policy.ts',s=>s.replace("import {env} from 'cloudflare:workers';",'const env=globalThis.__rlEnv;').replace("from './safety'",`from '${safetyUrl}'`));
-const chatToolsUrl=compile('app/chat-tools.ts');const chatServerUrl=compile('app/chat-server.ts',s=>s.replace("import {env} from 'cloudflare:workers';",'const env=globalThis.__rlEnv;').replace("from './chat-tools'",`from '${chatToolsUrl}'`).replace("from './safety'",`from '${safetyUrl}'`));
-const webPushUrl=compile('app/web-push.ts');globalThis.__pushTasks=[];const notificationServerUrl=compile('app/notifications-server.ts',s=>s.replace("import {env,waitUntil} from 'cloudflare:workers';",'const env=globalThis.__rlEnv;const waitUntil=p=>globalThis.__pushTasks.push(p);').replace("from './web-push'",`from '${webPushUrl}'`).replace("from './safety'",`from '${safetyUrl}'`));
+const chatToolsUrl=compile('app/chat-tools.ts');const chatServerUrl=compile('app/chat-server.ts',s=>s.replace("import {env} from 'cloudflare:workers';",'const env=globalThis.__rlEnv;').replace("from './chat-tools'",`from '${chatToolsUrl}'`).replace("from './safety'",`from '${safetyUrl}'`));const webPushUrl=compile('app/web-push.ts');globalThis.__pushTasks=[];const notificationServerUrl=compile('app/notifications-server.ts',s=>s.replace("import {env,waitUntil} from 'cloudflare:workers';",'const env=globalThis.__rlEnv;const waitUntil=p=>globalThis.__pushTasks.push(p);').replace("from './web-push'",`from '${webPushUrl}'`).replace("from './safety'",`from '${safetyUrl}'`));
 const voiceAccessUrl=compile('app/voice-access.ts',s=>s.replace("import {env} from 'cloudflare:workers';",'const env=globalThis.__rlEnv;').replace("from './safety'",`from '${safetyUrl}'`));
 const revisionUrl=compile('app/message-revision.ts');
 const historyUrl=compile('app/history-tools.ts',s=>s.replace("from './safety'",`from '${safetyUrl}'`));const analyticsUrl=compile('app/product-analytics.ts');
@@ -39,8 +36,7 @@ assert.equal((await post('alice',{action:'profile',profile:{...draft('alice'),bi
 const cfAustin={city:'Austin',region:'Texas',country:'US'};
 assert.equal((await post('locator',{action:'connection_location'})).status,404,'place search remains available when connection metadata is absent');
 const connectionArea=await post('locator',{action:'connection_location'},cfAustin);assert.deepEqual(connectionArea.data.location,{city:'Austin',region:'Texas',country:'United States'});
-assert.equal((await post('locator',{action:'profile',confirmLocation:true,profile:draft('locator')},cfAustin)).status,200);
-let locator=(await get('locator')).data.me;assert.equal(locator.locationConfirmed,true);assert.equal(locator.region,'Texas');assert.equal(locator.country,'United States');assert(!('locationConfirmationKey' in locator)&&!('locationConfirmedAt' in locator),'raw confirmation metadata stays private');
+assert.equal((await post('locator',{action:'profile',confirmLocation:true,profile:draft('locator')},cfAustin)).status,200);let locator=(await get('locator')).data.me;assert.equal(locator.locationConfirmed,true);assert.equal(locator.region,'Texas');assert.equal(locator.country,'United States');assert(!('locationConfirmationKey' in locator)&&!('locationConfirmedAt' in locator),'raw confirmation metadata stays private');
 assert.equal((await post('locator',{action:'profile',confirmLocation:true,profile:{...draft('locator'),city:'Dallas',areaLat:null,areaLon:null,locationPlaceId:''}},cfAustin)).data.locationConfirmed,false,'a different selected area is not confirmed');locator=(await get('locator')).data.me;assert.equal(locator.locationConfirmed,false);
 assert.equal((await post('alice',{action:'profile',profile:{...draft('alice'),firstStep:'',introPrompt:'Something I’m curious about…'}})).status,200,'only one introductory answer is required');assert.equal((await post('alice',{action:'profile',profile:{...draft('alice'),communication:['Ask before giving advice.'],communicationNote:'Direct questions help me.'}})).status,200);
 assert.equal((await get('alice')).data.account.status,'pending');
@@ -59,8 +55,7 @@ const b={...draft('bob'),orientation:'Allosexual',expectation:'Required',gender:
 assert.equal((await post('bob',{action:'profile',profile:b})).status,200);assert.equal((await review({action:'admit',target:'bob',reason:'Reviewed adult eligibility and orientation',adultReviewed:true})).status,200);
 // Ineligible bookmarked profiles must not crowd out an eligible candidate beyond 100 rows.
 for(let i=0;i<105;i++){const key='discovery-hidden-'+i;sql.prepare('INSERT INTO safety_accounts (id,status,updated) VALUES (?,?,?)').run(key,'admitted',new Date().toISOString());sql.prepare('INSERT INTO profiles (id,data,active,updated) VALUES (?,?,1,?)').run(key,JSON.stringify({...draft(key),city:'Different city',remote:false}),new Date().toISOString());sql.prepare('INSERT INTO bookmarks (member,target) VALUES (?,?)').run('alice',key);}
-assert((await get('alice')).data.people.some(p=>p.id==='bob'),'eligible people beyond the first 100 candidates remain discoverable');
-assert(!(await get('alice')).data.people.some(p=>'birthDate' in p||'promptKeys' in p),'discovery never exposes private profile data');
+assert((await get('alice')).data.people.some(p=>p.id==='bob'),'eligible people beyond the first 100 candidates remain discoverable');assert(!(await get('alice')).data.people.some(p=>'birthDate' in p||'promptKeys' in p),'discovery never exposes private profile data');
 assert((await get('bob')).data.me.birthDate,'the owner can edit their private birth date');
 sql.prepare("DELETE FROM bookmarks WHERE target LIKE 'discovery-hidden-%'").run();sql.prepare("DELETE FROM profiles WHERE id LIKE 'discovery-hidden-%'").run();sql.prepare("DELETE FROM safety_accounts WHERE id LIKE 'discovery-hidden-%'").run();
 assert.deepEqual((await get('bob')).data.people.find(p=>p.id==='alice').communication,['Ask before giving advice.']);assert.equal((await get('bob')).data.people.find(p=>p.id==='alice').communicationNote,'Direct questions help me.');
@@ -79,8 +74,7 @@ as('alice');let r=await photo.POST(new Request('https://rl.test/api/photo',{meth
 assert.equal((await get('alice')).data.me.photoPending,false,'uploads need no approval');sql.prepare("UPDATE profiles SET data=json_set(data,'$.photoPending',json('true')) WHERE id='alice'").run();
 sql.prepare('INSERT INTO blocks (actor,target) VALUES (?,?)').run('referee','alice');as('referee');assert((await (await moderation.GET()).json()).photos.some(p=>p.id==='alice'),'owner can review despite a connection conflict');sql.prepare('DELETE FROM blocks WHERE actor=? AND target=?').run('referee','alice');as('referee');assert((await (await moderation.GET()).json()).photos.some(p=>p.id==='alice'),'independent reviewers can see pending photos');
 result=await get('bob');assert.equal(result.data.connections[0].person.hasPhoto,false,'unreviewed photo never visible');assert.equal((await review({action:'approve_photo',target:'alice',reason:'Reviewed photo against content guidelines'})).status,200);result=await get('bob');assert.equal(result.data.connections[0].person.hasPhoto,true);assert(!JSON.stringify(result.data).includes('profile-photos/'),'storage keys must not leak');
-as('bob');r=await photo.GET(new Request('https://rl.test/api/photo?member=alice'));assert.equal(r.status,403,'photos hidden before acceptance');
-assert.equal((await post('bob',{action:'accept',connection:id})).status,200);
+as('bob');r=await photo.GET(new Request('https://rl.test/api/photo?member=alice'));assert.equal(r.status,403,'photos hidden before acceptance');assert.equal((await post('bob',{action:'accept',connection:id})).status,200);
 assert.equal((await post('alice',{action:'bookmark',target:'bob',saved:true})).status,200);assert((await get('alice')).data.bookmarks.includes('bob'),'bookmarks persist on fresh account loads');assert(!(await get('bob')).data.bookmarks.includes('bob'),'bookmarks remain private');assert.equal((await post('alice',{action:'bookmark',target:'demo-jules',saved:true})).status,400);
 
 as('bob');r=await photo.GET(new Request('https://rl.test/api/photo?member=alice'));assert.equal(r.status,403,'acceptance does not reveal photos');assert.equal((await post('alice',{action:'profile',profile:{...draft('alice'),photoDescription:'A close-up portrait beside a garden wall.'}})).status,200);assert.equal((await get('alice')).data.me.photoDescription,'A close-up portrait beside a garden wall.');assert(!('photoDescription' in (await get('bob')).data.people.find(p=>p.id==='alice')),'photo descriptions stay out of general discovery');assert.equal((await post('alice',{action:'photo_consent',connection:id,share:true})).status,200);as('bob');assert.equal((await photo.GET(new Request('https://rl.test/api/photo?member=alice'))).status,403,'one-sided sharing is insufficient');assert(!('photoDescription' in (await get('bob')).data.connections[0].person),'description stays hidden before mutual photo consent');assert.equal((await post('bob',{action:'photo_consent',connection:id,share:true})).status,200);as('bob');assert.equal((await get('bob')).data.connections[0].person.photoDescription,'A close-up portrait beside a garden wall.','mutual photo consent unlocks its accessible description');r=await photo.GET(new Request('https://rl.test/api/photo?member=alice'));assert.equal(r.status,200);assert.equal(r.headers.get('cache-control'),'private, no-store');
@@ -99,8 +93,7 @@ assert.equal((await get('alice')).data.connections.find(c=>c.id===id).unread,1,'
 // Replies and reactions are durable, scoped, and idempotent.
 const rootMessage=(await post('alice',{action:'messages',connection:id})).data.messages[0].id;
 const replyAttempt=crypto.randomUUID(),replyMessageId=JSON.stringify([id,'alice',replyAttempt]);
-const replyPayload={action:'message',connection:id,text:'A specific reply',replyTo:rootMessage,clientMessageId:replyAttempt};
-assert.equal((await post('alice',replyPayload)).status,200);assert.equal((await post('alice',replyPayload)).status,200);assert.equal(sql.prepare("SELECT COUNT(*) AS n FROM notifications WHERE member='bob' AND kind='message' AND scope=?").get(id).n,1,'a retry produces only one notification');
+const replyPayload={action:'message',connection:id,text:'A specific reply',replyTo:rootMessage,clientMessageId:replyAttempt};assert.equal((await post('alice',replyPayload)).status,200);assert.equal((await post('alice',replyPayload)).status,200);assert.equal(sql.prepare("SELECT COUNT(*) AS n FROM notifications WHERE member='bob' AND kind='message' AND scope=?").get(id).n,1,'a retry produces only one notification');
 
 assert.equal((await post('alice',{...replyPayload,replyTo:''})).status,409,'same attempt cannot change reply target');
 let replyThread=(await post('bob',{action:'messages',connection:id})).data.messages;
@@ -119,8 +112,7 @@ assert.equal((await post('alice',{action:'visibility',active:false})).status,200
 assert.equal((await post('alice',{action:'react',connection:id,message:rootMessage,emoji:'👍'})).status,403,'paused members cannot react');
 assert.equal((await post('alice',{action:'visibility',active:true})).status,200);
 assert.equal((await get('bob')).data.connections.find(c=>c.id===id).lastMessage.body,'A specific reply');
-sql.prepare('DELETE FROM messages WHERE id=?').run(replyMessageId);sql.prepare("DELETE FROM message_reactions WHERE kind='direct' AND scope=?").run(id);
-s…15274 tokens truncated…(await post('history-c',{action:'messages',connection:historyConnection,before:latestPage.data.cursor})).status,404);
+sql.prepare('DELETE FROM messages WHERE id=?').run(replyMessageId);sql.prepare("DELETE FROM message_reactions WHERE kind='direct' AND scope=?").run(id);s…15274 tokens truncated…(await post('history-c',{action:'messages',connection:historyConnection,before:latestPage.data.cursor})).status,404);
 assert.equal((await notificationPost('history-a',{action:'mute',channel:'direct',scope:historyConnection,muted:true})).status,200);as('history-a');assert((await (await notificationsApi.GET()).json()).mutedScopes.includes('direct:'+historyConnection));assert.equal((await notificationPost('history-c',{action:'mute',channel:'direct',scope:historyConnection,muted:true})).status,403);
 // The circle cursor cannot retrieve anything from before a participant's admission.
 assert.equal((await circlePost('history-a',{action:'propose',connection:historyConnection,title:'History pages',description:'Read and talk together',tags:['History'],activity:'Read a short piece'})).status,200);
@@ -139,8 +131,7 @@ assert.equal(sql.prepare('SELECT read FROM notifications WHERE id=?').get('circl
 await circlePost('history-b',{action:'conversation',circle:historyCircle,before:groupLatest.data.cursor});
 assert.equal(sql.prepare('SELECT read FROM notifications WHERE id=?').get('circle-read-old').read,0,'older history fetch never acknowledges activity');
 addCircleAlert('circle-read-new');
-assert.equal((await circlePost('history-b',{action:'read_conversation',circle:historyCircle,through:readSnapshot.data.readCursor})).status,200);
-assert.equal(sql.prepare('SELECT read FROM notifications WHERE id=?').get('circle-read-old').read,1);
+assert.equal((await circlePost('history-b',{action:'read_conversation',circle:historyCircle,through:readSnapshot.data.readCursor})).status,200);assert.equal(sql.prepare('SELECT read FROM notifications WHERE id=?').get('circle-read-old').read,1);
 for(const key of ['circle-read-new','circle-read-other-member','circle-read-other-scope','circle-read-request'])assert.equal(sql.prepare('SELECT read FROM notifications WHERE id=?').get(key).read,0,'acknowledgement does not clear unrelated or newer activity');
 const readUnchanged=await circlePost('history-b',{action:'conversation',circle:historyCircle,knownRevision:readSnapshot.data.revision});assert.equal(readUnchanged.data.unchanged,true);assert(readUnchanged.data.readCursor>readSnapshot.data.readCursor,'unchanged messages still provide a fresh notification snapshot');
 assert.equal((await circlePost('history-b',{action:'read_conversation',circle:historyCircle,through:readUnchanged.data.readCursor})).status,200);assert.equal(sql.prepare('SELECT read FROM notifications WHERE id=?').get('circle-read-new').read,1);
@@ -159,8 +150,7 @@ console.log('Optional communication preferences round-trip and private daily fee
 
 const identityProfile={...draft('identity-member'),gender:'Self-described',genderDescription:'Genderfluid',background:'Yoruba',interested:model.genders};assert.equal((await post('identity-member',{action:'profile',profile:identityProfile})).status,200);let identitySaved=(await get('identity-member')).data.me;assert.equal(identitySaved.genderDescription,'Genderfluid');assert.equal(identitySaved.background,'Yoruba');assert.equal((await post('identity-member',{action:'profile',profile:{...identityProfile,gender:'Prefer not to say',background:''}})).status,200);identitySaved=(await get('identity-member')).data.me;assert.equal(identitySaved.gender,'Prefer not to say');assert(!identitySaved.genderDescription);assert.equal(identitySaved.background,'');assert.equal(JSON.parse(sql.prepare('SELECT data FROM profiles WHERE id=?').get('identity-member').data).genderDescription,'','withdrawing gender sharing clears the saved description');console.log('Identity self-description, optional sharing, legacy preference lists, and withdrawal passed.');
 
-// Journey milestones are allowlisted, account scoped, and idempotent.
-as(null);assert.equal((await metrics.POST(request({action:'journey',expectedAccount:'alice',kind:'signup_basics_completed'}))).status,401);
+// Journey milestones are allowlisted, account scoped, and idempotent.as(null);assert.equal((await metrics.POST(request({action:'journey',expectedAccount:'alice',kind:'signup_basics_completed'}))).status,401);
 as('identity-member');assert.equal((await metrics.POST(request({action:'journey',expectedAccount:'other',kind:'signup_basics_completed'}))).status,400);
 assert.equal((await metrics.POST(request({action:'journey',expectedAccount:'identity-member',kind:'approved'}))).status,400,'clients cannot claim server milestones');
 assert.equal((await metrics.POST(request({action:'journey',expectedAccount:'identity-member',kind:'discovery_opened'}))).status,403,'unapproved members cannot claim discovery access');
@@ -179,8 +169,7 @@ const measured=await (await metrics.GET()).json();
 assert.equal(measured.cohort.approved-baseline.cohort.approved,2,'only matured approval windows from the past month count');
 for(const field of ['discovered','viewed','chatted','invited','accepted','messaged','conversations','returned'])assert.equal(measured.cohort[field]-baseline.cohort[field],1,field+' excludes early, late, recent and old events');
 assert.equal(measured.signupCohort.started-baseline.signupCohort.started,2);assert.equal(measured.signupCohort.basics-baseline.signupCohort.basics,2);assert.equal(measured.signupCohort.interests-baseline.signupCohort.interests,1);assert.equal(measured.signupCohort.saved-baseline.signupCohort.saved,1);
-assert(!JSON.stringify(measured).includes('journey-a'),'owner response returns totals, not member identifiers');
-console.log('Journey allowlist, authorization, deduplication, content omission, sender milestones and seven-day observation windows passed.');
+assert(!JSON.stringify(measured).includes('journey-a'),'owner response returns totals, not member identifiers');console.log('Journey allowlist, authorization, deduplication, content omission, sender milestones and seven-day observation windows passed.');
 
 // Worker support reuses the same server-enforced membership and moderation boundary.
 const workerIds=['worker-a','worker-b','worker-c','worker-outsider'];
@@ -199,8 +188,7 @@ assert.equal((await workerAct('worker-a',{...workerDraft,category:'worker_workpl
 sql.prepare("DELETE FROM safety_events WHERE actor='worker-a' AND kind='circle_propose'").run();
 assert.equal((await workerAct('worker-a',workerDraft)).status,200);
 const workerCircle=sql.prepare("SELECT * FROM circles WHERE category='worker_industry'").get();
-assert.equal(workerCircle.membership_rules,workerDraft.membershipRules);
-assert.equal((await workerList('worker-outsider')).data.circles.some(c=>c.id===workerCircle.id),false,'pending proposal stays with founders');
+assert.equal(workerCircle.membership_rules,workerDraft.membershipRules);assert.equal((await workerList('worker-outsider')).data.circles.some(c=>c.id===workerCircle.id),false,'pending proposal stays with founders');
 assert.equal(sql.prepare('SELECT COUNT(*) AS n FROM circle_messages WHERE circle=?').get(workerCircle.id).n,0,'direct messages never copied');
 assert.equal((await workerAct('worker-b',{action:'approve',circle:workerCircle.id})).status,400);
 assert.equal((await workerAct('worker-b',{action:'approve',circle:workerCircle.id,workerConsent:true})).status,200);
@@ -219,8 +207,7 @@ assert.equal((await workerAct('worker-a',{action:'admit',circle:workerCircle.id,
 let workerConversation=await workerAct('worker-c',{action:'conversation',circle:workerCircle.id});
 assert.equal(workerConversation.status,200);assert.equal(workerConversation.data.messages.length,0,'new member cannot read earlier messages');
 assert.equal((await workerAct('worker-c',{action:'message',circle:workerCircle.id,text:'Glad to learn together'})).status,200);
-assert.equal((await workerAct('worker-a',{action:'conversation',circle:workerCircle.id})).data.messages.length,2);
-assert(!JSON.stringify((await get('worker-outsider')).data.people).includes('Industry peers'),'friendship profiles contain no worker participation');
+assert.equal((await workerAct('worker-a',{action:'conversation',circle:workerCircle.id})).data.messages.length,2);assert(!JSON.stringify((await get('worker-outsider')).data.people).includes('Industry peers'),'friendship profiles contain no worker participation');
 sql.prepare("INSERT INTO blocks (actor,target) VALUES ('worker-a','worker-outsider')").run();
 assert.equal((await workerList('worker-outsider')).data.circles.some(c=>c.id===workerCircle.id),false,'blocked applicant cannot discover circle');
 assert.equal((await workerAct('worker-outsider',{action:'request',circle:workerCircle.id,workerConsent:true})).status,403);
@@ -239,8 +226,7 @@ assert.equal((await workerAct('worker-a',{...organizingDraft,workerConsent:false
 assert.equal((await workerAct('worker-a',organizingDraft)).status,200);
 const organizingCircle=sql.prepare("SELECT * FROM circles WHERE category='worker_organizing'").get();
 assert.equal(organizingCircle.tags,'[]','organizing classification survives without topic tags');
-assert(!(await workerList('worker-c')).data.circles.some(c=>c.id===organizingCircle.id),'proposal is not visible before both founders agree');
-assert.equal((await workerAct('worker-b',{action:'approve',circle:organizingCircle.id})).status,400);
+assert(!(await workerList('worker-c')).data.circles.some(c=>c.id===organizingCircle.id),'proposal is not visible before both founders agree');assert.equal((await workerAct('worker-b',{action:'approve',circle:organizingCircle.id})).status,400);
 assert.equal((await workerAct('worker-b',{action:'approve',circle:organizingCircle.id,workerConsent:true})).status,200);
 assert(!(await workerList('worker-c')).data.circles.some(c=>c.id===organizingCircle.id),'approved organizing circles stay out of worker discovery');assert(!(await workerList('worker-c')).data.circles.some(c=>JSON.stringify(c).includes('Hospitality organizing learners')),'unlisted organizing details are not returned to outsiders');assert((await workerList('worker-a')).data.circles.some(c=>c.id===organizingCircle.id),'founders can still access their unlisted organizing circle');
 assert(!(await workerList('worker-c',false)).data.circles.some(c=>c.id===organizingCircle.id),'organizing circle stays out of general discovery');
@@ -259,8 +245,7 @@ assert(!(await workerList('worker-outsider')).data.circles.some(c=>c.id===organi
 assert.equal((await workerAct('worker-c',{action:'accept_invite',circle:organizingCircle.id,inviteId:invitedListing.inviteId})).status,400,'invite acceptance requires explicit access consent');
 assert.equal((await workerAct('worker-c',{action:'accept_invite',circle:organizingCircle.id,inviteId:invitedListing.inviteId,workerConsent:true})).status,200);
 const invitedConversation=await workerAct('worker-c',{action:'conversation',circle:organizingCircle.id});assert.equal(invitedConversation.status,200);assert.equal(invitedConversation.data.messages.length,0,'invitees cannot read earlier circle history');
-assert.equal((await workerAct('worker-c',{action:'message',circle:organizingCircle.id,text:'Joining from the invitation'})).status,200,'accepted invitees can participate');
-assert.equal((await workerAct('worker-a',{action:'conversation',circle:organizingCircle.id})).data.messages.length,2,'the founders and new invitee can see newly posted messages');
+assert.equal((await workerAct('worker-c',{action:'message',circle:organizingCircle.id,text:'Joining from the invitation'})).status,200,'accepted invitees can participate');assert.equal((await workerAct('worker-a',{action:'conversation',circle:organizingCircle.id})).data.messages.length,2,'the founders and new invitee can see newly posted messages');
 assert.equal((await workerAct('worker-a',{action:'conversation',circle:organizingCircle.id})).data.messages.length,1,'the founders retain access to their private discussion');
 console.log('Union-organizing category, discovery separation, two-founder consent and admission history checks passed.');
 
@@ -279,8 +264,7 @@ assert.equal((await workerAct('worker-a',{action:'admit',circle:mediaCircle.id,t
 const blockedPhoto=await testImagePost('worker-a',mediaCircle.id);assert.equal(blockedPhoto.response.status,200);
 const blockedPhotoUrl='/api/chat-image?kind=circle&scope='+encodeURIComponent(mediaCircle.id)+'&message='+encodeURIComponent(blockedPhoto.id);
 const blockedAudio=await testVoicePost('worker-a',mediaCircle.id);assert.equal(blockedAudio.response.status,200);
-const blockedAudioUrl='/api/voice?kind=circle&scope='+encodeURIComponent(mediaCircle.id)+'&message='+encodeURIComponent(blockedAudio.id);
-assert.equal((await testImageGet('worker-c',blockedPhotoUrl)).status,200);
+const blockedAudioUrl='/api/voice?kind=circle&scope='+encodeURIComponent(mediaCircle.id)+'&message='+encodeURIComponent(blockedAudio.id);assert.equal((await testImageGet('worker-c',blockedPhotoUrl)).status,200);
 assert.equal((await testVoiceGet('worker-c',blockedAudioUrl)).status,200);
 assert.equal((await post('worker-c',{action:'block',target:'worker-a'})).status,200);
 assert.equal((await testImageGet('worker-c',blockedPhotoUrl)).status,404,'blocking the media sender invalidates their existing photo URL');
@@ -299,8 +283,7 @@ assert.equal((await workerAct('worker-c',{action:'request',circle:mediaCircle.id
 assert.equal((await workerAct('worker-a',{action:'admit',circle:mediaCircle.id,target:'worker-c'})).status,200);
 const removedPhoto=await testImagePost('worker-b',mediaCircle.id);assert.equal(removedPhoto.response.status,200);
 const removedPhotoUrl='/api/chat-image?kind=circle&scope='+encodeURIComponent(mediaCircle.id)+'&message='+encodeURIComponent(removedPhoto.id);
-const removedAudio=await testVoicePost('worker-b',mediaCircle.id);assert.equal(removedAudio.response.status,200);
-const removedAudioUrl='/api/voice?kind=circle&scope='+encodeURIComponent(mediaCircle.id)+'&message='+encodeURIComponent(removedAudio.id);
+const removedAudio=await testVoicePost('worker-b',mediaCircle.id);assert.equal(removedAudio.response.status,200);const removedAudioUrl='/api/voice?kind=circle&scope='+encodeURIComponent(mediaCircle.id)+'&message='+encodeURIComponent(removedAudio.id);
 assert.equal((await testImageGet('worker-c',removedPhotoUrl)).status,200);
 assert.equal((await testVoiceGet('worker-c',removedAudioUrl)).status,200);
 assert.equal((await workerAct('worker-a',{action:'remove',circle:mediaCircle.id,target:'worker-c'})).status,200);
@@ -319,8 +302,7 @@ const deleteCirclePhoto=await testImagePost('worker-a',mediaCircle.id);assert.eq
 const deleteCirclePhotoUrl='/api/chat-image?kind=circle&scope='+encodeURIComponent(mediaCircle.id)+'&message='+encodeURIComponent(deleteCirclePhoto.id);
 const deleteCircleVoice=await testVoicePost('worker-a',mediaCircle.id);assert.equal(deleteCircleVoice.response.status,200);
 const deleteCircleVoiceUrl='/api/voice?kind=circle&scope='+encodeURIComponent(mediaCircle.id)+'&message='+encodeURIComponent(deleteCircleVoice.id);
-for(const url of [deleteDirectPhotoUrl,deleteCirclePhotoUrl])assert.equal((await testImageGet('worker-b',url)).status,200);
-for(const url of [deleteDirectVoiceUrl,deleteCircleVoiceUrl])assert.equal((await testVoiceGet('worker-b',url)).status,200);
+for(const url of [deleteDirectPhotoUrl,deleteCirclePhotoUrl])assert.equal((await testImageGet('worker-b',url)).status,200);for(const url of [deleteDirectVoiceUrl,deleteCircleVoiceUrl])assert.equal((await testVoiceGet('worker-b',url)).status,200);
 const deleteDirectPhotoKey=sql.prepare('SELECT attachment_key FROM messages WHERE id=?').get(deleteDirectPhoto.id).attachment_key;
 const deleteDirectVoiceKey=sql.prepare('SELECT audio_key FROM messages WHERE id=?').get(deleteDirectVoice.id).audio_key;
 const deleteCirclePhotoKey=sql.prepare('SELECT attachment_key FROM circle_messages WHERE id=?').get(deleteCirclePhoto.id).attachment_key;
@@ -339,8 +321,7 @@ for(const member of ['ongoing-a','ongoing-b','ongoing-legacy']){
 }
 for(const [connection,recipient] of [['ongoing-pair','ongoing-b'],['legacy-pair','ongoing-legacy']])sql.prepare("INSERT INTO connections (id,sender,recipient,status,kind,created,sender_photo,recipient_photo) VALUES (?,?,?,'accepted','Connect',?,1,1)").run(connection,'ongoing-a',recipient,new Date().toISOString());
 assert.equal((await get('ongoing-a')).data.connections.find(c=>c.id==='ongoing-pair').photoOngoingMine,false);
-assert.equal((await post('ongoing-a',{action:'photo_consent',connection:'ongoing-pair',share:true,ongoing:true})).status,200);
-assert.equal((await post('ongoing-b',{action:'photo_consent',connection:'ongoing-pair',share:true,ongoing:true})).status,200);
+assert.equal((await post('ongoing-a',{action:'photo_consent',connection:'ongoing-pair',share:true,ongoing:true})).status,200);assert.equal((await post('ongoing-b',{action:'photo_consent',connection:'ongoing-pair',share:true,ongoing:true})).status,200);
 // Only one member of the second connection opts in; replacement must still reset it.
 assert.equal((await post('ongoing-a',{action:'photo_consent',connection:'legacy-pair',share:true,ongoing:true})).status,200);
 async function replaceOngoingPhoto(){as('ongoing-a');return photo.POST(new Request('https://rl.test/api/photo',{method:'POST',headers:{Origin:'https://rl.test','Content-Type':'image/png'},body:image}));}
@@ -359,8 +340,7 @@ sql.prepare("UPDATE connections SET sender_photo=1,recipient_photo=1 WHERE id='l
 globalThis.__beforeRun=(query)=>{if(query.startsWith("UPDATE profiles SET data=json_set(data,'$.photoKey'")){globalThis.__beforeRun=null;sql.prepare("UPDATE profiles SET data=json_set(data,'$.photoKey','concurrent-photo') WHERE id='ongoing-a'").run();}};
 assert.equal((await replaceOngoingPhoto()).status,409);globalThis.__beforeRun=null;
 assert.equal(sql.prepare("SELECT sender_photo FROM connections WHERE id='legacy-pair'").get().sender_photo,1);
-// Explicit removal clears ongoing agreements as well.
-await post('ongoing-a',{action:'photo_consent',connection:'ongoing-pair',share:true,ongoing:true});
+// Explicit removal clears ongoing agreements as well.await post('ongoing-a',{action:'photo_consent',connection:'ongoing-pair',share:true,ongoing:true});
 await post('ongoing-b',{action:'photo_consent',connection:'ongoing-pair',share:true,ongoing:true});
 as('ongoing-a');assert.equal((await photo.POST(new Request('https://rl.test/api/photo',{method:'POST',headers:{Origin:'https://rl.test','x-photo-action':'remove'}}))).status,200);
 assert.equal(sql.prepare("SELECT sender_photo FROM connections WHERE id='ongoing-pair'").get().sender_photo,0);
