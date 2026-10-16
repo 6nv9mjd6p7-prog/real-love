@@ -269,7 +269,7 @@ async function testVoicePost(who,scope){as(who);const attempt=crypto.randomUUID(
 async function testVoiceGet(who,url){as(who);return voice.GET(new Request('https://rl.test'+url));}
 async function testImagePost(who,scope){as(who);const attempt=crypto.randomUUID();const response=await chatImage.POST(new Request('https://rl.test/api/chat-image',{method:'POST',headers:{Origin:'https://rl.test','Content-Type':'image/png','x-expected-account':who,'x-chat-image-kind':'circle','x-chat-image-scope':scope,'x-chat-image-attempt':attempt,'x-chat-image-caption':''},body:image}));return {response,id:JSON.stringify([scope,who,attempt])};}
 async function testImageGet(who,url){as(who);return chatImage.GET(new Request('https://rl.test'+url));}
-sql.prepare("DELETE FROM safety_events WHERE actor='worker-a' AND kind='circle_propose'").run();
+sql.prepare("DELETE FROM safety_events WHERE actor IN ('worker-a','worker-b','worker-c') AND kind IN ('circle_propose','circle_approve','circle_request','circle_admit','circle_leave','circle_remove')").run();
 const mediaCircleDraft={...workerDraft,title:'Media access regression',category:'worker_industry',workerConsent:true};
 assert.equal((await workerAct('worker-a',mediaCircleDraft)).status,200);
 const mediaCircle=sql.prepare("SELECT * FROM circles WHERE title='Media access regression'").get();
