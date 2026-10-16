@@ -36,6 +36,7 @@ assert(directives.get('style-src').some(source=>/^'nonce-[a-f0-9]{36}'$/.test(so
 assert(!directives.get('style-src').includes("'unsafe-inline'"),'inline stylesheet blocks are no longer universally allowed');
 assert.match(await secured.text(),/<script nonce="[a-f0-9]{36}">bootstrap\(\)<\/script><style nonce="[a-f0-9]{36}">body\{color:red\}<\/style>/,'nonces are attached to server-rendered scripts and style blocks');
 for(const file of ['app/interactive-photo.tsx','app/chat-bubble.tsx','app/dev/chat-preview/preview.tsx'])assert.doesNotMatch(readFileSync(file,'utf8'),/\sstyle=\{/,'runtime styling in '+file+' uses policy-compatible classes and data attributes');
+for(const file of ['components/ui/chart.tsx','components/ui/progress.tsx','components/ui/sidebar.tsx','components/ui/sonner.tsx','components/ui/toggle-group.tsx'])assert.doesNotMatch(readFileSync(file,'utf8'),/\sstyle=\{/,'UI component styling in '+file+' remains compatible with strict CSP');
 assert.deepEqual(directives.get('media-src'),["'self'",'blob:'],'local voice previews and private saved notes are allowed');
 assert.deepEqual(directives.get('connect-src'),["'self'"],'recordings stay on this app');
 assert.deepEqual(directives.get('object-src'),["'none'"]);
