@@ -36,7 +36,7 @@ export async function changeMessage(kind:Kind,scope:string,viewer:string,input:a
  const history=deleting?[]:[...JSON.parse(row.edit_history||'[]'),{body:row.body,at:row.edited_at||row.created}];
  const r=await db().prepare(`UPDATE ${table} SET body=?,edited_at=?,deleted_at=?,edit_count=?,edit_history=?,audio_key=CASE WHEN ?=1 THEN '' ELSE audio_key END,attachment_key=CASE WHEN ?=1 THEN '' ELSE attachment_key END WHERE id=? AND ${column}=? AND sender=? AND deleted_at='' AND edit_count=? AND created>? AND (${guard})`).bind(body,deleting?row.edited_at:now,deleting?now:'',deleting?row.edit_count:row.edit_count+1,JSON.stringify(history),deleting?1:0,deleting?1:0,row.id,scope,viewer,row.edit_count,cutoff,...values).run();
  if(!r.meta.changes)throw new SafetyError('Message or conversation permissions changed. Refresh before trying again.',409);
- if(deleting){await db().prepare('DELETE FROM message_reactions WHERE kind=? AND scope=? AND message=?').bind(kind,scope,row.id).run();if(env.BUCKET)for(const key of [row.audio_key,row.attachment_key])if(key)await env.BUCKET.delete(key);}
+ if(deleting){if(kind==='circle')await db().prepare('DELETE FROM circle_activity_participants WHERE message=?').bind(row.id).run();await db().prepare('DELETE FROM message_reactions WHERE kind=? AND scope=? AND message=?').bind(kind,scope,row.id).run();if(env.BUCKET)for(const key of [row.audio_key,row.attachment_key])if(key)await env.BUCKET.delete(key);}
 }
 export async function saveReaction(kind:Kind,scope:string,message:string,member:string,emoji:string,guard:string,values:any[]){
  if(emoji!==''&&!reactionOptions.some(x=>x.emoji===emoji))throw new SafetyError('Choose a supported reaction.',400);

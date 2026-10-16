@@ -901,3 +901,5 @@ html[data-keyboard-open] .qa-keyboard>div:first-child span{float:right}
 .together-post-heading{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}.together-post-heading span{font-size:.85em}
 .together-body{white-space:pre-wrap}.together-content .inline-actions{flex-wrap:wrap}.together-content button{min-height:44px}
 @media(max-width:360px){.together-panel>summary span{display:block;margin:4px 0 0}.together-content{padding-inline:10px}.together-form{padding:10px}}
+
+.activity-participation{margin-top:12px;padding:12px;border:1px solid var(--line);border-radius:12px;background:var(--bg)}.activity-participation>p{margin-bottom:8px}.activity-participation details{margin:10px 0}.activity-participation summary{min-height:44px;cursor:pointer}.participation-confirm{display:flex;gap:10px;flex-wrap:wrap;margin:12px 0;padding:12px;border:1px solid var(--line);border-radius:10px;background:white}.participation-confirm p{flex-basis:100%}.activity-participation li{overflow-wrap:anywhere}

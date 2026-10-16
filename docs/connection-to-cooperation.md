@@ -27,3 +27,16 @@ No payments, pooled funds, resource inventories, reservations, lending/dispute p
 5. Evaluate physical sharing and other higher-risk cooperation separately before implementing it.
 
 Automated API tests cover consent, retries, known-ID access, history, blocks, pause, revocation, reporting, pagination, closure and deletion. Component tests cover optional disclosure/form, draft recovery, attempt reuse, discussion without sending, reporting and stale-response/access-loss handling. These checks do not establish browser layout, screen-reader behavior, touch or real multiple-account usability; browser/device QA remains outstanding.
+
+
+## Activity planning extension
+
+Activities may include a structured start time. The browser interprets its `datetime-local` input in the device’s time zone and sends a canonical UTC timestamp; the board displays it in each viewer’s device time zone. A new activity time must be in the future and within two years. Existing free-text timing notes remain optional. Rescheduling currently means cancelling the old activity and posting a new one, so a prior response is never transferred to a changed date automatically.
+
+Members can choose **Planning to join**, review who will see their name, then explicitly share their response. The author is not automatically a participant. Circle members with authorized post access can see chosen names in Participation; there is no public attendance list or numerical popularity score. The response is a plan, not a booking, obligation or attendance verification.
+
+**Withdraw response** removes the member’s record without an explanation. Withdrawal remains possible on closed or cancelled activities and through the API while paused. Leaving or being removed clears responses in that circle. Account deletion clears the member’s responses and responses to posts removed with that account. Message deletion clears its response records. Paused/non-admitted members and blocked people are omitted from the visible roster.
+
+The author or a host can close responses or confirm cancellation. Cancellation stops new responses, stays visibly labelled, and sends one generic in-app update to current respondents through existing notification controls. Prior responses are retained until withdrawn or cleaned up through the circle/account lifecycle; they do not mean the cancelled activity happened. New members cannot view or respond to pre-admission activities even if open. Responses recheck the post, history, membership, block, account, start time and circle state inside their SQL insertion. Response changes are included in viewer-bounded circle revisions.
+
+Migration `0022_circle_activity_planning.sql` adds the UTC start field and `circle_activity_participants` table. No contact information, precise location, payment, calendar integration or automatic RSVP is introduced. Automated tests cover UTC conversion, consent, idempotency, access/history boundaries, cancellation and notification deduplication, blocked names, paused withdrawal, races, removal and account cleanup. Real browser/device QA is still required.
