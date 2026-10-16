@@ -31,6 +31,7 @@ globalThis.HTMLRewriter=class{on(selector,handler){this.selector=selector;this.h
 const workerSource=readFileSync('build/sites-worker.ts','utf8')
  .replace('import handler from "vinext/server/fetch-handler";', 'const handler={fetch:async()=>{globalThis.__securityHandlerCalls++;return globalThis.__securityResponse;}};')
  .replace('import { runWithConnectorBinding } from "../lib/connector-context";', 'const runWithConnectorBinding=(_,fn)=>fn();')
+ .replace('import { cleanup } from "../app/safety";', 'const cleanup=()=>{globalThis.__retentionCleanupCalls++;return Promise.resolve();};')
  .replaceAll('import.meta.env.DEV','false');
 const {default:worker}=await import(compile(workerSource));
 globalThis.__securityHandlerCalls=0;
@@ -58,6 +59,11 @@ let limitedKey='';const limitedApi=await worker.fetch(new Request('https://examp
 const limitedAuth=await worker.fetch(new Request('https://example.test/api/auth',{method:'POST',headers:{'CF-Connecting-IP':'203.0.113.6'}}),{RATE_LIMITER_AUTH:{async limit(){return {success:false};}}},{});assert.equal(limitedAuth.status,429,'sign-in uses its stricter edge limiter');assert.equal(globalThis.__securityHandlerCalls,1);
 const insecurePreview=await worker.fetch(new Request('http://localhost/'),{},{});
 assert.equal(insecurePreview.headers.get('Strict-Transport-Security'),null,'local HTTP previews do not receive HSTS');
+globalThis.__retentionCleanupCalls=0;
+let scheduledCleanup;
+worker.scheduled({}, {}, {waitUntil(promise){scheduledCleanup=promise;}});
+await scheduledCleanup;
+assert.equal(globalThis.__retentionCleanupCalls,1,'the scheduled Worker event invokes report and safety data retention cleanup');
 globalThis.__securityResponse=new Response('photo',{headers:{'Content-Security-Policy':"default-src 'none'; sandbox"}});
 const photoResponse=await worker.fetch(new Request('https://example.test/api/photo'),{},{});
 assert.equal(photoResponse.headers.get('Content-Security-Policy'),"default-src 'none'; sandbox",'specific photo policy is preserved');
