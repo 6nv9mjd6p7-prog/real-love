@@ -52,3 +52,7 @@ Signed-out circle routes now render an account-entry view before mounting the me
 ## Review decision proximity
 
 Reviewer assignment now groups the admitted-member selector, required reason, validation guidance and Assign reviewer action. Each report and reviewer-role removal has its own local reason, so text entered for one decision cannot enable another. The remote shared reason panel is removed. Successful actions clear their own reason; failed actions preserve it for retry. Selecting a different reviewer candidate clears the assignment reason. Admission keeps its existing per-applicant reason and eligibility checks.
+
+## Chat list content
+
+Chat rows now show the name, latest-message timestamp, latest message and unread count. The opening profile prompt no longer adds a competing preview line. Before the first message, the row says Say hello. The complete invitation and its original profile context remain under Opening invitation inside the conversation and in Requests/Sent.
