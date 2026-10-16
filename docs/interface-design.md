@@ -70,3 +70,7 @@ In-app notifications now resolve person names, circle titles, event-specific des
 ## Mobile support and installation row
 
 The website support and installation actions now share one compact mobile row. Its minimum height is 60px instead of reserving 112px, including when installation is unavailable or the app is already installed. Controls retain 44px targets. The mobile install label is Add to phone, with the full action retained in its accessible name. Support introductory text remains accessible to assistive technology, and the visible external support link remains explicit. Installation instructions expand into document flow only when requested; all Safari, browser-menu and connectivity guidance remains intact. Native and conversation screens retain their existing utility visibility rules.
+
+## Handover recovery path
+
+Open circle management from leave review now expands the management disclosure and focuses the co-host selector after the conversation finishes loading. The handover section precedes general editing for the remaining host. If there are no candidates, focus goes to its explanatory heading. The leave dialog does not restore focus over the destination. Paused hosts get a direct Settings link to resume before managing handover.

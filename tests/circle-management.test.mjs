@@ -7,9 +7,9 @@ import React from 'react';
 import {renderToStaticMarkup} from 'react-dom/server';
 const require=createRequire(import.meta.url);
 let source=ts.transpileModule(readFileSync('app/circle-management.tsx','utf8'),{compilerOptions:{module:ts.ModuleKind.ESNext,jsx:ts.JsxEmit.ReactJSX}}).outputText;
-source=source.replace(/import \{ useState, useEffect \} from ['"]react['"];?/,'const useEffect=()=>{};const useState=initial=>[globalThis.circleManagementStates?.[globalThis.circleManagementIndex++]??initial,()=>{}];');
+source=source.replace(/import \{ useState, useEffect, useRef \} from ['"]react['"];?/,'const useEffect=()=>{};const useRef=initial=>({current:initial});const useState=initial=>[globalThis.circleManagementStates?.[globalThis.circleManagementIndex++]??initial,()=>{}];');
 source=source.replace(/from ["']react\/jsx-runtime["']/,`from '${pathToFileURL(require.resolve('react/jsx-runtime')).href}'`);
-const {default:Management}=await import('data:text/javascript;base64,'+Buffer.from(source).toString('base64'));
+const {default:Management,revealCircleHandover}=await import('data:text/javascript;base64,'+Buffer.from(source).toString('base64'));
 const circle={id:'circle',title:'Fixed title',description:'Original circle purpose.',activity:'Original next activity.',role:'host',hostCount:1};
 const members=[{id:'host',name:'Host',role:'host',status:'accepted',mine:true},{id:'member',name:'Member',role:'member',status:'accepted'},{id:'request',name:'Applicant',role:'member',status:'requested'}];
 function tree(c=circle,states){globalThis.circleManagementIndex=0;globalThis.circleManagementStates=states;return Management({circle:c,members,disabled:false,onAction:async(data)=>{globalThis.managementAction=data;return true;}});}
@@ -25,3 +25,10 @@ await invitation.find(n=>n.type==='button'&&n.props.children==='Accept co-host r
 await invitation.find(n=>n.type==='button'&&n.props.children==='Decline').props.onClick();assert.equal(globalThis.managementAction.action,'decline_host');
 delete globalThis.circleManagementStates;delete globalThis.circleManagementIndex;delete globalThis.managementAction;
 console.log('Circle edit payloads, current-member handover choices, explicit co-host consent and member-only visibility passed.');
+
+let focused='',scrolled='';
+const field={disabled:false,focus:()=>focused='select',scrollIntoView:()=>scrolled='select'};
+const heading={focus:()=>focused='heading',scrollIntoView:()=>scrolled='heading'};
+const root={open:false,querySelector:selector=>selector.endsWith('select')?field:heading};
+revealCircleHandover(root);assert.equal(root.open,true);assert.equal(focused,'select');assert.equal(scrolled,'select');
+field.disabled=true;revealCircleHandover(root);assert.equal(focused,'heading','an empty candidate list focuses the handover explanation');
