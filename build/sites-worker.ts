@@ -35,7 +35,17 @@ export default {
     // Same-origin location requests still require explicit browser permission.
     security.set('Permissions-Policy','camera=(), microphone=(self), geolocation=(self)');
     security.set('Cross-Origin-Resource-Policy','same-origin');
-    if(!security.has('Content-Security-Policy'))security.set('Content-Security-Policy',"default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' blob: data:; media-src 'self' blob:; connect-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'self' https://chatgpt.com https://*.chatgpt.com");
-    return new Response(response.body,{status:response.status,statusText:response.statusText,headers:security});
+    let body=response.body;
+    if(!security.has('Content-Security-Policy')){
+      // A per-response nonce lets the server-rendered app run its framework
+      // bootstrap scripts without allowing arbitrary inline JavaScript.
+      const nonceBytes=crypto.getRandomValues(new Uint8Array(18));
+      const nonce=Array.from(nonceBytes,byte=>byte.toString(16).padStart(2,'0')).join('');
+      const nonceScripts=response.headers.get('Content-Type')?.toLowerCase().includes('text/html');
+      security.set('Content-Security-Policy',`default-src 'self'; script-src 'self' 'nonce-${nonce}'; style-src 'self' 'unsafe-inline'; img-src 'self' blob: data:; media-src 'self' blob:; connect-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'self' https://chatgpt.com https://*.chatgpt.com`);
+      // Only HTML pages need the nonce; API responses retain their original body.
+      if(nonceScripts)body=new HTMLRewriter().on('script',{element(element){element.setAttribute('nonce',nonce);}}).transform(response).body;
+    }
+    return new Response(body,{status:response.status,statusText:response.statusText,headers:security});
   },
 };
