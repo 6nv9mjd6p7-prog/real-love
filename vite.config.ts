@@ -34,6 +34,11 @@ const localBindingConfig = {
         },
       ]
     : [],
+  // Native edge limits are per source IP and sit in front of D1-backed quotas.
+  ratelimits: [
+    { name: "RATE_LIMITER_API", namespace_id: "8073106011", simple: { limit: 300, period: 60 as const } },
+    { name: "RATE_LIMITER_AUTH", namespace_id: "8073106012", simple: { limit: 30, period: 60 as const } },
+  ],
 };
 
 export default defineConfig(async ({ command }) => {
