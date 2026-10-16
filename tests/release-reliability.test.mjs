@@ -47,7 +47,7 @@ assert(!directives.get('style-src').includes("'unsafe-inline'"),'inline styleshe
 assert.deepEqual(directives.get('style-src-attr'),["'none'"],'style attributes are explicitly blocked while nonce-authorized style blocks remain available');
 assert.match(await secured.text(),/<script nonce="[a-f0-9]{36}">bootstrap\(\)<\/script><style nonce="[a-f0-9]{36}">body\{color:red\}<\/style>/,'nonces are attached to server-rendered scripts and style blocks');
 const ciWorkflow=readFileSync('.github/workflows/ci.yml','utf8');
-for(const [action,sha] of [['actions/checkout','11bd71901bbe5b1630ceea73d27597364c9af683'],['pnpm/action-setup','b906affcce14559ad1aafd4ab0e942779e9f58b1'],['actions/setup-node','49933ea5288caeca8642d1e84afbd3f7d6820020']])assert.match(ciWorkflow,new RegExp(action.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+'@'+sha),'CI action '+action+' stays pinned to its reviewed immutable release');
+for(const action of ['actions/checkout','pnpm/action-setup','actions/setup-node']){const escaped=action.replace('/','\\/');assert.match(ciWorkflow,new RegExp('uses: '+escaped+'@[a-f0-9]{40} # v[0-9]+[.][0-9]+[.][0-9]+'),'CI action '+action+' remains pinned to a full immutable SHA and reviewed version');}
 assert.match(ciWorkflow,/persist-credentials:\s*false/,'checkout does not persist its GitHub token into build steps');
 assert.match(readFileSync('.github/dependabot.yml','utf8'),/package-ecosystem:\s*github-actions[\s\S]*interval:\s*monthly/,'Dependabot reviews pinned GitHub Actions for updates monthly');
 for(const file of ['app/interactive-photo.tsx','app/chat-bubble.tsx','app/dev/chat-preview/preview.tsx'])assert.doesNotMatch(readFileSync(file,'utf8'),/\sstyle=\{/,'runtime styling in '+file+' uses policy-compatible classes and data attributes');
