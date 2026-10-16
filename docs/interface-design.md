@@ -44,3 +44,7 @@ Live desktop review found that the welcome condition used the display label Exam
 Discover now excludes pending invitations as well as accepted connections. Pending profiles remain accessible in Requests or Sent; accepted profiles remain in Chats. This only filters Discover, leaving saved profiles and profile routes intact. Closed invitations continue to follow existing eligibility and consent rules.
 
 Chat rows explicitly allocate an auto-sized avatar column and the remaining width to the conversation button. Names truncate within their column; invitation context stays one line and message previews stay at most two lines, with long unbroken text contained. Dates continue below names on narrow screens, unread badges retain their reserved space, and full messages remain available inside the conversation.
+
+## Signed-out Circles
+
+Signed-out circle routes now render an account-entry view before mounting the member circle system. This avoids member-list requests, polling, disabled member filters, paused-account messages and retry errors for visitors. A single sign-in action explains profile approval, join requests and the accepted-connection requirement for proposing a circle. The worker resource hub remains available without an account. Signed-in paused members retain their existing reporting and leaving access.
