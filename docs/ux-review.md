@@ -101,7 +101,7 @@ Sources:
 - SQLite flow tests cover default/hidden discovery, known-ID invitation attempts, hidden senders, existing pending acceptance, chat/group continuity, photo continuity, full pause, stale profile saves, resume-with-hidden-state, independent safety actions, and moderation restrictions. Type/matching/draft checks passed; live mobile and multiple real-account testing remains outstanding.
 
 ## Step 4 — first-use guidance (2026-10-05)
-- Guest entry explains the three stages: short profile, admission review, then a mutually accepted invitation. Friendship is the starting point; wider community membership is optional.
+- Guest entry explains the three stages: short profile, admission review, then a mutually accepted invitation. Friendship is the starting point; circles, worker support, and collective action are optional app activities.
 - State-specific guidance prioritizes restrictions, profile creation, pending admission, updated rules, pause, and invitations. Updated-rule actions now lead directly to the editable profile agreement. Pending admission offers preview, editing, and fictional examples with no promised review time or character certification.
 - First-connection help appears on discovery only before an accepted connection and adapts to incoming or sent invitations. It is collapsible; it adds no mandatory tour or completion pressure.
 - Profile setup labels required basics and the single introduction, names the next step on Continue buttons, supports clicking earlier steps, validates each required stage, and keeps deeper answers optional/collapsed. Visible/privacy/paused behavior is explained before saving. Existing admitted accounts receive accurate create wording rather than a review promise.

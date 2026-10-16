@@ -19,3 +19,8 @@ console.log('Circle joining disclosures, agreement actions, host review, and wit
 
 const worker=render({...base,category:'worker_industry',membershipRules:'For local industry workers; hosts review each request.'},true);
 for(const label of ['Industry worker circle','Membership rules','hosts review each request','not professional advice or formal union representation','No protection from retaliation','not an anonymous or confidential organizing space'])assert(worker.includes(label),label);
+
+const organizingApproval=render({...proposal,category:'worker_organizing'},true);
+assert(organizingApproval.includes('named recipients of current invitations'));
+assert(organizingApproval.includes('privately invite accepted connections'));
+assert(!organizingApproval.includes('Agreeing makes this title'),'unlisted founder consent does not promise discovery');

@@ -12,6 +12,8 @@ const {default:Support,workerResources}=await import('data:text/javascript;base6
 const html=renderToStaticMarkup(React.createElement(Support,{onCircles:()=>{}}));
 for(const label of ['Work &amp; Worker Support','Explore worker circles','External help only','No representation offered here','does not join a circle','There is no employer field','not end-to-end encrypted','Not available:','United States'])assert(html.includes(label),label);
 assert(!html.includes('<form'),'resource hub does not collect workplace disclosures');
+assert(html.includes('https://www.worker.gov/'));assert(html.includes('https://www.dol.gov/agencies/whd/workers'));
+assert(html.includes('updates were suspended'),'Worker.gov freshness limitation is disclosed');
 assert(!html.includes('iframe'),'no provider embeds leak a visit before clicking');
 for(const resource of workerResources){assert(new URL(resource.url).protocol==='https:');assert(html.includes(resource.url));}
 assert.equal((html.match(/rel="noopener noreferrer"/g)||[]).length,workerResources.length+1);
