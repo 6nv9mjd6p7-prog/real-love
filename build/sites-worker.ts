@@ -60,7 +60,7 @@ export default {
       const nonceBytes=crypto.getRandomValues(new Uint8Array(18));
       const nonce=Array.from(nonceBytes,byte=>byte.toString(16).padStart(2,'0')).join('');
       const nonceHtml=response.headers.get('Content-Type')?.toLowerCase().includes('text/html');
-      security.set('Content-Security-Policy',`default-src 'self'; script-src 'self' 'nonce-${nonce}'; style-src 'self' 'nonce-${nonce}'; img-src 'self' blob: data:; media-src 'self' blob:; connect-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'self' https://chatgpt.com https://*.chatgpt.com`);
+      security.set('Content-Security-Policy',`default-src 'self'; script-src 'self' 'nonce-${nonce}'; style-src 'self' 'nonce-${nonce}'; style-src-attr 'none'; img-src 'self' blob: data:; media-src 'self' blob:; connect-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'self' https://chatgpt.com https://*.chatgpt.com`);
       // Only HTML pages need the nonce; API responses retain their original body.
       if(nonceHtml)body=new HTMLRewriter().on('script,style',{element(element){element.setAttribute('nonce',nonce);}}).transform(response).body;
     }
