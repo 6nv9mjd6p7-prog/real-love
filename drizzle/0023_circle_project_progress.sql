@@ -1,0 +1,1 @@
+ALTER TABLE `circle_messages` ADD `cooperation_parent` text DEFAULT '' NOT NULL;

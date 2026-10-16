@@ -162,6 +162,13 @@
       "when": 1792124742680,
       "tag": "0022_circle_activity_planning",
       "breakpoints": true
+    },
+    {
+      "idx": 23,
+      "version": "6",
+      "when": 1792125544263,
+      "tag": "0023_circle_project_progress",
+      "breakpoints": true
     }
   ]
 }

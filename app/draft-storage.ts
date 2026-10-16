@@ -22,3 +22,5 @@ export function messageAttempt(account:string,kind:string,id:string,text:string)
  const attempt={text,id:crypto.randomUUID()};writeDraft(storage,key,attempt);return attempt.id;
 }
 export function clearMessageAttempt(account:string,kind:string,id:string){removeDraft(tabStorage(),draftKey(account,kind+'-attempt',id));}
+// Clear one account's exact draft kind, including its in-memory fallback.
+export function clearDraftKind(storage:DraftStorage|null,account:string,kind:string){const prefix=draftKey(account,kind);for(const key of memory.keys())if(key.startsWith(prefix))memory.delete(key);try{for(let i=storage!.length-1;i>=0;i--){const key=storage!.key(i);if(key?.startsWith(prefix))storage!.removeItem(key);}}catch{}}

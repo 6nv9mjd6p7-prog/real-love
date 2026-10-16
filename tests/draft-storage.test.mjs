@@ -2,7 +2,7 @@ import ts from 'typescript';
 import {readFileSync} from 'node:fs';
 import assert from 'node:assert/strict';
 const source=ts.transpileModule(readFileSync('app/draft-storage.ts','utf8'),{compilerOptions:{module:ts.ModuleKind.ESNext,target:ts.ScriptTarget.ES2022}}).outputText;
-const {draftKey,readDraft,writeDraft,removeDraft,clearDrafts,messageAttempt,clearMessageAttempt}=await import('data:text/javascript;base64,'+Buffer.from(source).toString('base64'));
+const {draftKey,readDraft,writeDraft,removeDraft,clearDrafts,messageAttempt,clearMessageAttempt,clearDraftKind}=await import('data:text/javascript;base64,'+Buffer.from(source).toString('base64'));
 const values=new Map();const storage={get length(){return values.size;},key(i){return [...values.keys()][i]??null;},getItem(k){return values.get(k)??null;},setItem(k,v){values.set(k,v);},removeItem(k){values.delete(k);}};
 const a=draftKey('account-a','message','conversation-1'),b=draftKey('account-b','message','conversation-1'),other=draftKey('account-a','message','conversation-2');
 writeDraft(storage,a,'Unsent hello');assert.equal(readDraft(storage,a,''),'Unsent hello');assert.equal(readDraft(storage,b,''),'');assert.equal(readDraft(storage,other,''),'');
@@ -17,3 +17,8 @@ storage.setItem(other,'invalid json');assert.equal(readDraft(storage,other,''),'
 console.log('Draft isolation, restoration, expiry, clearing, and unavailable-storage checks passed');
 
 const attempt=messageAttempt('a','message','one','hello');assert.equal(messageAttempt('a','message','one','hello'),attempt);assert.notEqual(messageAttempt('b','message','one','hello'),attempt);assert.notEqual(messageAttempt('a','message','two','hello'),attempt);assert.notEqual(messageAttempt('a','message','one','edited'),attempt);clearMessageAttempt('a','message','one');assert.notEqual(messageAttempt('a','message','one','hello'),attempt);
+
+const projectDraft=draftKey('a','circle-project-one','post-1'),sameCircle=draftKey('a','circle-project-one','post-2'),anotherCircle=draftKey('a','circle-project-two','post-1'),otherAccount=draftKey('b','circle-project-one','post-1');
+for(const key of [projectDraft,sameCircle,anotherCircle,otherAccount])writeDraft(storage,key,'Private project draft');
+clearDraftKind(storage,'a','circle-project-one');assert.equal(readDraft(storage,projectDraft,''),'');assert.equal(readDraft(storage,sameCircle,''),'');assert.equal(readDraft(storage,anotherCircle,''),'Private project draft');assert.equal(readDraft(storage,otherAccount,''),'Private project draft');
+writeDraft(denied,projectDraft,'Memory project draft');clearDraftKind(denied,'a','circle-project-one');assert.equal(readDraft(denied,projectDraft,''),'','circle cleanup also clears memory fallback');

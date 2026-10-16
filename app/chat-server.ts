@@ -32,6 +32,12 @@ export async function changeMessage(kind:Kind,scope:string,viewer:string,input:a
  const body=deleting?'':typeof input.text==='string'?input.text.trim():'';
  if(!deleting&&(!body||body.length>1500))throw new SafetyError('Write a message of 1–1,500 characters.',400);
  if(!deleting)contentCheck(body);if(!deleting&&body===row.body)return;
+ if(kind==='circle'&&!deleting&&row.cooperation_parent){
+  const root=await db().prepare("SELECT id FROM circle_messages WHERE id=? AND circle=? AND cooperation_kind='project' AND cooperation_status='open' AND deleted_at=''").bind(row.cooperation_parent,scope).first();
+  if(!root)throw new SafetyError('This project is closed or unavailable. Its updates cannot be edited.',409);
+  guard+=" AND EXISTS (SELECT 1 FROM circle_messages root JOIN circle_members cm ON cm.circle=root.circle AND cm.member=? JOIN profiles p ON p.id=root.sender JOIN safety_accounts a ON a.id=p.id WHERE root.id=? AND root.circle=? AND root.cooperation_kind='project' AND root.cooperation_status='open' AND root.deleted_at='' AND cm.status='accepted' AND root.rowid>cm.history_after AND p.active=1 AND a.status='admitted' AND NOT EXISTS (SELECT 1 FROM blocks b WHERE (b.actor=? AND b.target=root.sender) OR (b.actor=root.sender AND b.target=?)))";
+  values=[...values,viewer,row.cooperation_parent,scope,viewer,viewer];
+ }
  const now=new Date().toISOString(),cutoff=new Date(Date.now()-window).toISOString();
  const history=deleting?[]:[...JSON.parse(row.edit_history||'[]'),{body:row.body,at:row.edited_at||row.created}];
  const r=await db().prepare(`UPDATE ${table} SET body=?,edited_at=?,deleted_at=?,edit_count=?,edit_history=?,audio_key=CASE WHEN ?=1 THEN '' ELSE audio_key END,attachment_key=CASE WHEN ?=1 THEN '' ELSE attachment_key END WHERE id=? AND ${column}=? AND sender=? AND deleted_at='' AND edit_count=? AND created>? AND (${guard})`).bind(body,deleting?row.edited_at:now,deleting?now:'',deleting?row.edit_count:row.edit_count+1,JSON.stringify(history),deleting?1:0,deleting?1:0,row.id,scope,viewer,row.edit_count,cutoff,...values).run();

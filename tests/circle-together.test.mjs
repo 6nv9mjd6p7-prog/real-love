@@ -13,6 +13,7 @@ let attempts=new Map();
 globalThis.__togetherAttempt=(_account,_kind,_circle,fingerprint)=>{if(!attempts.has(fingerprint))attempts.set(fingerprint,crypto.randomUUID());return attempts.get(fingerprint);};
 let source=readFileSync('app/circle-together.tsx','utf8')
  .replace("import {useCallback,useEffect,useId,useRef,useState} from 'react';",'const {useCallback,useEffect,useId,useRef,useState}=globalThis.__togetherHooks;')
+ .replace("import ProjectProgress from './project-progress';",'const ProjectProgress=()=>null;')
  .replace("import {useTabDraft} from './use-tab-draft';",'const useTabDraft=()=>globalThis.__togetherHooks.useState(\'\');')
  .replace("import {messageAttempt,clearMessageAttempt} from './draft-storage';",'const messageAttempt=globalThis.__togetherAttempt;const clearMessageAttempt=()=>{};');
 const code=ts.transpileModule(source,{compilerOptions:{module:ts.ModuleKind.ESNext,jsx:ts.JsxEmit.ReactJSX}}).outputText.replace(/from ["']react\/jsx-runtime["']/,`from '${pathToFileURL(require.resolve('react/jsx-runtime')).href}'`);
