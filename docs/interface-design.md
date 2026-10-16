@@ -89,3 +89,8 @@ The mobile website combines its brand/home link, Safety review entry (when eligi
 ## Compact chat inbox
 
 Accepted conversations use separated list rows rather than individual bordered cards. Avatars retain 44px targets; names and latest-message previews have clear hierarchy, with unread messages emphasized. Timestamps show a time today, Yesterday for the previous local calendar day, and a short date for older messages (including the year when needed). The exact timestamp remains in the time element's title and machine-readable dateTime. Name and timestamp stay together at narrow widths while previews remain bounded to two lines. Profile access stays separate from opening a chat; unavailable conversations retain their safety entry. Search, filters and Requests/Sent behavior are unchanged. Browser and mobile touch QA remain outstanding.
+
+
+## Discovery card reading order
+
+Discovery cards begin with name and age, broad area and shared identity details, followed by interest actions and connection context. The shared-interest explanation no longer precedes the person’s name. Compact spacing retains readable text and 44px interest/bookmark targets. A way to connect and View profile share a footer row when space allows; opening the disclosure gives all first-step and availability text the full width. Narrow screens stack these actions. The complete profile remains accessible; no profile fields, filters, privacy controls or eligibility rules change. Browser/mobile QA remains outstanding.
