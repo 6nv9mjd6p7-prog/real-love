@@ -66,4 +66,9 @@ export default {
     }
     return new Response(body,{status:response.status,statusText:response.statusText,headers:security});
   },
+  // Run retention cleanup even when the app has no user traffic. Report
+  // evidence is deleted after its expiry instead of lingering in object storage.
+  scheduled(_controller: ScheduledController, _env: Cloudflare.Env, ctx: ExecutionContext) {
+    ctx.waitUntil(cleanup());
+  },
 };
