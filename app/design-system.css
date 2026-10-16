@@ -135,11 +135,26 @@ html[data-native-platform] .app-shell:has(.conversation-screen,.circle-conversat
 }
 
 /* Settings keep their complete controls in labelled, keyboard-operated groups. */
-.app-shell .settings-group{padding:0;margin:0;border:0;border-bottom:1px solid var(--border);border-radius:0;box-shadow:none;background:transparent}
-.app-shell .settings-group>summary{cursor:pointer;min-height:48px;padding:12px 0;color:var(--ink)}
+.app-shell .settings-groups{display:block;max-width:900px;padding:0 16px;border:1px solid var(--border);border-radius:var(--card-radius);background:var(--surface)}
+.app-shell .settings-group,.app-shell .settings-delete{padding:0;margin:0;border:0;border-bottom:1px solid var(--border);border-radius:0;box-shadow:none;background:transparent}
+.app-shell .settings-groups>details:last-child{border-bottom:0}
+.app-shell .settings-groups details>summary{display:list-item;width:100%;box-sizing:border-box;cursor:pointer;min-height:48px;padding:12px 0;border:0;border-radius:0;background:transparent;color:var(--ink);line-height:1.5;text-align:left}
+.app-shell .settings-groups details>summary:hover{background:var(--accent-soft)}
 .app-shell .settings-group>summary h2{display:inline;font-size:1rem;line-height:1.5}
-.app-shell .settings-group[open]{padding-bottom:16px}
+.app-shell .settings-group[open],.app-shell .settings-delete[open]{padding-bottom:16px}
 .app-shell .settings-group[open]>summary{margin-bottom:8px}
+.app-shell .settings-groups .care-grid{display:block;margin:0}
+.app-shell .settings-groups :is(.care-card,.care-grid>.form-section,.settings-detail){padding:0;margin:0;border:0;border-top:1px solid var(--border);border-radius:0;background:transparent;box-shadow:none}
+.app-shell .settings-groups :is(.care-card,.care-grid>.form-section,.settings-detail)[open]{padding-bottom:12px}
+.app-shell .settings-groups .guidelines{padding:0 0 0 12px;margin:0;border:0;border-left:2px solid var(--border);border-radius:0;background:transparent;box-shadow:none}
+.app-shell .settings-groups .guidelines>h2{display:none}
+.app-shell .settings-groups summary>svg{display:inline-block;width:18px;height:18px;margin-right:6px;vertical-align:middle}
+.app-shell .settings-groups .visibility-choice{padding:12px 0;margin:0;border:0;border-top:1px solid var(--border);border-radius:0;background:transparent}
+.app-shell .settings-groups .visibility-choice:first-of-type{border-top:0;padding-top:0}
+.app-shell .settings-groups .settings-delete>summary{color:#9e3434}
+.app-shell .settings-shortcuts{gap:4px 12px;margin-bottom:12px}
+.app-shell .settings-shortcuts button{padding:6px 0;border:0;border-radius:0;background:transparent;font-size:.875rem;text-decoration:underline;text-underline-offset:4px}
+.app-shell .settings-shortcuts button:hover{background:transparent;color:var(--ink)}
 
 /* Keep text entry readable and avoid automatic zoom when a phone field receives focus. */
 .app-shell input:not([type=checkbox]):not([type=radio]),.app-shell select,.app-shell textarea{font-size:1rem}

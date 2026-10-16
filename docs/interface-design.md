@@ -56,3 +56,7 @@ Reviewer assignment now groups the admitted-member selector, required reason, va
 ## Chat list content
 
 Chat rows now show the name, latest-message timestamp, latest message and unread count. The opening profile prompt no longer adds a competing preview line. Before the first message, the row says Say hello. The complete invitation and its original profile context remain under Opening invitation inside the conversation and in Requests/Sent.
+
+## Settings list presentation
+
+Settings now use one shared surface with full-width section rows and separators. The privacy topics form one vertical list on desktop and mobile instead of nested cards in a two-column grid. Supporting details and conduct rules use the same row treatment, with no repeated card frames; rule text and all controls remain available. Quick access links still open, scroll to and focus their group. Visibility, safety, notifications, account actions and the separate deletion confirmation retain their behavior.
