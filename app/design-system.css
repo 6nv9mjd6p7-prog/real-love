@@ -364,3 +364,25 @@ html[data-native-platform] .app-shell:has(.conversation-screen,.circle-conversat
 .app-shell .campaign-form legend{padding:0 8px 0 0;font-size:.9375rem}
 .app-shell .campaign-form .campaign-source{display:grid;gap:8px;padding:12px 0}
 .app-shell .campaign-form .setup-actions{gap:8px;padding:8px 0 0;margin:0}
+
+/* Activity stays readable; filters and alert settings share the compact list language. */
+.app-shell .notification-center .notification-list-heading{margin:8px 0;gap:8px;min-height:44px}
+.app-shell .notification-list-heading>h2{margin:0;font-size:1rem}
+.app-shell .notification-list-heading>.text-button{min-height:44px;padding:6px 0;font-size:.8125rem}
+.app-shell .notification-filter-bar{flex-wrap:wrap;overflow:visible;gap:4px;padding:0;margin:0 0 12px}
+.app-shell .notification-filter-bar>button{min-height:44px;padding:7px 10px;border-radius:var(--control-radius);font-size:.8125rem;max-width:100%;white-space:normal}
+.app-shell .notification-list{border-radius:var(--card-radius)}
+.app-shell .notification-list>li>button{min-height:72px;padding:10px 12px;gap:12px;align-items:flex-start}
+.app-shell .notification-list>li>button>span:first-child{flex:1;min-width:0;line-height:1.45}
+.app-shell .notification-list>li>button>span:first-child>strong{font-size:.875rem}
+.app-shell .notification-list .notification-detail{font-size:.8125rem;line-height:1.5;margin-top:3px}
+.app-shell .notification-list time{font-size:.75rem;line-height:1.5;margin-top:4px}
+.app-shell .notification-list .notification-open{align-self:center;max-width:6.5rem;font-size:.8125rem;line-height:1.4}
+.app-shell .notification-list>li>button:focus-visible{outline-offset:-4px}
+.app-shell .notification-preferences{margin-top:16px;padding:0 14px;border:1px solid var(--border);border-radius:var(--card-radius);background:var(--surface)}
+.app-shell .notification-preferences>.notification-settings{margin:0;padding:0;border:0;border-bottom:1px solid var(--border);border-radius:0;background:transparent;box-shadow:none}
+.app-shell .notification-preferences>.notification-settings:last-child{border-bottom:0}
+.app-shell .notification-preferences>.notification-settings>summary{min-height:48px;padding:12px 0;font-size:.875rem;line-height:1.5}
+.app-shell .notification-preferences>.notification-settings[open]{padding-bottom:12px}
+.app-shell .notification-preferences>.notification-settings[open]>summary{margin:0}
+@media(max-width:400px){.app-shell .notification-list>li>button{flex-wrap:wrap;gap:4px 8px}.app-shell .notification-list>li>button>span:first-child{flex-basis:100%}.app-shell .notification-list .notification-open{max-width:100%;text-align:left}}

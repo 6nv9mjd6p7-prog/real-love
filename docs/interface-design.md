@@ -104,3 +104,8 @@ Circle membership/proposal status sits alongside the title and wraps when needed
 ## Compact review and proposal forms
 
 Admission checks, the applicant-specific reason, validation and approval stay together in a separated section instead of a nested card. Required review guidance and evidence remain visible. Owner activity metrics use a labelled disclosure so the long dashboard does not separate the review queue from reviewer management by default; all metrics remain available. Proposal source fields use separators, smaller gaps and adjacent navigation without changing required evidence, consent or the final review step. Scoped reasons and access checks are unchanged. Browser/mobile QA remains outstanding.
+
+
+## Compact notifications and alert settings
+
+Notification filters wrap into visible rows instead of requiring horizontal scrolling, while keeping their labels, selection states and unread counts. Event titles, full details, timestamps and specific destination labels remain visible. Rows use smaller gaps and type hierarchy; narrow screens place the destination label below the content rather than squeezing the event text. Unread emphasis and inward focus outlines remain. Device setup and activity preferences share one surface with separated disclosure rows. Notification access checks, marking read, destinations and device permissions are unchanged. Browser/mobile QA remains outstanding.
