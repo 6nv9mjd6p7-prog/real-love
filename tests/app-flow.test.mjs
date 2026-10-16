@@ -265,9 +265,9 @@ assert.equal((await workerAct('worker-a',{action:'conversation',circle:organizin
 console.log('Union-organizing category, discovery separation, two-founder consent and admission history checks passed.');
 
 // Old chat media URLs must re-check sender blocks and current circle membership.
-async function testVoicePost(who,scope){as(who);const attempt=crypto.randomUUID();const response=await voice.POST(new Request('https://rl.test/api/voice',{method:'POST',headers:{Origin:'https://rl.test','Content-Type':'audio/webm','x-expected-account':who,'x-voice-kind':'circle','x-voice-scope':scope,'x-voice-attempt':attempt,'x-voice-duration':'2000','x-voice-reply':''},body:new Uint8Array([0x1a,0x45,0xdf,0xa3,...Array(30).fill(0)])}));return {response,id:JSON.stringify([scope,who,attempt])};}
+async function testVoicePost(who,scope,kind='circle'){as(who);const attempt=crypto.randomUUID();const response=await voice.POST(new Request('https://rl.test/api/voice',{method:'POST',headers:{Origin:'https://rl.test','Content-Type':'audio/webm','x-expected-account':who,'x-voice-kind':kind,'x-voice-scope':scope,'x-voice-attempt':attempt,'x-voice-duration':'2000','x-voice-reply':''},body:new Uint8Array([0x1a,0x45,0xdf,0xa3,...Array(30).fill(0)])}));return {response,id:JSON.stringify([scope,who,attempt])};}
 async function testVoiceGet(who,url){as(who);return voice.GET(new Request('https://rl.test'+url));}
-async function testImagePost(who,scope){as(who);const attempt=crypto.randomUUID();const response=await chatImage.POST(new Request('https://rl.test/api/chat-image',{method:'POST',headers:{Origin:'https://rl.test','Content-Type':'image/png','x-expected-account':who,'x-chat-image-kind':'circle','x-chat-image-scope':scope,'x-chat-image-attempt':attempt,'x-chat-image-caption':''},body:image}));return {response,id:JSON.stringify([scope,who,attempt])};}
+async function testImagePost(who,scope,kind='circle'){as(who);const attempt=crypto.randomUUID();const response=await chatImage.POST(new Request('https://rl.test/api/chat-image',{method:'POST',headers:{Origin:'https://rl.test','Content-Type':'image/png','x-expected-account':who,'x-chat-image-kind':kind,'x-chat-image-scope':scope,'x-chat-image-attempt':attempt,'x-chat-image-caption':''},body:image}));return {response,id:JSON.stringify([scope,who,attempt])};}
 async function testImageGet(who,url){as(who);return chatImage.GET(new Request('https://rl.test'+url));}
 sql.prepare("DELETE FROM safety_events WHERE actor IN ('worker-a','worker-b','worker-c') AND kind IN ('circle_propose','circle_approve','circle_request','circle_admit','circle_leave','circle_remove')").run();
 const mediaCircleDraft={...workerDraft,title:'Media access regression',category:'worker_industry',workerConsent:true};
@@ -311,9 +311,9 @@ for(const messageId of [blockedAudio.id,leaveAudio.id,removedAudio.id]){const st
 console.log('Chat media URLs re-check current circle membership and block state after block, leave, and removal.');
 
 // Account removal deletes private chat media objects and invalidates their old URLs.
-const deleteDirectPhoto=await testImagePost('worker-a','worker-connection');assert.equal(deleteDirectPhoto.response.status,200);
+const deleteDirectPhoto=await testImagePost('worker-a','worker-connection','direct');assert.equal(deleteDirectPhoto.response.status,200);
 const deleteDirectPhotoUrl='/api/chat-image?kind=direct&scope=worker-connection&message='+encodeURIComponent(deleteDirectPhoto.id);
-const deleteDirectVoice=await testVoicePost('worker-a','worker-connection');assert.equal(deleteDirectVoice.response.status,200);
+const deleteDirectVoice=await testVoicePost('worker-a','worker-connection','direct');assert.equal(deleteDirectVoice.response.status,200);
 const deleteDirectVoiceUrl='/api/voice?kind=direct&scope=worker-connection&message='+encodeURIComponent(deleteDirectVoice.id);
 const deleteCirclePhoto=await testImagePost('worker-a',mediaCircle.id);assert.equal(deleteCirclePhoto.response.status,200);
 const deleteCirclePhotoUrl='/api/chat-image?kind=circle&scope='+encodeURIComponent(mediaCircle.id)+'&message='+encodeURIComponent(deleteCirclePhoto.id);
