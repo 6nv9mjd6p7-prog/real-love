@@ -241,14 +241,13 @@ assert.equal(organizingCircle.tags,'[]','organizing classification survives with
 assert(!(await workerList('worker-c')).data.circles.some(c=>c.id===organizingCircle.id),'proposal is not visible before both founders agree');
 assert.equal((await workerAct('worker-b',{action:'approve',circle:organizingCircle.id})).status,400);
 assert.equal((await workerAct('worker-b',{action:'approve',circle:organizingCircle.id,workerConsent:true})).status,200);
-assert((await workerList('worker-c')).data.circles.some(c=>c.id===organizingCircle.id),'organizing circles appear in worker discovery after approval');
+assert(!(await workerList('worker-c')).data.circles.some(c=>c.id===organizingCircle.id),'approved organizing circles stay out of worker discovery');assert(!(await workerList('worker-c')).data.circles.some(c=>JSON.stringify(c).includes('Hospitality organizing learners')),'unlisted organizing details are not returned to outsiders');assert((await workerList('worker-a')).data.circles.some(c=>c.id===organizingCircle.id),'founders can still access their unlisted organizing circle');
 assert(!(await workerList('worker-c',false)).data.circles.some(c=>c.id===organizingCircle.id),'organizing circle stays out of general discovery');
-assert.equal((await workerAct('worker-c',{action:'conversation',circle:organizingCircle.id})).status,403);
-assert.equal((await workerAct('worker-c',{action:'request',circle:organizingCircle.id})).status,400);
-assert.equal((await workerAct('worker-c',{action:'request',circle:organizingCircle.id,workerConsent:true})).status,200);
+assert.equal((await workerAct('worker-c',{action:'conversation',circle:organizingCircle.id})).status,404,'direct-ID access does not reveal an unlisted organizing circle');
+assert.equal((await workerAct('worker-c',{action:'request',circle:organizingCircle.id})).status,404,'outsiders cannot request access to an unlisted organizing circle');
+assert.equal((await workerAct('worker-c',{action:'request',circle:organizingCircle.id,workerConsent:true})).status,404,'unlisted organizing circles cannot be joined through a direct-ID request');assert.equal((await workerAct('worker-c',{action:'conversation',circle:organizingCircle.id})).status,404,'a direct-ID conversation request does not reveal an unlisted circle');assert.equal(sql.prepare('SELECT COUNT(*) AS n FROM notifications WHERE member=? AND scope=?').get('worker-c',organizingCircle.id).n,0,'organizing activity does not create notifications for outsiders');
 assert.equal((await workerAct('worker-a',{action:'message',circle:organizingCircle.id,text:'Let us agree on a broad concern.'})).status,200);
-assert.equal((await workerAct('worker-a',{action:'admit',circle:organizingCircle.id,target:'worker-c'})).status,200);
-assert.equal((await workerAct('worker-c',{action:'conversation',circle:organizingCircle.id})).data.messages.length,0,'organizing circle history begins at admission');
+assert.equal((await workerAct('worker-a',{action:'conversation',circle:organizingCircle.id})).data.messages.length,1,'the founders retain access to their private discussion');
 console.log('Union-organizing category, discovery separation, two-founder consent and admission history checks passed.');
 
 // Consent version 2 is explicit ongoing sharing; existing version 1 is never upgraded implicitly.
