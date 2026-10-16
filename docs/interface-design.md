@@ -99,3 +99,8 @@ Discovery cards begin with name and age, broad area and shared identity details,
 ## Compact circle summaries
 
 Circle membership/proposal status sits alongside the title and wraps when needed. The next activity uses a separated text section rather than another coloured card. Purpose and activity text retain their complete content and line breaks. Tags, guidelines, worker privacy information, co-host reminders, join-request review and reporting remain accessible. Action targets remain at least 44px; proposal agreement, invitation consent and join-review flows are unchanged. Browser/mobile QA remains outstanding.
+
+
+## Compact review and proposal forms
+
+Admission checks, the applicant-specific reason, validation and approval stay together in a separated section instead of a nested card. Required review guidance and evidence remain visible. Owner activity metrics use a labelled disclosure so the long dashboard does not separate the review queue from reviewer management by default; all metrics remain available. Proposal source fields use separators, smaller gaps and adjacent navigation without changing required evidence, consent or the final review step. Scoped reasons and access checks are unchanged. Browser/mobile QA remains outstanding.

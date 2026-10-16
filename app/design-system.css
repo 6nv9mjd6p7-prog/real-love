@@ -342,3 +342,25 @@ html[data-native-platform] .app-shell:has(.conversation-screen,.circle-conversat
 .app-shell .circle-card>details{margin:0;border:0;border-bottom:1px solid var(--border);border-radius:0;background:transparent;padding:0}
 .app-shell .circle-card>details>summary{min-height:44px;padding:10px 0;font-size:.875rem;line-height:1.5}
 .app-shell .circle-card>details[open]{padding-bottom:10px}
+
+/* Review and proposal forms group each decision without nesting another card. */
+.app-shell .moderation-screen>.form-section{padding:14px;margin-bottom:12px}
+.app-shell .moderation-screen .form-section>h2{margin-bottom:8px}
+.app-shell .moderation-screen .form-section>p{margin:8px 0;line-height:1.5}
+.app-shell .moderation-screen .admission-review{display:grid;gap:8px;padding:12px 0;margin-top:12px;border:0;border-top:1px solid var(--border);border-radius:0;background:transparent;box-shadow:none}
+.app-shell .moderation-screen .admission-review>h3,.app-shell .moderation-screen .admission-review>p,.app-shell .moderation-screen .admission-review>label{margin:0}
+.app-shell .moderation-screen .admission-review>label:not(.check-line){display:grid;gap:6px}
+.app-shell .moderation-screen .admission-review textarea{margin:0}
+.app-shell .moderation-screen .admission-review>button{justify-self:start;margin:0}
+.app-shell .moderation-screen .review-case{padding:14px 0}
+.app-shell .moderation-screen .review-case>.choice-chips{gap:8px;margin-top:8px}
+.moderation-metrics{margin:12px 0;border:1px solid var(--border);border-radius:var(--card-radius);background:var(--surface);padding:0 14px}
+.moderation-metrics>summary{min-height:44px;padding:12px 0;font-weight:600;cursor:pointer;line-height:1.5}
+.app-shell .moderation-metrics>.owner-metrics{padding:0 0 14px;margin:0;border:0;border-radius:0;box-shadow:none}
+.app-shell .campaign-form{gap:12px}
+.app-shell .campaign-form>h2,.app-shell .campaign-form>.field-help{margin:0}
+.app-shell .campaign-form label{gap:6px}
+.app-shell .campaign-form fieldset{padding:10px 0 0;border:0;border-top:1px solid var(--border);border-radius:0}
+.app-shell .campaign-form legend{padding:0 8px 0 0;font-size:.9375rem}
+.app-shell .campaign-form .campaign-source{display:grid;gap:8px;padding:12px 0}
+.app-shell .campaign-form .setup-actions{gap:8px;padding:8px 0 0;margin:0}
