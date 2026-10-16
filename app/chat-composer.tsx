@@ -4,10 +4,10 @@ import {ImagePlus,Send, X} from 'lucide-react';
 import VoiceRecorder from './voice-recorder';
 import {chatViewportState} from './chat-viewport';
 
-export default function ChatComposer({accountId,kind,scope,value,onChange,textareaRef,label,placeholder,disabled,sending,onSubmit,reply,replyTo,onCancelReply,onVoiceSent,onImageSend,onImageSent}:{
+export default function ChatComposer({accountId,kind,scope,value,onChange,textareaRef,label,placeholder,disabled,sending,onSubmit,reply,replyTo,onCancelReply,onVoiceSent,onImageSend,onImageSent,onActivityChange}:{
  accountId:string;kind:'direct'|'circle';scope:string;value:string;onChange:(value:string)=>void;
  textareaRef:RefObject<HTMLTextAreaElement|null>;label:string;placeholder:string;disabled:boolean;sending:boolean;
- onSubmit:(event:FormEvent<HTMLFormElement>)=>void;reply:{name:string;body:string}|null;replyTo?:string;
+ onActivityChange?:(active:boolean)=>void;onSubmit:(event:FormEvent<HTMLFormElement>)=>void;reply:{name:string;body:string}|null;replyTo?:string;
  onCancelReply:()=>void;onVoiceSent:()=>Promise<void>;onImageSend:(image:Blob,caption:string,attempt:string)=>Promise<void>;onImageSent:()=>Promise<void>;
 }){
  useEffect(()=>{
@@ -57,6 +57,7 @@ export default function ChatComposer({accountId,kind,scope,value,onChange,textar
   };
  },[textareaRef]);
  const id=useId(),fileInput=useRef<HTMLInputElement>(null),attempt=useRef(''),[voiceActive,setVoiceActive]=useState(false),[photo,setPhoto]=useState<File|null>(null),[photoPreview,setPhotoPreview]=useState(''),[photoError,setPhotoError]=useState(''),[photoSending,setPhotoSending]=useState(false);
+ useEffect(()=>{onActivityChange?.(voiceActive||photoSending);},[voiceActive,photoSending,onActivityChange]);
  useEffect(()=>{if(!photo){setPhotoPreview('');return;}const url=URL.createObjectURL(photo);setPhotoPreview(url);return()=>URL.revokeObjectURL(url);},[photo]);
  function choosePhoto(file?:File){setPhotoError('');if(!file)return;if(!['image/jpeg','image/png','image/webp'].includes(file.type)){setPhotoError('Choose a JPG, PNG, or WebP photo.');return;}if(file.size>10*1024*1024){setPhotoError('Choose a photo under 10 MB.');return;}attempt.current=crypto.randomUUID();setPhoto(file);}
  function replacePhoto(){if(sending||photoSending)return;if(fileInput.current)fileInput.current.value='';fileInput.current?.click();}

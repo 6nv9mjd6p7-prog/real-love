@@ -67,3 +67,6 @@ planned={...planned,status:'cancelled',canJoin:false,joined:true};await showActi
 console.log('Activity time conversion, named-response disclosure, opt-in, private cancellation, withdrawal and cancellation confirmation passed.');
 
 slots=[];index=0;tree=Together({...props,initialOpen:true});assert.equal(tree.props.open,true,'list shortcut expands Together');tree.props.onToggle({currentTarget:{open:false}});index=0;tree=Together({...props,initialOpen:true});assert.equal(tree.props.open,false,'opened shortcut remains manually collapsible');
+
+index=0;tree=Together({...props,expanded:true});assert.equal(tree.props.open,true);
+index=0;tree=Together({...props,expanded:false});assert.equal(tree.props.open,false,'hidden Together stops its visible state without resetting drafts');

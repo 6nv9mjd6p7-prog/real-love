@@ -256,24 +256,49 @@ html[data-native-platform] .app-shell:has(.conversation-screen,.circle-conversat
  .site-utility .install-app:has(.install-guide){flex-basis:100%;width:100%}
 }
 
-/* Conversation options share a compact row; expanded content keeps its full width.
-   This changes presentation only: transcript scrolling and keyboard behavior stay owned
-   by the existing conversation layout. */
-.app-shell .circle-conversation .chat-heading{display:grid;grid-template-columns:auto minmax(0,1fr);align-items:center;gap:12px;margin:0;padding:0 0 8px}
-.app-shell .circle-conversation .chat-heading h1{grid-column:2;grid-row:1;min-width:0;margin:0;font-family:Arial,Helvetica,sans-serif;font-size:1.125rem;font-weight:700;line-height:1.4;letter-spacing:0;white-space:normal;overflow-wrap:anywhere}
-.app-shell .circle-conversation .chat-heading>.circle-back{grid-column:1;grid-row:1;min-width:44px;min-height:44px;max-width:none;padding:8px;border:0;background:transparent;font-size:.8125rem;white-space:normal;text-align:left}
-.circle-control-bar{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 12px;border-bottom:1px solid var(--border);min-width:0}
-.circle-control-bar>.circle-management,.circle-control-bar>.circle-chat-tools{min-width:0;margin:0;border:0}
-.circle-control-bar>details>summary{position:static;min-height:44px;padding:10px 0;font-size:.875rem;line-height:1.5;background:transparent;color:var(--ink)}
-.circle-control-bar>.circle-chat-tools:not([open])>summary span{display:none}
-.circle-control-bar>details[open],.circle-control-bar>.circle-host-invitation{grid-column:1/-1}
-.circle-control-bar>details[open]{padding-bottom:12px}
-.circle-control-bar:not(:has(>.circle-management))>.circle-chat-tools{grid-column:1/-1}
+/* Circle workspace: everyday navigation stays visible; full tools remain in More. */
+.circle-workspace [hidden]{display:none!important}
+.circle-workspace-heading{display:grid;grid-template-columns:64px minmax(0,1fr) 52px;align-items:center;gap:8px;padding:0 0 8px}
+.circle-workspace-heading button{display:flex;align-items:center;justify-content:center;gap:4px;min-width:44px;min-height:44px;padding:4px;color:var(--indigo);font-size:.875rem}
+.circle-workspace-heading .circle-more-button{flex-direction:column;gap:0;font-size:.75rem}
+.circle-workspace-title{min-width:0;text-align:center}
+.circle-workspace-title h1{margin:0;font-family:Arial,Helvetica,sans-serif;font-size:1.0625rem;font-weight:700;line-height:1.35;letter-spacing:0;overflow-wrap:anywhere;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.circle-workspace-title p{margin:2px 0 0;color:var(--muted);font-size:.8125rem}
+.circle-section-tabs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));border-bottom:1px solid var(--border);margin:0 0 12px}
+.circle-section-tabs>button{display:flex;align-items:center;justify-content:center;gap:7px;min-width:0;min-height:48px;padding:8px 4px;border-bottom:3px solid transparent;color:var(--muted);font-size:.875rem}
+.circle-section-tabs>button[aria-selected=true]{border-bottom-color:var(--indigo);color:var(--indigo);font-weight:700}
+.circle-more-panel{margin:0 0 12px;padding:12px;border:1px solid var(--border);border-radius:12px;background:var(--bg)}
+.circle-more-panel>h2{font-size:1rem;margin-bottom:8px}
+.circle-more-panel>details{margin:0;border:0;border-bottom:1px solid var(--border);border-radius:0;background:transparent}
+.circle-more-panel>details>summary{position:static;min-height:44px;padding:10px 0;font-size:.875rem}
+.circle-section-panel{min-width:0;padding:4px 0 16px}
+.circle-section-panel>.circle-members{margin:0;border:0;padding:0}
+.circle-section-panel h2{font-size:1rem;margin-bottom:12px}
+.circle-workspace .together-panel[data-embedded]{border:0;margin:0;padding:0;background:transparent}
+.circle-workspace .together-panel[data-embedded]>summary{display:none}
+.circle-workspace .together-panel[data-embedded]>.together-content{max-height:none;overflow:visible;padding:0}
+.circle-chat-panel{min-width:0}
+.circle-activity-strip{margin:0 0 8px;border:0;border-radius:8px;background:#efedfc}
+.circle-activity-strip>summary{display:flex;align-items:center;gap:10px;min-height:44px;padding:10px 12px;color:var(--ink);cursor:pointer;font-size:.875rem;list-style:none}
+.circle-activity-strip>summary::-webkit-details-marker{display:none}
+.circle-activity-strip>summary>svg{flex:0 0 auto;color:var(--indigo)}
+.circle-activity-strip>summary>span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.circle-activity-strip>summary:after{content:'⌄';margin-left:auto;color:var(--indigo)}
+.circle-activity-strip[open]>summary>span{white-space:normal;overflow-wrap:anywhere}
+.circle-activity-strip>div{padding:0 12px 10px}
+.circle-workspace .conversation-messages{border:0;background:transparent}
+.circle-workspace .message{border-radius:14px}
 @media(max-width:720px){
- .app-shell .circle-conversation .chat-heading{gap:8px;padding-bottom:4px}
- .app-shell .circle-conversation .chat-heading h1{font-size:1rem}
- .app-shell .circle-conversation .chat-heading>.circle-back{max-width:8rem;padding-inline:4px}
- .circle-control-bar{gap:0 8px}
+ .app-shell:has(.circle-workspace){padding-bottom:calc(76px + env(safe-area-inset-bottom))}
+ .app-shell:has(.circle-workspace)>.sidebar{display:block!important;height:0;min-height:0;padding:0;border:0}
+ .app-shell:has(.circle-workspace)>.sidebar nav{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:2px}
+ .app-shell:has(.circle-workspace)>.sidebar nav .nav-item{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;min-height:60px;padding:4px 2px;font-size:.75rem}
+ .app-shell:has(.circle-workspace) .circle-workspace{background:white;padding:8px 12px}
+ .app-shell:has(.circle-workspace) .circle-workspace .conversation-messages{height:clamp(10rem,calc(var(--app-viewport,100dvh) - 278px - env(safe-area-inset-bottom)),48rem);min-height:10rem;padding:12px 0}
+ .circle-workspace .chat-composer{position:sticky;bottom:calc(74px + env(safe-area-inset-bottom));z-index:5}
+ html[data-keyboard-open] .app-shell:has(.circle-workspace)>.sidebar nav{display:none}
+ html[data-keyboard-open] .app-shell:has(.circle-workspace){padding-bottom:0}
+ html[data-keyboard-open] .circle-workspace .chat-composer{bottom:0}
 }
 
 /* Mobile web has one app header instead of separate brand and action rows.

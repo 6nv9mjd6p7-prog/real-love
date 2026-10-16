@@ -8,7 +8,7 @@ type Post={id:string;sender:string;name:string;body:string;kind:string;status:st
 const kinds=[['offer','Offer','Something I can help with'],['request','Request','Something I could use help with'],['activity','Activity','Something to do together'],['project','Project','Something to build together']] as const;
 const emptyDraft={kind:'offer',description:'',when:'',startsLocal:''};
 
-export default function CircleTogether({accountId,circleId,disabled,refreshKey,initialOpen=false,onDiscuss,onReport,onPosted}:{accountId:string;circleId:string;disabled:boolean;refreshKey:unknown;initialOpen?:boolean;onDiscuss:(post:Post)=>void;onReport:(post:Post)=>void;onPosted:()=>Promise<void>}){
+export default function CircleTogether({accountId,circleId,disabled,refreshKey,initialOpen=false,expanded,onDiscuss,onReport,onPosted}:{accountId:string;circleId:string;disabled:boolean;refreshKey:unknown;initialOpen?:boolean;expanded?:boolean;onDiscuss:(post:Post)=>void;onReport:(post:Post)=>void;onPosted:()=>Promise<void>}){
  const uid=useId(),[open,setOpen]=useState(initialOpen),[composing,setComposing]=useState(false),[posts,setPosts]=useState<Post[]>([]),[cursor,setCursor]=useState<number|null>(null),[more,setMore]=useState(false),[loading,setLoading]=useState(false),[saving,setSaving]=useState(false),[loaded,setLoaded]=useState(false),[error,setError]=useState(''),[notice,setNotice]=useState(''),[consent,setConsent]=useState(false);
  const [raw,setRaw]=useTabDraft(accountId,'circle-together',circleId);
  const [joining,setJoining]=useState(''),[cancelling,setCancelling]=useState(''),[loadError,setLoadError]=useState('');
@@ -23,7 +23,8 @@ export default function CircleTogether({accountId,circleId,disabled,refreshKey,i
   catch(e:any){if(alive.current&&ticket===generation.current&&!request.signal.aborted){setPosts([]);setMore(false);setLoaded(false);setLoadError(e.message||'Together could not load. Try again.');}}
   finally{if(alive.current&&ticket===generation.current)setLoading(false);}
  },[accountId,circleId]);
- useEffect(()=>{if(open&&!saving)void load();},[open,refreshKey,load,saving]);
+ const visible=expanded??open;
+ useEffect(()=>{if(visible&&!saving)void load();},[visible,refreshKey,load,saving]);
  function change(field:string,value:string){setRaw(JSON.stringify({...draft,[field]:value}));setConsent(false);}
  async function publish(){
   if(pending.current||disabled||!consent)return;pending.current=true;setSaving(true);setError('');setNotice('');
@@ -34,7 +35,7 @@ export default function CircleTogether({accountId,circleId,disabled,refreshKey,i
  async function close(post:Post){if(pending.current||disabled)return;pending.current=true;setSaving(true);setError('');try{await api({action:'together_close',message:post.id});if(alive.current)setNotice('Post marked closed. This does not delete its discussion.');}catch(e:any){if(alive.current)setError(e.message||'The post could not close. Try again.');}finally{pending.current=false;if(alive.current)setSaving(false);}}
  async function respond(post:Post,join:boolean){if(pending.current||disabled)return;pending.current=true;setSaving(true);setError('');try{await api({action:'together_respond',message:post.id,join,participationConsent:join});if(alive.current){setJoining('');setNotice(join?'Your chosen name is shared with this circle as planning to join. You can withdraw at any time.':'Your response was withdrawn. No explanation is needed.');}}catch(e:any){if(alive.current)setError(e.message||'Your response could not be saved. Try again.');}finally{pending.current=false;if(alive.current)setSaving(false);}}
  async function cancelActivity(post:Post){if(pending.current||disabled)return;pending.current=true;setSaving(true);setError('');try{await api({action:'together_cancel',message:post.id});if(alive.current){setCancelling('');setNotice('Activity cancelled. New responses are stopped.');try{await onPosted();}catch{setNotice('Activity cancelled. Refresh the chat to see the update.');}}}catch(e:any){if(alive.current)setError(e.message||'The activity could not be cancelled. Try again.');}finally{pending.current=false;if(alive.current)setSaving(false);}}
- return <details className="together-panel" open={open} onToggle={event=>setOpen(event.currentTarget.open)}>
+ return <details className="together-panel" data-embedded={expanded!==undefined||undefined} open={visible} onToggle={event=>{if(expanded===undefined)setOpen(event.currentTarget.open);}}>
   <summary>Together <span>Talk · Help · Do · Build</span></summary>
   <div className="together-content">
    <p>Offer help, ask a question, plan an activity, or suggest a project with this circle. Helping is voluntary; nobody owes a response or a favour.</p>
