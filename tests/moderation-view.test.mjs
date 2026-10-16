@@ -11,7 +11,7 @@ source=source.replace(/import \{ useState, useEffect \} from ['"]react['"];?/,'c
 source=source.replace(/from ["']react\/jsx-runtime["']/,`from '${pathToFileURL(require.resolve('react/jsx-runtime')).href}'`);
 const {default:Review}=await import('data:text/javascript;base64,'+Buffer.from(source).toString('base64'));
 const data={owner:true,admissions:[{id:'applicant',name:'Applicant',age:25}],cases:[],moderators:[],photos:[]};
-function render(confirmed,reason){globalThis.reviewIndex=0;globalThis.reviewStates=[data,'',false,'','',confirmed?'applicant':'',false,'',{applicant:reason}];return renderToStaticMarkup(React.createElement(Review,{accountId:'owner'}));}
+function render(confirmed,reason,options={}){globalThis.reviewIndex=0;globalThis.reviewStates=[options.data||data,'',false,options.assignmentReason||'',options.target||'',confirmed?'applicant':'',false,'',{applicant:reason},options.decisionReasons||{}];return renderToStaticMarkup(React.createElement(Review,{accountId:'owner'}));}
 function approvalDisabled(html){const button=html.match(/<button[^>]*>Approve member<\/button>/)?.[0];assert(button);return button.includes('disabled');}
 assert(approvalDisabled(render(false,'')));
 assert(approvalDisabled(render(true,'yes')));
@@ -19,7 +19,20 @@ assert(approvalDisabled(render(false,'Checks completed')));
 const ready=render(true,'Checks completed');assert(!approvalDisabled(ready));
 assert(ready.includes('Ready to approve this member.'));
 assert(ready.includes('Reason for approving Applicant'));
-assert(ready.indexOf('Profiles awaiting approval')<ready.indexOf('Reason for a report or reviewer action'));
+assert(!ready.includes('Reason for a report or reviewer action'),'there is no shared reason field far from its actions');
+assert(ready.includes('Reason for assigning this reviewer'));
+assert(ready.indexOf('Admitted member')<ready.indexOf('Reason for assigning this reviewer')&&ready.indexOf('Reason for assigning this reviewer')<ready.indexOf('Assign reviewer'),'member, reason and assignment are grouped in submission order');
 assert(render(true,'yes').includes('at least 5 characters'));
+const caseData={...data,admittedMembers:[{id:'candidate',name:'Candidate'}],moderators:[{id:'reviewer',name:'Reviewer'}],cases:[{id:'case-a',target:'member-a',reason:'A',created:'2026-10-16T00:00:00Z',context:{type:'profile'},evidence:{}},{id:'case-b',target:'member-b',reason:'B',created:'2026-10-16T00:00:00Z',context:{type:'profile'},evidence:{}}]};
+const isolated=render(false,'',{data:caseData,target:'candidate',decisionReasons:{'report:case-a':'Evidence reviewed'}});
+const cases=[...isolated.matchAll(/<article class="review-case">([\s\S]*?)<\/article>/g)].map(m=>m[1]);
+assert.equal(cases.length,2);
+assert(!cases[0].match(/<button[^>]*>Warn<\/button>/)[0].includes('disabled'));
+assert(cases[1].match(/<button[^>]*>Warn<\/button>/)[0].includes('disabled'),'a different report needs its own reason');
+assert(isolated.match(/<button[^>]*>Assign reviewer<\/button>/)[0].includes('disabled'),'a report reason cannot enable role assignment');
+assert(isolated.match(/<button[^>]*>Remove reviewer role<\/button>/)[0].includes('disabled'),'a report reason cannot enable role removal');
+const assignmentReady=render(false,'',{data:caseData,target:'candidate',assignmentReason:'Trusted admitted member'});
+assert(!assignmentReady.match(/<button[^>]*>Assign reviewer<\/button>/)[0].includes('disabled'));
+assert([...assignmentReady.matchAll(/<button[^>]*>Warn<\/button>/g)].every(m=>m[0].includes('disabled')),'assignment reason cannot enable report actions');
 delete globalThis.reviewStates;delete globalThis.reviewIndex;
 console.log('Admission controls explain requirements and enable only after confirmation plus a valid applicant-specific reason');

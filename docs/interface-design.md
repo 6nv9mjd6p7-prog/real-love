@@ -48,3 +48,7 @@ Chat rows explicitly allocate an auto-sized avatar column and the remaining widt
 ## Signed-out Circles
 
 Signed-out circle routes now render an account-entry view before mounting the member circle system. This avoids member-list requests, polling, disabled member filters, paused-account messages and retry errors for visitors. A single sign-in action explains profile approval, join requests and the accepted-connection requirement for proposing a circle. The worker resource hub remains available without an account. Signed-in paused members retain their existing reporting and leaving access.
+
+## Review decision proximity
+
+Reviewer assignment now groups the admitted-member selector, required reason, validation guidance and Assign reviewer action. Each report and reviewer-role removal has its own local reason, so text entered for one decision cannot enable another. The remote shared reason panel is removed. Successful actions clear their own reason; failed actions preserve it for retry. Selecting a different reviewer candidate clears the assignment reason. Admission keeps its existing per-applicant reason and eligibility checks.

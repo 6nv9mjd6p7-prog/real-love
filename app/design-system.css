@@ -197,3 +197,15 @@ html[data-native-platform] .app-shell:has(.conversation-screen,.circle-conversat
 /* Keep account entry available without repeating onboarding above each destination. */
 .entry-sign-in{display:flex;align-items:center;justify-content:space-between;gap:8px 16px;flex-wrap:wrap;padding:4px 0 12px;margin-bottom:16px;border-bottom:1px solid var(--line);color:var(--muted);font-size:.875rem}
 .entry-sign-in .text-button{display:inline-flex;align-items:center;flex-shrink:0;color:var(--accent);font-weight:600}
+
+/* Keep decision requirements beside the control that submits them. */
+.reviewer-assignment,.decision-reason{display:grid;gap:8px;min-width:0}
+.reviewer-assignment{max-width:42rem;gap:12px}
+.decision-reason label,.reviewer-assignment>label{display:grid;gap:8px}
+.decision-reason textarea{width:100%;box-sizing:border-box;min-height:6rem;margin:0}
+.moderation-screen .decision-reason .field-help{margin:0}
+.reviewer-assignment>button{justify-self:start;margin:0}
+.review-case>.decision-reason{margin:12px 0 8px}
+.reviewer-removal{width:100%;min-width:0}
+.reviewer-removal>summary{min-height:44px;padding:10px 0;cursor:pointer}
+.reviewer-removal[open]>.decision-reason{margin-bottom:8px}
