@@ -247,6 +247,19 @@ assert.equal((await workerAct('worker-c',{action:'conversation',circle:organizin
 assert.equal((await workerAct('worker-c',{action:'request',circle:organizingCircle.id})).status,404,'outsiders cannot request access to an unlisted organizing circle');
 assert.equal((await workerAct('worker-c',{action:'request',circle:organizingCircle.id,workerConsent:true})).status,404,'unlisted organizing circles cannot be joined through a direct-ID request');assert.equal((await workerAct('worker-c',{action:'conversation',circle:organizingCircle.id})).status,404,'a direct-ID conversation request does not reveal an unlisted circle');assert.equal(sql.prepare('SELECT COUNT(*) AS n FROM notifications WHERE member=? AND scope=?').get('worker-c',organizingCircle.id).n,0,'organizing activity does not create notifications for outsiders');
 assert.equal((await workerAct('worker-a',{action:'message',circle:organizingCircle.id,text:'Let us agree on a broad concern.'})).status,200);
+// A private invitation is visible only to its accepted-connection recipient and never exposes earlier messages.
+sql.prepare("INSERT INTO connections (id,sender,recipient,status,kind,created) VALUES ('worker-invite-connection','worker-a','worker-c','accepted','Connect',?)").run(new Date().toISOString());
+assert.equal((await workerAct('worker-outsider',{action:'invite',circle:organizingCircle.id,target:'worker-c'})).status,404,'unlisted circle IDs stay hidden from nonmembers');
+assert.equal((await workerAct('worker-a',{action:'invite',circle:organizingCircle.id,target:'worker-outsider'})).status,403,'hosts can invite only accepted connections');
+const inviteResult=await workerAct('worker-a',{action:'invite',circle:organizingCircle.id,target:'worker-c'});assert.equal(inviteResult.status,200);
+assert.equal((await workerAct('worker-a',{action:'invite',circle:organizingCircle.id,target:'worker-c'})).status,409,'duplicate pending invitations are rejected');
+const invitedListing=(await workerList('worker-c')).data.circles.find(c=>c.id===organizingCircle.id);assert.equal(invitedListing.membership,'invited');assert(invitedListing.inviteId);
+assert(!(await workerList('worker-outsider')).data.circles.some(c=>c.id===organizingCircle.id),'other outsiders cannot discover an invite-only circle');
+assert.equal((await workerAct('worker-c',{action:'accept_invite',circle:organizingCircle.id,inviteId:invitedListing.inviteId})).status,400,'invite acceptance requires explicit access consent');
+assert.equal((await workerAct('worker-c',{action:'accept_invite',circle:organizingCircle.id,inviteId:invitedListing.inviteId,workerConsent:true})).status,200);
+const invitedConversation=await workerAct('worker-c',{action:'conversation',circle:organizingCircle.id});assert.equal(invitedConversation.status,200);assert.equal(invitedConversation.data.messages.length,0,'invitees cannot read earlier circle history');
+assert.equal((await workerAct('worker-c',{action:'message',circle:organizingCircle.id,text:'Joining from the invitation'})).status,200,'accepted invitees can participate');
+assert.equal((await workerAct('worker-a',{action:'conversation',circle:organizingCircle.id})).data.messages.length,2,'the founders and new invitee can see newly posted messages');
 assert.equal((await workerAct('worker-a',{action:'conversation',circle:organizingCircle.id})).data.messages.length,1,'the founders retain access to their private discussion');
 console.log('Union-organizing category, discovery separation, two-founder consent and admission history checks passed.');
 
