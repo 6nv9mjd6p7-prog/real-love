@@ -26,7 +26,7 @@ export default function ChatPreview(){
    <span className="qa-preview-dimensions">{size.width} × {size.height} CSS px</span>
    <button type="button" className="secondary" disabled={size.width>720} aria-pressed={keyboard} onClick={()=>sendKeyboard(!keyboard)}>{keyboard?'Hide':'Show'} keyboard</button>
   </section>
-  <div className="qa-preview-stage"><iframe className="qa-preview-frame" title={'Fictional chat at '+size.label+' size'} src="/dev/chat-preview/session" style={{width:size.width,height:size.height}}/></div>
+  <div className="qa-preview-stage"><iframe className="qa-preview-frame" data-screen={size.width} title={'Fictional chat at '+size.label+' size'} src="/dev/chat-preview/session"/></div>
   <p className="field-help">Use the size selector to repeat the same scenario. The keyboard control simulates the reduced visible viewport on phones.</p>
  </main>;
 }
