@@ -437,3 +437,47 @@ html[data-native-platform] .app-shell:has(.conversation-screen,.circle-conversat
  .app-shell .inbox-toolbar>.section-tabs>button{min-width:0;padding:6px 4px;line-height:1.3}
  .inbox-screen .chat-row-title{align-items:baseline}
 }
+
+/* Discover keeps common filters close to search and advanced detail one step away. */
+.app-shell .discovery-screen{max-width:960px;min-width:0}
+.app-shell .discovery-screen>.page-heading{margin:0 0 8px}
+.app-shell .discovery-screen>.page-heading h1{font-family:Arial,Helvetica,sans-serif;font-size:1.5rem;font-weight:700;line-height:1.3;letter-spacing:0}
+.app-shell .discovery-screen>.page-heading p{margin-top:6px;font-size:.875rem}
+.app-shell .discovery-section-tabs{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));width:100%;margin:12px 0;padding:0;gap:0;border:0;border-bottom:1px solid var(--border);border-radius:0;background:transparent}
+.app-shell .discovery-section-tabs:has(>button:nth-child(3)){grid-template-columns:repeat(3,minmax(0,1fr))}
+.app-shell .discovery-section-tabs>button{min-width:0;min-height:48px;border:0;border-bottom:3px solid transparent;border-radius:0;background:transparent;box-shadow:none;color:var(--muted)}
+.app-shell .discovery-section-tabs>button[aria-pressed=true]{border-bottom-color:var(--indigo);color:var(--indigo);font-weight:700}
+.app-shell .compact-discovery-toolbar{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:8px 12px;margin:8px 0}
+.app-shell .compact-discovery-toolbar>.search{grid-column:1;max-width:none;min-width:0;margin:0;gap:8px}
+.app-shell .compact-discovery-toolbar>.search input{min-width:0;width:100%;min-height:44px;padding:9px 12px}
+.discovery-filter-toggle{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:44px;max-width:100%;padding:8px 12px;font-size:.875rem}
+.discovery-filter-toggle svg{flex:0 0 auto}
+.compact-discovery-toolbar>.interest-shortcuts{grid-column:1/-1}
+.app-shell .compact-discovery-toolbar>.discovery-filter-panel{grid-column:1/-1;width:100%;max-width:none;min-width:0;padding:16px;margin:4px 0;border:1px solid var(--border);border-radius:12px;background:var(--surface)}
+.compact-discovery-toolbar>.discovery-filter-panel[hidden]{display:none!important}
+.discovery-filter-heading{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.app-shell .discovery-filter-heading h2{margin:0;font-size:1.125rem;line-height:1.4}
+.discovery-filter-heading>.text-button{min-height:44px;padding:8px}
+.app-shell .discovery-filter-panel .discovery-preferences{max-width:none;margin:8px 0;padding:8px 0;border:0;border-bottom:1px solid var(--border);border-radius:0;background:transparent}
+.discovery-filter-panel .discovery-preferences .field-help{margin:6px 0}
+.discovery-filter-panel>.form-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px 16px}
+.discovery-age-range{min-width:0;margin:0;padding:0;border:0}
+.discovery-age-range>div{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.app-shell .discovery-filter-panel :is(.extended-discovery-filters>details,.discovery-explanation,.discovery-location-help,.discovery-saved-searches){margin:0;padding:0;border:0;border-bottom:1px solid var(--border);border-radius:0;background:transparent}
+.discovery-filter-panel :is(.extended-discovery-filters>details,.discovery-explanation,.discovery-location-help,.discovery-saved-searches)>summary{min-height:44px;padding:10px 0;cursor:pointer;color:var(--indigo);font-size:.875rem;font-weight:600}
+.app-shell .discovery-screen>.empty-state{min-height:0;padding:20px;margin-top:16px}
+.app-shell .discovery-screen>.empty-state p{margin:8px auto 12px}
+.app-shell .returning-activity{max-width:960px;margin:0 0 16px;padding:10px 12px}
+@media(min-width:1000px){
+ .app-shell .returning-activity{display:grid;grid-template-columns:auto minmax(0,1fr);gap:8px 16px;align-items:center}
+ .returning-activity>.activity-heading{grid-column:1;grid-row:1;margin:0}
+ .returning-activity>.activity-recent{grid-column:2;grid-row:1;margin:0;gap:8px}
+ .returning-activity>.activity-recent>button{min-height:44px;padding:8px;border:0;border-left:1px solid var(--border)}
+ .returning-activity>.activity-shortcuts{grid-column:1/-1}
+}
+@media(max-width:600px){
+ .app-shell .compact-discovery-toolbar{gap:8px}
+ .discovery-filter-toggle{gap:6px;padding:8px;font-size:.8125rem}
+ .app-shell .compact-discovery-toolbar>.discovery-filter-panel{padding:12px}
+ .discovery-filter-panel>.form-grid{grid-template-columns:minmax(0,1fr)}
+}

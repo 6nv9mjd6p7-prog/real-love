@@ -79,3 +79,42 @@ Typography: the inbox heading is measured at 24px, using the existing Arial/Helv
 TypeScript, four relevant test files (chat row, chat experience, navigation workflow and design system), production build and deployment passed. No application-origin errors appeared in the inspected browser error batch. Search/filter state was restored after testing. Full accessibility compliance, responsive phone rendering, populated incoming requests, invitation mutations and screen-reader/device QA are not claimed.
 
 Remaining acceptance work: verify the inbox and circles at 320px/390px on a supported phone viewport. Overall final result stays blocked until that evidence exists.
+
+# Compact Discover continuation — v162
+
+## Visual target and evidence
+
+This adapts the selected compact navigation direction to existing Discover, Saved and fictional-demo code. It does not claim that the circle concept is an exact inbox/discovery mock.
+
+- Closed baseline: `/workspace/scratch/real-love-discover-before.jpg`; published result: `/workspace/scratch/real-love-discover-after.jpg`. Both are 1363 × 936 screenshot pixels at the same desktop viewport, same account, unfiltered Discover and empty member results.
+- Combined full comparison: `/workspace/scratch/real-love-discover-comparison.jpg`; focused, unscaled matching crops: `/workspace/scratch/real-love-discover-focused-comparison.jpg`.
+- Expanded filters: `/workspace/scratch/real-love-discover-filters-before.jpg` and `/workspace/scratch/real-love-discover-filters-after.jpg`, both 1348 × 926 capture pixels with the page scrollbar present. Same-size combined input: `/workspace/scratch/real-love-discover-filters-comparison.jpg`.
+- Additional inspected states: `/workspace/scratch/real-love-discover-saved.jpg` and `/workspace/scratch/real-love-discover-demo.jpg`. The first demo capture showed the prior route and was rejected; the file was replaced with a settled capture showing four fictional example cards. Saved was also recaptured after its navigation transition settled.
+- Published source: managed Site commit `d485ae319426dc2a7c87f65070f2382814eaa122`, v162.
+
+## Findings and implemented changes
+
+The baseline put a separate Filters row below search and interest shortcuts. Its expanded panel put saved-search content before common matching controls. The implemented toolbar puts Search and Filters together, preserves shortcuts, exposes a full-width filter region, and moves saved searches and ranking explanations after the common/advanced fields. A labelled Age range groups minimum and maximum ages. The existing advanced identity, communication, activities, photo-availability, keyword, distance, eligibility, ace-spectrum and saved-view controls remain available. Filter values and matching logic were not changed.
+
+On the checked desktop, the result status moved from y=608.89 to y=481.19, approximately 128px higher. The returning-conversation block decreased from 124px to 66px with all names and navigation actions retained. Both collapsed and expanded document scrollWidth equal clientWidth (1363px and 1348px respectively). No new actionable desktop P0/P1/P2 finding was observed in the inspected states.
+
+## Required fidelity surfaces
+
+- **Typography:** existing Arial/Helvetica/sans-serif; 24px discovery heading, established list/card and field text. Full labels and the original descriptive copy remain.
+- **Spacing/layout:** 960px content region, two equal People/Saved sections, paired Search/Filters row, grouped age fields, compact disclosure separators and full-width expansion. Desktop state and focused comparisons confirm the intended hierarchy. CSS stacks common fields on narrow screens, but this has not been rendered in a phone viewport.
+- **Colors:** existing ink, indigo active underline, neutral surfaces, borders and focus styles; no palette change.
+- **Assets:** existing vector controls plus Lucide's SlidersHorizontal control. Existing private-photo behavior, saved profile cards, demo markers, member names and interest chips remain; no mock portraits or new public photo access.
+- **Copy/content:** all original filter fields, constraints, saved-search privacy explanations, rank/eligibility explanations, counts and removal controls remain. A minor existing plural result noun such as “1 fictional examples” was observed; it is P3 copy polish outside this layout pass.
+
+## Browser flow checks
+
+1. **Discover — healthy in checked desktop state.** Search, People/Saved, all existing personal-interest shortcuts, returning conversations and empty-state action remain available.
+2. **Filter panel — healthy in checked state.** Enter opens it and focuses the Filters heading. Location, distance, interests, grouped ages, activities and availability appear before saved searches. All advanced disclosure labels remain available.
+3. **Draft and focus recovery — healthy.** An unsubmitted keyword survived Escape → reopen. Escape closed the region and returned focus to Filters. Done also closed it. The temporary keyword was cleared; no keyword rule was applied to member discovery.
+4. **Saved — healthy in checked populated state.** Existing saved profiles retain their identity details, shared interests, descriptions, bookmark controls and profile actions. Separate Saved preference lifecycle is covered by tests; no bookmark was changed.
+5. **Demo filtering — healthy.** Four fictional profiles render. Setting demo minimum age to 30 produced one eligible fictional profile, one active-filter count and a removable Age: 30–99 chip. The original demo age was restored; demo preferences remained separate from member discovery.
+6. **Saved searches and return — healthy.** The Saved searches disclosure exposes the existing private browser-local views panel. No view was saved or removed. The app was restored to Discover with filters closed.
+
+All 58 test files, TypeScript, production build and deployment passed. New regression coverage verifies mounted filter content, aria-controls/expanded state, panel-heading focus and Escape/Done focus return. No application-origin errors appeared in the inspected browser error batch. No message, invitation, profile, location, permission or photo-sharing change was made during QA.
+
+Remaining acceptance work is unchanged: actual 320px/390px rendering and phone/device interaction checks are unavailable in this browser. Overall final result remains blocked for phone design acceptance; desktop checks do not establish mobile fidelity or full accessibility compliance.
