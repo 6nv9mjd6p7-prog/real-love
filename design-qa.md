@@ -48,3 +48,34 @@ The selected layout is implemented and published as v160. Desktop interaction ch
 - Capture incoming text messages with privacy-preserving identity treatment.
 
 No same-viewport focused-region fidelity claim is made: it would be misleading to present cropped desktop controls as a responsive phone render. The combined evidence supports only desktop hierarchy/palette review. Final mobile comparison remains blocked.
+
+# Compact Chats continuation — v161
+
+## Evidence and scope
+
+The selected circle concept's compact hierarchy is extended to the existing inbox. This is a scoped adaptation of the app, not a claim that the circle mock depicts an inbox. Existing message-preview content, profile/photo access, counters, filters, route state and invitation actions remain unchanged.
+
+- Before source: `/workspace/scratch/real-love-chats-before.jpg`.
+- Published implementation: `/workspace/scratch/real-love-chats-after.jpg`.
+- Full comparison input: `/workspace/scratch/real-love-chats-comparison.jpg`.
+- Focused comparison input: `/workspace/scratch/real-love-chats-focused-comparison.jpg`.
+- Both source and implementation captures are 1363 × 936 pixels at the same desktop viewport, signed-in account, All filter and two existing chats. The full comparison shows both at equal proportional scale; the focused comparison uses identically positioned, unscaled crops. All comparison images and flow screenshots were inspected.
+- Implementation source: managed Site commit `266713079e24b95c5d802a77a6ee7b230ee04b44`; published v161.
+
+## Findings and accepted changes
+
+The baseline stacked section navigation, search, chat filters, permanent guidance and generous list spacing before the conversations. The compact version uses equal underlined section buttons, one desktop search/filter row, a smaller heading and an About Chats disclosure. The first chat moved from y=503.39 to y=365.39, 138 CSS pixels higher. Browser document scrollWidth and clientWidth both measure 1363px. No actionable desktop P0/P1/P2 finding was observed in the compared states. The existing mobile verification gap remains; desktop success does not establish phone layout or touch behavior.
+
+Typography: the inbox heading is measured at 24px, using the existing Arial/Helvetica/sans-serif stack. List names, latest-message previews, timestamps and exact-time titles keep existing rendering. Spacing: the full and focused comparisons show reduced vertical stacking and a 960px content limit; search retains a measured 50px height and filter/navigation controls retain at least 44px CSS minimums. Colors: existing indigo, neutral text, pale surfaces and focus styling remain; active primary sections use the same underline pattern as circles. Assets: existing vector search icon and private-photo/initial avatar controls are unchanged; no new raster assets or public profile photos were introduced. Copy: full reply-at-your-own-pace guidance remains under About Chats; latest-message previews, unread labels, pending invitation details, report and withdrawal controls are preserved.
+
+## Flow checks
+
+1. **Chats list — healthy on desktop.** Two existing conversations render latest-message previews, names, timestamps and separate profile controls. Screenshot: `/workspace/scratch/real-love-chats-after.jpg`.
+2. **Guidance — healthy on desktop.** Enter expands and closes About Chats. Heading remains at y=155 while guidance starts at y=201, without overlap. Screenshot: `/workspace/scratch/real-love-chats-help.jpg`.
+3. **Search and filter — healthy in checked states.** Searching an existing name shows only its matching conversation; clearing restores the list. Unread displays the correct no-unread state. All restores the default list. No messages were sent.
+4. **Requests — healthy in checked empty state.** The Requests route selects the correct section, hides chat-only filters, retains search and displays the existing empty state. Screenshot: `/workspace/scratch/real-love-chats-requests.jpg`.
+5. **Sent — healthy in checked populated state.** The Sent route selects correctly and retains the existing proposal, context, time, status, profile, Withdraw and Report controls. No invitation was withdrawn. Screenshot: `/workspace/scratch/real-love-chats-sent.jpg`.
+
+TypeScript, four relevant test files (chat row, chat experience, navigation workflow and design system), production build and deployment passed. No application-origin errors appeared in the inspected browser error batch. Search/filter state was restored after testing. Full accessibility compliance, responsive phone rendering, populated incoming requests, invitation mutations and screen-reader/device QA are not claimed.
+
+Remaining acceptance work: verify the inbox and circles at 320px/390px on a supported phone viewport. Overall final result stays blocked until that evidence exists.
