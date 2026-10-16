@@ -3,6 +3,7 @@ import {env} from 'cloudflare:workers';
 import {getChatGPTUser} from '../../chatgpt-auth';
 import {z} from 'zod';
 import {db,initializeAccount,quota,readInput,reportReasons,failure,safetyHeaders,cleanup,activeMember} from '../../safety';
+import {photoReviewToken} from '../../photo-policy';
 async function messageEvidence(m:any){const evidence:any={body:m.deleted_at?'[Deleted message]':m.body,created:m.created,editHistory:m.deleted_at?[]:JSON.parse(m.edit_history||'[]')};if(!m.deleted_at&&env.BUCKET){const legacyPhoto=m.audio_type==='image/png'&&m.audio_key?.startsWith('chat-images/'),photoKey=m.attachment_key|| (legacyPhoto?m.audio_key:'');if(photoKey){const photo=await env.BUCKET.get(photoKey);if(!photo)throw new Error('Message photo evidence is unavailable. Please try again.');const type=m.attachment_type||'image/png',key='report-evidence/'+crypto.randomUUID()+'.png';await env.BUCKET.put(key,photo.body,{httpMetadata:{contentType:type}});evidence.photoEvidenceKey=key;evidence.photoType=type;}if(m.audio_key&&!legacyPhoto){const audio=await env.BUCKET.get(m.audio_key);if(!audio)throw new Error('Message voice evidence is unavailable. Please try again.');const key='report-evidence/'+crypto.randomUUID();await env.BUCKET.put(key,audio.body,{httpMetadata:{contentType:m.audio_type}});evidence.audioEvidenceKey=key;evidence.audioType=m.audio_type;evidence.audioDuration=m.audio_duration;}}return evidence;}
 export async function POST(req:Request){try{const u=await getChatGPTUser();if(!u)return Response.json({error:'Sign in to report.'},{status:401});await initializeAccount(u);const input=await readInput(req);if(input.expectedAccount&&input.expectedAccount!==u.userId)return Response.json({error:'Your signed-in account changed. Refresh before reporting.'},{status:409,headers:safetyHeaders});await quota(u.userId,'report',10,86400);const p=z.object({target:z.string().min(1).max(200),reason:z.enum(reportReasons as [string,...string[]]),details:z.string().trim().min(1).max(1500),type:z.enum(['profile','photo','message','circle','circle_message','appeal']).default('profile'),objectId:z.string().max(600).default(''),scope:z.string().max(200).default('')}).parse(input);if(p.type==='appeal'&&p.target!==u.userId)return Response.json({error:'You can appeal only your own account decision.'},{status:403,headers:safetyHeaders});if(p.target===u.userId&&p.type!=='appeal')return Response.json({error:'Choose another person or use account appeal.'},{status:400});let evidence:any={},context:any={type:p.type,objectId:p.objectId,scope:p.scope};
 if(['profile','photo'].includes(p.type)){
@@ -20,6 +21,9 @@ if(['profile','photo'].includes(p.type)){
  if(p.type==='photo'){
   const shared=interacting&&linked?.status==='accepted'&&linked.sender_photo&&linked.recipient_photo&&!data.photoPending&&data.photoKey;
   if(!shared)return Response.json({error:'Only a photo currently shared with you can be attached. You can report the concern without attaching a photo.'},{status:403,headers:safetyHeaders});
+  // Bind a later moderation removal to this exact photo version. A member may
+  // replace their profile photo while the report is waiting for review.
+  context.photoKeyToken=await photoReviewToken(data.photoKey);
   evidence.photoReported=true;
   if(env.BUCKET){const object=await env.BUCKET.get(data.photoKey);if(object){const key='report-evidence/'+crypto.randomUUID()+'.png';await env.BUCKET.put(key,object.body,{httpMetadata:{contentType:'image/png'}});evidence.photoEvidenceKey=key;}}
  }

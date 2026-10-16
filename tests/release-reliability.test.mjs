@@ -23,11 +23,14 @@ const workerSource=readFileSync('build/sites-worker.ts','utf8')
 const {default:worker}=await import(compile(workerSource));
 globalThis.__securityResponse=new Response('<html></html>',{headers:{'Content-Type':'text/html'}});
 const secured=await worker.fetch(new Request('https://example.test/'),{},{});
+assert.equal(secured.headers.get('Strict-Transport-Security'),'max-age=31536000','HTTPS responses enable HSTS for this host only');
 const directives=new Map(secured.headers.get('Content-Security-Policy').split(';').map(d=>{const [name,...sources]=d.trim().split(/\s+/);return [name,sources];}));
 assert.deepEqual(directives.get('media-src'),["'self'",'blob:'],'local voice previews and private saved notes are allowed');
 assert.deepEqual(directives.get('connect-src'),["'self'"],'recordings stay on this app');
 assert.deepEqual(directives.get('object-src'),["'none'"]);
 assert.equal(secured.headers.get('Permissions-Policy'),'camera=(), microphone=(self), geolocation=(self)','microphone and optional location may request permission on this origin; camera stays blocked');
+const insecurePreview=await worker.fetch(new Request('http://localhost/'),{},{});
+assert.equal(insecurePreview.headers.get('Strict-Transport-Security'),null,'local HTTP previews do not receive HSTS');
 globalThis.__securityResponse=new Response('photo',{headers:{'Content-Security-Policy':"default-src 'none'; sandbox"}});
 const photoResponse=await worker.fetch(new Request('https://example.test/api/photo'),{},{});
 assert.equal(photoResponse.headers.get('Content-Security-Policy'),"default-src 'none'; sandbox",'specific photo policy is preserved');

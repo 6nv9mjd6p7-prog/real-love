@@ -27,6 +27,11 @@ export default {
     const security = new Headers(response.headers);
     security.set('X-Content-Type-Options','nosniff');
     security.set('Referrer-Policy','no-referrer');
+    // Tell browsers to keep using HTTPS for this host after a secure visit.
+    // Omit includeSubDomains because the hosting platform may share parent domains.
+    if (new URL(request.url).protocol === 'https:') {
+      security.set('Strict-Transport-Security', 'max-age=31536000');
+    }
     // Same-origin location requests still require explicit browser permission.
     security.set('Permissions-Policy','camera=(), microphone=(self), geolocation=(self)');
     security.set('Cross-Origin-Resource-Policy','same-origin');

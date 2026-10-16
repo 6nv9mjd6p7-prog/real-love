@@ -142,3 +142,29 @@ assert.equal((await readDetail('referee','explore','private-detail')).data.campa
 assert.equal((await readDetail('referee','mine','private-detail')).data.campaigns.length,0,'a detail ID cannot bypass ownership or participation');
 assert.equal((await readDetail('author','mine','private-detail')).data.campaigns[0].id,'private-detail');
 console.log('Campaign detail restoration retains list authorization and resolves older records without pagination.');
+
+// A moderator's role must not reveal private proposal or feedback content when
+// the moderator has a personal connection to the proposer or feedback author.
+for(const who of ['conflict-reviewer','feedback-author']){
+ await post(who,{action:'profile',profile:draft(who)});
+ sql.prepare("UPDATE safety_accounts SET status='admitted' WHERE id=?").run(who);
+}
+sql.prepare('INSERT INTO moderators (id) VALUES (?)').run('conflict-reviewer');
+for(const [id,sender,recipient] of [
+ ['reviewer-proposer-link','conflict-reviewer','author'],
+ ['reviewer-feedback-link','conflict-reviewer','feedback-author']
+])sql.prepare("INSERT INTO connections (id,sender,recipient,status,kind,created) VALUES (?,?,?,'accepted','Connect',?)").run(id,sender,recipient,stamp);
+seedCampaign('conflicted-private-proposal',stamp,payload,'author');
+sql.prepare("UPDATE campaigns SET status='pending' WHERE id='conflicted-private-proposal'").run();
+sql.prepare("INSERT INTO campaign_updates (id,campaign,body,kind,published,created,reviewer) VALUES ('private-proposal-update','conflicted-private-proposal','Private review notes','review',0,?,'referee')").run(stamp);
+sql.prepare("INSERT INTO campaign_feedback VALUES ('conflicted-private-feedback','conflicted-private-proposal','feedback-author','report','Private feedback body','open',?)").run(stamp);
+assert.equal((await readDetail('conflict-reviewer','review','conflicted-private-proposal')).data.campaigns.length,0,'a conflicted moderator cannot read the proposal, private updates, or feedback');
+seedCampaign('public-feedback-conflict',stamp,payload,'outsider');
+sql.prepare("INSERT INTO campaign_feedback VALUES ('public-conflicted-feedback','public-feedback-conflict','feedback-author','report','Sensitive feedback body','open',?)").run(stamp);
+const conflictedPublic=await readDetail('conflict-reviewer','all','public-feedback-conflict');
+assert.equal(conflictedPublic.status,200);
+assert.equal(conflictedPublic.data.campaigns.length,1,'the public campaign remains available');
+assert.equal(conflictedPublic.data.campaigns[0].canReview,true,'reviewer is independent of campaign proposer');
+assert.equal(conflictedPublic.data.campaigns[0].feedback.some(f=>f.id==='public-conflicted-feedback'),false,'feedback from a connected author stays private to an independent reviewer');
+assert.equal((await readDetail('reviewer','review','conflicted-private-proposal')).data.campaigns[0].feedback[0].id,'conflicted-private-feedback','an independent reviewer can still read private review feedback');
+console.log('Campaign privacy regression passed: conflicted moderators cannot read private proposals or feedback.');
