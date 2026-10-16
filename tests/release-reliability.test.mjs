@@ -19,10 +19,11 @@ console.log('Stale request cancellation, dialog focus lifecycle, and private-dat
 // Cloudflare's HTMLRewriter adds the generated nonce to each server-rendered script.
 globalThis.HTMLRewriter=class{on(selector,handler){this.selector=selector;this.handler=handler;return this;}transform(response){const handler=this.handler,html=globalThis.__securityHTML;const body=html.replace(/<script\b[^>]*>/gi,tag=>{const attrs={};handler.element({setAttribute:(name,value)=>attrs[name]=value});return tag.replace(/>$/,Object.entries(attrs).map(([name,value])=>' '+name+'="'+value+'"').join('')+'>');});return new Response(body,{status:response.status,headers:response.headers});}};
 const workerSource=readFileSync('build/sites-worker.ts','utf8')
- .replace('import handler from "vinext/server/fetch-handler";', 'const handler={fetch:async()=>globalThis.__securityResponse};')
+ .replace('import handler from "vinext/server/fetch-handler";', 'const handler={fetch:async()=>{globalThis.__securityHandlerCalls++;return globalThis.__securityResponse;}};')
  .replace('import { runWithConnectorBinding } from "../lib/connector-context";', 'const runWithConnectorBinding=(_,fn)=>fn();')
  .replaceAll('import.meta.env.DEV','false');
 const {default:worker}=await import(compile(workerSource));
+globalThis.__securityHandlerCalls=0;
 globalThis.__securityHTML='<html><script>bootstrap()</script></html>';
 globalThis.__securityResponse=new Response(globalThis.__securityHTML,{headers:{'Content-Type':'text/html'}});
 const secured=await worker.fetch(new Request('https://example.test/'),{},{});
@@ -35,6 +36,8 @@ assert.deepEqual(directives.get('media-src'),["'self'",'blob:'],'local voice pre
 assert.deepEqual(directives.get('connect-src'),["'self'"],'recordings stay on this app');
 assert.deepEqual(directives.get('object-src'),["'none'"]);
 assert.equal(secured.headers.get('Permissions-Policy'),'camera=(), microphone=(self), geolocation=(self)','microphone and optional location may request permission on this origin; camera stays blocked');
+let limitedKey='';const limitedApi=await worker.fetch(new Request('https://example.test/api/app',{headers:{'CF-Connecting-IP':'203.0.113.5'}}),{RATE_LIMITER_API:{async limit({key}){limitedKey=key;return {success:false};}}},{});assert.equal(limitedApi.status,429,'the edge rejects over-limit API calls before reaching app handlers');assert.equal(limitedApi.headers.get('Retry-After'),'60');assert.equal(limitedKey,'203.0.113.5');assert.equal(globalThis.__securityHandlerCalls,1,'the blocked request never reaches the app handler');
+const limitedAuth=await worker.fetch(new Request('https://example.test/api/auth',{method:'POST',headers:{'CF-Connecting-IP':'203.0.113.6'}}),{RATE_LIMITER_AUTH:{async limit(){return {success:false};}}},{});assert.equal(limitedAuth.status,429,'sign-in uses its stricter edge limiter');assert.equal(globalThis.__securityHandlerCalls,1);
 const insecurePreview=await worker.fetch(new Request('http://localhost/'),{},{});
 assert.equal(insecurePreview.headers.get('Strict-Transport-Security'),null,'local HTTP previews do not receive HSTS');
 globalThis.__securityResponse=new Response('photo',{headers:{'Content-Security-Policy':"default-src 'none'; sandbox"}});
