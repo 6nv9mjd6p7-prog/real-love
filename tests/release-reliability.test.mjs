@@ -2,6 +2,7 @@ import ts from 'typescript';
 import {readFileSync} from 'node:fs';
 import {runInNewContext} from 'node:vm';
 import assert from 'node:assert/strict';
+import {createHash} from 'node:crypto';
 const compile=s=>'data:text/javascript;base64,'+Buffer.from(ts.transpileModule(s,{compilerOptions:{module:ts.ModuleKind.ESNext}}).outputText).toString('base64');
 const {LatestRequest}=await import(compile(readFileSync('app/request-gate.ts','utf8')));
 const gate=new LatestRequest();let resolveOld;const old=gate.begin();const pending=new Promise(r=>resolveOld=r).then(value=>gate.current(old)?value:null);const newer=gate.begin();assert(gate.current(newer));resolveOld('stale profile');assert.equal(await pending,null);gate.cancel();assert(!gate.current(newer),'unmount or mutation cancels outstanding work');
@@ -12,26 +13,29 @@ assert.deepEqual(dialogControls(root),[first,middle,last]);assert.equal(tabDesti
 const opener=make('opener'),background=make('main'),alreadyInert=make('hidden panel',{inert:true});const listeners={};globalThis.document={activeElement:opener,body:{style:{overflow:'auto'}},querySelector:()=>null,querySelectorAll:()=>[background,alreadyInert],addEventListener:(type,fn)=>listeners[type]=fn,removeEventListener:type=>delete listeners[type]};let dismissed=0,busy=true;const cleanup=manageDialogFocus(root,()=>dismissed++,()=>busy);assert.equal(document.activeElement,first);assert(background.inert);listeners.keydown({key:'Escape',preventDefault(){}});assert.equal(dismissed,0);busy=false;listeners.keydown({key:'Escape',preventDefault(){}});assert.equal(dismissed,1);document.activeElement=last;let prevented=false;listeners.keydown({key:'Tab',shiftKey:false,preventDefault(){prevented=true;}});assert(prevented);assert.equal(document.activeElement,first);cleanup();assert.equal(document.activeElement,opener);assert.equal(background.inert,false);assert.equal(alreadyInert.inert,true);assert.equal(document.body.style.overflow,'auto');assert.deepEqual(listeners,{});delete globalThis.document;
 const handlers={};let networkCalls=0;runInNewContext(readFileSync('public/sw.js','utf8'),{self:{location:{origin:'https://example.test'},addEventListener:(name,fn)=>handlers[name]=fn,skipWaiting(){},clients:{claim(){return Promise.resolve();}}},URL,Response,fetch:async()=>{networkCalls++;throw Error('offline');}});
 for(const request of [{url:'https://example.test/api/app',method:'GET',mode:'cors'},{url:'https://example.test/api/photos',method:'GET',mode:'same-origin'},{url:'https://example.test/api/circles',method:'POST',mode:'cors'},{url:'https://other.test/',method:'GET',mode:'navigate'}]){handlers.fetch({request,respondWith(){assert.fail('private data and cross-origin requests must bypass the worker');}});}
-assert.equal(networkCalls,0);let response;handlers.fetch({request:{url:'https://example.test/',method:'GET',mode:'navigate'},respondWith(p){response=p;}});const offline=await response;assert.equal(offline.status,503);assert.equal(offline.headers.get('Cache-Control'),'no-store');const offlineHtml=await offline.text();assert.match(offlineHtml,/Reconnect to Real Love/);assert.match(offlineHtml,/<a href="\/">Try again<\/a>/,'offline retry uses normal navigation instead of inline JavaScript');assert(!offline.headers.get('Content-Security-Policy').includes("script-src 'unsafe-inline'"),'offline fallback does not allow inline JavaScript');assert.equal(networkCalls,1);
+assert.equal(networkCalls,0);let response;handlers.fetch({request:{url:'https://example.test/',method:'GET',mode:'navigate'},respondWith(p){response=p;}});const offline=await response;assert.equal(offline.status,503);assert.equal(offline.headers.get('Cache-Control'),'no-store');const offlineHtml=await offline.text();assert.match(offlineHtml,/Reconnect to Real Love/);assert.match(offlineHtml,/<a href="\/">Try again<\/a>/,'offline retry uses normal navigation instead of inline JavaScript');const offlineStyle=offlineHtml.match(/<style>([\s\S]*?)<\/style>/)?.[1]||'';const offlineHash=createHash('sha256').update(offlineStyle).digest('base64');assert.equal(offline.headers.get('Content-Security-Policy'),`default-src 'none'; style-src 'sha256-${offlineHash}'; base-uri 'none'`,'offline CSS is allowed by its exact content hash, without unsafe-inline');assert.equal(networkCalls,1);
 console.log('Stale request cancellation, dialog focus lifecycle, and private-data offline bypass passed (unit tests; not browser QA).');
 
 // Exercise the actual response wrapper: recorded previews use local blob URLs.
-// Cloudflare's HTMLRewriter adds the generated nonce to each server-rendered script.
-globalThis.HTMLRewriter=class{on(selector,handler){this.selector=selector;this.handler=handler;return this;}transform(response){const handler=this.handler,html=globalThis.__securityHTML;const body=html.replace(/<script\b[^>]*>/gi,tag=>{const attrs={};handler.element({setAttribute:(name,value)=>attrs[name]=value});return tag.replace(/>$/,Object.entries(attrs).map(([name,value])=>' '+name+'="'+value+'"').join('')+'>');});return new Response(body,{status:response.status,headers:response.headers});}};
+// Cloudflare's HTMLRewriter adds the generated nonce to server-rendered scripts and styles.
+globalThis.HTMLRewriter=class{on(selector,handler){this.selector=selector;this.handler=handler;return this;}transform(response){const handler=this.handler,html=globalThis.__securityHTML;const body=html.replace(/<(script|style)\b[^>]*>/gi,tag=>{const attrs={};handler.element({setAttribute:(name,value)=>attrs[name]=value});return tag.replace(/>$/,Object.entries(attrs).map(([name,value])=>' '+name+'="'+value+'"').join('')+'>');});return new Response(body,{status:response.status,headers:response.headers});}};
 const workerSource=readFileSync('build/sites-worker.ts','utf8')
  .replace('import handler from "vinext/server/fetch-handler";', 'const handler={fetch:async()=>{globalThis.__securityHandlerCalls++;return globalThis.__securityResponse;}};')
  .replace('import { runWithConnectorBinding } from "../lib/connector-context";', 'const runWithConnectorBinding=(_,fn)=>fn();')
  .replaceAll('import.meta.env.DEV','false');
 const {default:worker}=await import(compile(workerSource));
 globalThis.__securityHandlerCalls=0;
-globalThis.__securityHTML='<html><script>bootstrap()</script></html>';
+globalThis.__securityHTML='<html><script>bootstrap()</script><style>body{color:red}</style></html>';
 globalThis.__securityResponse=new Response(globalThis.__securityHTML,{headers:{'Content-Type':'text/html'}});
 const secured=await worker.fetch(new Request('https://example.test/'),{},{});
 assert.equal(secured.headers.get('Strict-Transport-Security'),'max-age=31536000','HTTPS responses enable HSTS for this host only');
 const directives=new Map(secured.headers.get('Content-Security-Policy').split(';').map(d=>{const [name,...sources]=d.trim().split(/\s+/);return [name,sources];}));
 assert(directives.get('script-src').some(source=>/^'nonce-[a-f0-9]{36}'$/.test(source)),'inline scripts are authorized by a response-specific nonce');
 assert(!directives.get('script-src').includes("'unsafe-inline'"),'inline JavaScript is no longer universally allowed');
-assert.match(await secured.text(),/<script nonce="[a-f0-9]{36}">bootstrap\(\)<\/script>/,'the nonce is attached to server-rendered scripts');
+assert(directives.get('style-src').some(source=>/^'nonce-[a-f0-9]{36}'$/.test(source)),'inline style blocks are authorized by a response-specific nonce');
+assert(!directives.get('style-src').includes("'unsafe-inline'"),'inline stylesheet blocks are no longer universally allowed');
+assert.match(await secured.text(),/<script nonce="[a-f0-9]{36}">bootstrap\(\)<\/script><style nonce="[a-f0-9]{36}">body\{color:red\}<\/style>/,'nonces are attached to server-rendered scripts and style blocks');
+for(const file of ['app/interactive-photo.tsx','app/chat-bubble.tsx','app/dev/chat-preview/preview.tsx'])assert.doesNotMatch(readFileSync(file,'utf8'),/\sstyle=\{/,'runtime styling in '+file+' uses policy-compatible classes and data attributes');
 assert.deepEqual(directives.get('media-src'),["'self'",'blob:'],'local voice previews and private saved notes are allowed');
 assert.deepEqual(directives.get('connect-src'),["'self'"],'recordings stay on this app');
 assert.deepEqual(directives.get('object-src'),["'none'"]);
