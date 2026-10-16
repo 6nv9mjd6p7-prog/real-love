@@ -4,6 +4,15 @@ import {runInNewContext} from 'node:vm';
 import assert from 'node:assert/strict';
 import {createHash} from 'node:crypto';
 const compile=s=>'data:text/javascript;base64,'+Buffer.from(ts.transpileModule(s,{compilerOptions:{module:ts.ModuleKind.ESNext}}).outputText).toString('base64');
+const safetySource=readFileSync('app/safety.ts','utf8').replace("import {env} from 'cloudflare:workers';",'const env={};').replace("import {RULES_VERSION} from './rules';","const RULES_VERSION='test';").replace("export {RULES_VERSION,reportReasons} from './rules';",'export const reportReasons=[];');
+const safetyUrl='data:text/javascript;base64,'+Buffer.from(ts.transpileModule(safetySource,{compilerOptions:{module:ts.ModuleKind.ESNext,target:ts.ScriptTarget.ES2022}}).outputText).toString('base64');
+const {failure,SafetyError}=await import(safetyUrl);
+const unexpectedFailure=await failure(Error('database host and private query details'));
+assert.equal(unexpectedFailure.status,503);
+assert.equal((await unexpectedFailure.json()).error,'Could not complete this action. Please try again.','unexpected server errors are sanitized before reaching the client');
+const expectedFailure=await failure(new SafetyError('Request origin not allowed.',403));
+assert.equal(expectedFailure.status,403);
+assert.equal((await expectedFailure.json()).error,'Request origin not allowed.','safe, intentional application errors retain their status and message');
 const {LatestRequest}=await import(compile(readFileSync('app/request-gate.ts','utf8')));
 const gate=new LatestRequest();let resolveOld;const old=gate.begin();const pending=new Promise(r=>resolveOld=r).then(value=>gate.current(old)?value:null);const newer=gate.begin();assert(gate.current(newer));resolveOld('stale profile');assert.equal(await pending,null);gate.cancel();assert(!gate.current(newer),'unmount or mutation cancels outstanding work');
 const {dialogControls,tabDestination,manageDialogFocus}=await import(compile(readFileSync('app/modal-focus.ts','utf8')));
@@ -13,7 +22,7 @@ assert.deepEqual(dialogControls(root),[first,middle,last]);assert.equal(tabDesti
 const opener=make('opener'),background=make('main'),alreadyInert=make('hidden panel',{inert:true});const listeners={};globalThis.document={activeElement:opener,body:{style:{overflow:'auto'}},querySelector:()=>null,querySelectorAll:()=>[background,alreadyInert],addEventListener:(type,fn)=>listeners[type]=fn,removeEventListener:type=>delete listeners[type]};let dismissed=0,busy=true;const cleanup=manageDialogFocus(root,()=>dismissed++,()=>busy);assert.equal(document.activeElement,first);assert(background.inert);listeners.keydown({key:'Escape',preventDefault(){}});assert.equal(dismissed,0);busy=false;listeners.keydown({key:'Escape',preventDefault(){}});assert.equal(dismissed,1);document.activeElement=last;let prevented=false;listeners.keydown({key:'Tab',shiftKey:false,preventDefault(){prevented=true;}});assert(prevented);assert.equal(document.activeElement,first);cleanup();assert.equal(document.activeElement,opener);assert.equal(background.inert,false);assert.equal(alreadyInert.inert,true);assert.equal(document.body.style.overflow,'auto');assert.deepEqual(listeners,{});delete globalThis.document;
 const handlers={};let networkCalls=0;runInNewContext(readFileSync('public/sw.js','utf8'),{self:{location:{origin:'https://example.test'},addEventListener:(name,fn)=>handlers[name]=fn,skipWaiting(){},clients:{claim(){return Promise.resolve();}}},URL,Response,fetch:async()=>{networkCalls++;throw Error('offline');}});
 for(const request of [{url:'https://example.test/api/app',method:'GET',mode:'cors'},{url:'https://example.test/api/photos',method:'GET',mode:'same-origin'},{url:'https://example.test/api/circles',method:'POST',mode:'cors'},{url:'https://other.test/',method:'GET',mode:'navigate'}]){handlers.fetch({request,respondWith(){assert.fail('private data and cross-origin requests must bypass the worker');}});}
-assert.equal(networkCalls,0);let response;handlers.fetch({request:{url:'https://example.test/',method:'GET',mode:'navigate'},respondWith(p){response=p;}});const offline=await response;assert.equal(offline.status,503);assert.equal(offline.headers.get('Cache-Control'),'no-store');const offlineHtml=await offline.text();assert.match(offlineHtml,/Reconnect to Real Love/);assert.match(offlineHtml,/<a href="\/">Try again<\/a>/,'offline retry uses normal navigation instead of inline JavaScript');const offlineStyle=offlineHtml.match(/<style>([\s\S]*?)<\/style>/)?.[1]||'';const offlineHash=createHash('sha256').update(offlineStyle).digest('base64');assert.equal(offline.headers.get('Content-Security-Policy'),`default-src 'none'; style-src 'sha256-${offlineHash}'; base-uri 'none'`,'offline CSS is allowed by its exact content hash, without unsafe-inline');assert.equal(networkCalls,1);
+assert.equal(networkCalls,0);let response;handlers.fetch({request:{url:'https://example.test/',method:'GET',mode:'navigate'},respondWith(p){response=p;}});const offline=await response;assert.equal(offline.status,503);assert.equal(offline.headers.get('Cache-Control'),'no-store');const offlineHtml=await offline.text();assert.match(offlineHtml,/Reconnect to Real Love/);assert.match(offlineHtml,/<a href="\/">Try again<\/a>/,'offline retry uses normal navigation instead of inline JavaScript');const offlineStyle=offlineHtml.match(/<style>([\s\S]*?)<\/style>/)?.[1]||'';const offlineHash=createHash('sha256').update(offlineStyle).digest('base64');assert.equal(offline.headers.get('Content-Security-Policy'),`default-src 'none'; style-src 'sha256-${offlineHash}'; style-src-attr 'none'; base-uri 'none'`,'offline CSS uses an exact hash and rejects inline style attributes');assert.equal(networkCalls,1);
 console.log('Stale request cancellation, dialog focus lifecycle, and private-data offline bypass passed (unit tests; not browser QA).');
 
 // Exercise the actual response wrapper: recorded previews use local blob URLs.
@@ -22,6 +31,7 @@ globalThis.HTMLRewriter=class{on(selector,handler){this.selector=selector;this.h
 const workerSource=readFileSync('build/sites-worker.ts','utf8')
  .replace('import handler from "vinext/server/fetch-handler";', 'const handler={fetch:async()=>{globalThis.__securityHandlerCalls++;return globalThis.__securityResponse;}};')
  .replace('import { runWithConnectorBinding } from "../lib/connector-context";', 'const runWithConnectorBinding=(_,fn)=>fn();')
+ .replace('import { cleanup } from "../app/safety";', 'const cleanup=()=>{globalThis.__retentionCleanupCalls++;return Promise.resolve();};')
  .replaceAll('import.meta.env.DEV','false');
 const {default:worker}=await import(compile(workerSource));
 globalThis.__securityHandlerCalls=0;
@@ -34,7 +44,12 @@ assert(directives.get('script-src').some(source=>/^'nonce-[a-f0-9]{36}'$/.test(s
 assert(!directives.get('script-src').includes("'unsafe-inline'"),'inline JavaScript is no longer universally allowed');
 assert(directives.get('style-src').some(source=>/^'nonce-[a-f0-9]{36}'$/.test(source)),'inline style blocks are authorized by a response-specific nonce');
 assert(!directives.get('style-src').includes("'unsafe-inline'"),'inline stylesheet blocks are no longer universally allowed');
+assert.deepEqual(directives.get('style-src-attr'),["'none'"],'style attributes are explicitly blocked while nonce-authorized style blocks remain available');
 assert.match(await secured.text(),/<script nonce="[a-f0-9]{36}">bootstrap\(\)<\/script><style nonce="[a-f0-9]{36}">body\{color:red\}<\/style>/,'nonces are attached to server-rendered scripts and style blocks');
+const ciWorkflow=readFileSync('.github/workflows/ci.yml','utf8');
+for(const [action,sha] of [['actions/checkout','11bd71901bbe5b1630ceea73d27597364c9af683'],['pnpm/action-setup','b906affcce14559ad1aafd4ab0e942779e9f58b1'],['actions/setup-node','49933ea5288caeca8642d1e84afbd3f7d6820020']])assert.match(ciWorkflow,new RegExp(action.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+'@'+sha),'CI action '+action+' stays pinned to its reviewed immutable release');
+assert.match(ciWorkflow,/persist-credentials:\s*false/,'checkout does not persist its GitHub token into build steps');
+assert.match(readFileSync('.github/dependabot.yml','utf8'),/package-ecosystem:\s*github-actions[\s\S]*interval:\s*monthly/,'Dependabot reviews pinned GitHub Actions for updates monthly');
 for(const file of ['app/interactive-photo.tsx','app/chat-bubble.tsx','app/dev/chat-preview/preview.tsx'])assert.doesNotMatch(readFileSync(file,'utf8'),/\sstyle=\{/,'runtime styling in '+file+' uses policy-compatible classes and data attributes');
 for(const file of ['components/ui/chart.tsx','components/ui/progress.tsx','components/ui/sidebar.tsx','components/ui/sonner.tsx','components/ui/toggle-group.tsx'])assert.doesNotMatch(readFileSync(file,'utf8'),/\sstyle=\{/,'UI component styling in '+file+' remains compatible with strict CSP');
 assert.deepEqual(directives.get('media-src'),["'self'",'blob:'],'local voice previews and private saved notes are allowed');
@@ -45,6 +60,11 @@ let limitedKey='';const limitedApi=await worker.fetch(new Request('https://examp
 const limitedAuth=await worker.fetch(new Request('https://example.test/api/auth',{method:'POST',headers:{'CF-Connecting-IP':'203.0.113.6'}}),{RATE_LIMITER_AUTH:{async limit(){return {success:false};}}},{});assert.equal(limitedAuth.status,429,'sign-in uses its stricter edge limiter');assert.equal(globalThis.__securityHandlerCalls,1);
 const insecurePreview=await worker.fetch(new Request('http://localhost/'),{},{});
 assert.equal(insecurePreview.headers.get('Strict-Transport-Security'),null,'local HTTP previews do not receive HSTS');
+globalThis.__retentionCleanupCalls=0;
+let scheduledCleanup;
+worker.scheduled({}, {}, {waitUntil(promise){scheduledCleanup=promise;}});
+await scheduledCleanup;
+assert.equal(globalThis.__retentionCleanupCalls,1,'the scheduled Worker event invokes report and safety data retention cleanup');
 globalThis.__securityResponse=new Response('photo',{headers:{'Content-Security-Policy':"default-src 'none'; sandbox"}});
 const photoResponse=await worker.fetch(new Request('https://example.test/api/photo'),{},{});
 assert.equal(photoResponse.headers.get('Content-Security-Policy'),"default-src 'none'; sandbox",'specific photo policy is preserved');
