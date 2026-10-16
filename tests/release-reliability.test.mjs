@@ -16,15 +16,21 @@ assert.equal(networkCalls,0);let response;handlers.fetch({request:{url:'https://
 console.log('Stale request cancellation, dialog focus lifecycle, and private-data offline bypass passed (unit tests; not browser QA).');
 
 // Exercise the actual response wrapper: recorded previews use local blob URLs.
+// Cloudflare's HTMLRewriter adds the generated nonce to each server-rendered script.
+globalThis.HTMLRewriter=class{on(selector,handler){this.selector=selector;this.handler=handler;return this;}transform(response){const handler=this.handler,html=globalThis.__securityHTML;const body=html.replace(/<script\b[^>]*>/gi,tag=>{const attrs={};handler.element({setAttribute:(name,value)=>attrs[name]=value});return tag.replace(/>$/,Object.entries(attrs).map(([name,value])=>' '+name+'="'+value+'"').join('')+'>');});return new Response(body,{status:response.status,headers:response.headers});}};
 const workerSource=readFileSync('build/sites-worker.ts','utf8')
  .replace('import handler from "vinext/server/fetch-handler";', 'const handler={fetch:async()=>globalThis.__securityResponse};')
  .replace('import { runWithConnectorBinding } from "../lib/connector-context";', 'const runWithConnectorBinding=(_,fn)=>fn();')
  .replaceAll('import.meta.env.DEV','false');
 const {default:worker}=await import(compile(workerSource));
-globalThis.__securityResponse=new Response('<html></html>',{headers:{'Content-Type':'text/html'}});
+globalThis.__securityHTML='<html><script>bootstrap()</script></html>';
+globalThis.__securityResponse=new Response(globalThis.__securityHTML,{headers:{'Content-Type':'text/html'}});
 const secured=await worker.fetch(new Request('https://example.test/'),{},{});
 assert.equal(secured.headers.get('Strict-Transport-Security'),'max-age=31536000','HTTPS responses enable HSTS for this host only');
 const directives=new Map(secured.headers.get('Content-Security-Policy').split(';').map(d=>{const [name,...sources]=d.trim().split(/\s+/);return [name,sources];}));
+assert(directives.get('script-src').some(source=>/^'nonce-[a-f0-9]{36}'$/.test(source)),'inline scripts are authorized by a response-specific nonce');
+assert(!directives.get('script-src').includes("'unsafe-inline'"),'inline JavaScript is no longer universally allowed');
+assert.match(await secured.text(),/<script nonce="[a-f0-9]{36}">bootstrap\(\)<\/script>/,'the nonce is attached to server-rendered scripts');
 assert.deepEqual(directives.get('media-src'),["'self'",'blob:'],'local voice previews and private saved notes are allowed');
 assert.deepEqual(directives.get('connect-src'),["'self'"],'recordings stay on this app');
 assert.deepEqual(directives.get('object-src'),["'none'"]);
