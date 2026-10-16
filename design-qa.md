@@ -118,3 +118,44 @@ On the checked desktop, the result status moved from y=608.89 to y=481.19, appro
 All 58 test files, TypeScript, production build and deployment passed. New regression coverage verifies mounted filter content, aria-controls/expanded state, panel-heading focus and Escape/Done focus return. No application-origin errors appeared in the inspected browser error batch. No message, invitation, profile, location, permission or photo-sharing change was made during QA.
 
 Remaining acceptance work is unchanged: actual 320px/390px rendering and phone/device interaction checks are unavailable in this browser. Overall final result remains blocked for phone design acceptance; desktop checks do not establish mobile fidelity or full accessibility compliance.
+
+# Compact My profile continuation — final v164
+
+## Evidence and comparison target
+
+This extends the existing selected compact design direction to the app's profile editor while retaining its fields and workflows. Baseline is the existing profile overview, not a fictional profile recreation.
+
+- Source baseline: `/workspace/scratch/real-love-profile-before.jpg` (1348 × 926 capture pixels, page scrollbar present).
+- Final overview: `/workspace/scratch/real-love-profile-after.jpg` (1363 × 936, page scrollbar no longer needed). Browser clientWidth and scrollWidth both measure 1363px. The minor capture-size difference is recorded rather than treated as pixel-identical viewport evidence.
+- Combined full comparison: `/workspace/scratch/real-love-profile-comparison.jpg`, equally constrained proportional previews. Focused comparison: `/workspace/scratch/real-love-profile-focused-comparison.jpg`, matching unscaled crop coordinates. Account, saved answers, route and overview state are the same.
+- Final optional editor: `/workspace/scratch/real-love-profile-more.jpg`.
+- Preview interaction: `/workspace/scratch/real-love-profile-preview.jpg` (v163; its preview code was unchanged in v164).
+- Iteration evidence: `/workspace/scratch/real-love-profile-v163.jpg`, `/workspace/scratch/real-love-profile-more-v163.jpg` and combined `/workspace/scratch/real-love-profile-spacing-iteration.jpg`.
+- Final published source: managed Site commit `4f7529d812fd387934a900e2e12e48d152d626a3`, v164.
+
+## Findings, iteration and outcome
+
+The baseline stacked the page header, a pseudo-tab action bar, save status, an already-selected overview button, an introduction card with repeated preview controls, and large section cards. Photos extended below the checked viewport. The final overview uses a compact header/action group, one visible overview preview action, grouped location/preview controls, and five navigation rows. The overview return button and section picker appear while editing, where they have a navigation purpose.
+
+All five section rows are visible in the checked desktop viewport; the last ends at y=799.48. Existing section titles, summaries, hints and destinations remain. Initial v163 passed the workflow checks but retained excessive optional-editor paragraph margins and form spacing [P2 density mismatch with the requested compact direction]. v164 reduces the form gap to 12px and optional-group gap to 8px, removes redundant margins, and retains all text. The revised optional editor ends at y=715.56, with no horizontal overflow. Both initial and corrected screenshots were inspected together. No further actionable desktop P0/P1/P2 issue was observed in the final captures.
+
+## Required fidelity surfaces
+
+- **Typography:** existing sans-serif stack; 24px page heading, 15px section titles, 14px summaries, 13px hints/actions. Existing summary clamping remains, with full answers available in their editor; no field was removed.
+- **Spacing/layout:** 960px maximum profile region, compact single-column navigation rows, divided surfaces, grouped independent actions, 12px form gap and 8px optional-group gap. Editing retains a clear overview return and section selector. Phone CSS preserves accessible action wording while visually reducing repeated action labels; phone rendering remains unverified.
+- **Colors/tokens:** existing indigo, ink, neutral background, white surfaces, border tokens and visible focus treatment. Focus on row buttons remains inside the row boundary.
+- **Assets:** no new raster assets or avatar substitutions. Existing photo management and preview remain; no profile photo or consent setting was changed.
+- **Copy/content:** required/optional field labels, identity, birth-date privacy, location confirmation, interests, introduction, agreement, communication, activities, availability, prompts, boundaries, photo guidance and save feedback remain. Only redundant navigation presentation is removed from the overview.
+
+## Browser flow checks
+
+1. **Overview — healthy on desktop.** Five compact section rows render, with status, preview, location shortcut and authorized reviewer action available. No horizontal overflow.
+2. **Basics and section navigation — healthy.** Basics opens its editor; overview return, section selector and global preview are visible while editing.
+3. **Unsaved edits — healthy.** A temporary name edit remained after Basics → Interests → Basics, and the unsaved save bar was visible. The original name was restored without submitting Save; status returned to All changes saved.
+4. **Preview — healthy.** Overview preview opens the existing Profile preview dialog, shows saved-profile status and the existing mutual photo-sharing explanation, and closes normally.
+5. **Photos — healthy in checked state.** Photos opens section 5, keeps its photo input available, and does not show a profile-answer Save button for an unchanged form. No photo was selected, replaced or removed.
+6. **Optional answers and location shortcut — healthy.** More about me retains communication, activities, prompts and boundaries disclosures. Change location opens Basics. The app was restored to the unchanged overview.
+
+Seven relevant test files passed, including profile draft/input/section/filter/view checks, chat-experience rendering and design-system checks. The existing section test now locates preview/location controls semantically rather than relying on child positions. TypeScript and the production build passed. The final spacing-only adjustment passed the design-system check and a fresh production build. No application-origin errors appeared in the inspected browser log batch. Signup required fields, optional sections, consent and save separation are covered by render/validation checks; no new account or agreement was submitted in the live session.
+
+Phone rendering, touch/keyboard behavior at 320px/390px and screen-reader/device checks remain outstanding. Overall final result stays blocked for phone design acceptance; the desktop result is not a mobile compliance claim.
