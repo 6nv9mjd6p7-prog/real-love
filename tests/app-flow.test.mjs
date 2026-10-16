@@ -698,3 +698,59 @@ as('ongoing-a');assert.equal((await photo.POST(new Request('https://rl.test/api/
 assert.equal(sql.prepare("SELECT sender_photo FROM connections WHERE id='ongoing-pair'").get().sender_photo,0);
 assert.equal(sql.prepare("SELECT recipient_photo FROM connections WHERE id='ongoing-pair'").get().recipient_photo,0);
 console.log('Ongoing opt-in preserves replacements; legacy, mixed consent, revocation, removal, and failed replacement remain bounded.');
+
+// Together shares circle-message authorization, report evidence and admission history.
+for(const who of ['together-a','together-b','together-c','together-outside']){
+ assert.equal((await post(who,{action:'profile',profile:draft(who)})).status,200);
+ assert.equal((await review({action:'admit',target:who,reason:'Reviewed adult eligibility and app conduct rules',adultReviewed:true})).status,200);
+}
+sql.prepare("INSERT INTO connections (id,sender,recipient,status,kind,proposal,created) VALUES ('together-connection','together-a','together-b','accepted','Connect','Read and learn together',?)").run(new Date().toISOString());
+assert.equal((await circlePost('together-a',{action:'propose',connection:'together-connection',title:'Learning together',description:'A place to help one another learn.',tags:[],activity:'Choose a reading afternoon.'})).status,200);
+const togetherCircle=(await circleGet('together-b')).data.circles.find(c=>c.title==='Learning together').id;
+assert.equal((await circlePost('together-b',{action:'approve',circle:togetherCircle})).status,200);
+const togetherAttempt=crypto.randomUUID(),togetherDraft={action:'together_post',circle:togetherCircle,kind:'offer',description:'I can help someone practise conversational Spanish.',when:'Saturday afternoon',togetherConsent:true,clientMessageId:togetherAttempt};
+assert.equal((await circlePost('together-a',{...togetherDraft,togetherConsent:false})).status,400);
+assert.equal((await circlePost('together-a',{...togetherDraft,kind:'payment'})).status,400);
+assert.equal((await circlePost('together-a',{...togetherDraft,description:'https://example.com send money'})).status,400);
+assert.equal((await circlePost('together-a',{...togetherDraft,expectedAccount:'another-account'})).status,409);
+assert.equal((await circlePost('together-outside',{action:'together_list',circle:togetherCircle})).status,403);
+assert.equal((await circlePost('together-outside',togetherDraft)).status,403);
+assert.equal((await circlePost('together-a',togetherDraft)).status,200);
+assert.equal((await circlePost('together-a',togetherDraft)).status,200,'same confirmed attempt never duplicates a Together post');
+let togetherList=await circlePost('together-b',{action:'together_list',circle:togetherCircle});
+assert.equal(togetherList.data.posts.length,1);const togetherPost=togetherList.data.posts[0];assert.equal(togetherPost.kind,'offer');assert(togetherPost.body.includes('Saturday afternoon'));assert.equal(togetherPost.status,'open');
+assert.equal((await circlePost('together-a',{...togetherDraft,description:'A different offer using the same attempt identifier.'})).status,409);
+const togetherThread=await circlePost('together-b',{action:'conversation',circle:togetherCircle});assert(togetherThread.data.messages.some(m=>m.id===togetherPost.id),'Together posts are reportable normal chat messages');
+assert.equal((await post('together-b',{action:'report',target:'together-a',type:'circle_message',scope:togetherCircle,objectId:togetherPost.id,reason:'Other',details:'Please review this Together post.'})).status,200);
+assert.equal((await circlePost('together-c',{action:'request',circle:togetherCircle})).status,200);
+assert.equal((await circlePost('together-c',{action:'together_list',circle:togetherCircle})).status,403,'pending applicants cannot read Together');
+assert.equal((await circlePost('together-a',{action:'admit',circle:togetherCircle,target:'together-c'})).status,200);
+assert.equal((await circlePost('together-c',{action:'together_list',circle:togetherCircle})).data.posts.length,0,'new members cannot see earlier Together posts');
+assert.equal((await circlePost('together-c',{action:'together_close',circle:togetherCircle,message:togetherPost.id})).status,403);
+assert.equal((await circlePost('together-a',{...togetherDraft,clientMessageId:crypto.randomUUID(),kind:'project',description:'Let us build a shared reading list for the circle.'})).status,200);
+const laterPost=(await circlePost('together-c',{action:'together_list',circle:togetherCircle})).data.posts[0];
+assert.equal((await circlePost('together-c',{action:'together_close',circle:togetherCircle,message:laterPost.id})).status,403,'ordinary participants cannot close someone else’s post');
+const beforeClose=await circlePost('together-b',{action:'conversation',circle:togetherCircle});
+assert.equal((await circlePost('together-b',{action:'together_close',circle:togetherCircle,message:laterPost.id})).status,200,'a host may close a visible post');
+assert.equal((await circlePost('together-a',{action:'together_close',circle:togetherCircle,message:laterPost.id})).status,200,'closure is idempotent');
+assert.notEqual((await circlePost('together-b',{action:'conversation',circle:togetherCircle})).data.revision,beforeClose.data.revision,'closing changes the visible conversation revision');
+assert.equal((await circlePost('together-c',{action:'together_list',circle:togetherCircle})).data.posts[0].status,'closed');
+assert.equal((await post('together-c',{action:'block',target:'together-a'})).status,200);
+assert.equal((await circlePost('together-c',{action:'together_list',circle:togetherCircle})).data.posts.length,0,'blocks hide Together posts');
+assert.equal((await post('together-a',{action:'visibility',active:false})).status,200);
+assert.equal((await circlePost('together-a',{action:'together_list',circle:togetherCircle})).status,403,'pause revokes Together reads');
+assert.equal((await circlePost('together-a',{...togetherDraft,clientMessageId:crypto.randomUUID()})).status,403,'pause revokes Together writes');
+assert.equal((await post('together-a',{action:'visibility',active:true})).status,200);
+globalThis.__beforeRun=(query)=>{if(query.startsWith('INSERT INTO circle_messages')){globalThis.__beforeRun=null;sql.prepare("UPDATE circle_members SET status='left' WHERE circle=? AND member='together-a'").run(togetherCircle);}};
+assert.equal((await circlePost('together-a',{...togetherDraft,clientMessageId:crypto.randomUUID()})).status,403,'revoked membership during insertion prevents a post');globalThis.__beforeRun=null;
+assert.equal((await circlePost('together-a',{action:'together_list',circle:togetherCircle})).status,403,'former members cannot read Together');
+assert(!JSON.stringify((await get('together-outside')).data.people).includes('practise conversational Spanish'),'Together content never enters profile discovery');
+// Pagination and deletion share the same admitted circle history.
+for(let i=0;i<32;i++)sql.prepare("INSERT INTO circle_messages (id,circle,sender,body,created,cooperation_kind) VALUES (?,?,?,?,?,'activity')").run('together-page-'+i,togetherCircle,'together-b','A reading activity '+i,new Date().toISOString());
+const togetherPage=await circlePost('together-b',{action:'together_list',circle:togetherCircle});assert.equal(togetherPage.data.posts.length,30);assert(togetherPage.data.hasMore);
+const togetherOlder=await circlePost('together-b',{action:'together_list',circle:togetherCircle,before:togetherPage.data.cursor});assert(togetherOlder.data.posts.length>=2);assert(!togetherOlder.data.posts.some(p=>togetherPage.data.posts.some(x=>x.id===p.id)));
+assert.equal((await circlePost('together-b',{action:'delete_message',circle:togetherCircle,message:'together-page-31'})).status,200);
+assert(!(await circlePost('together-b',{action:'together_list',circle:togetherCircle})).data.posts.some(p=>p.id==='together-page-31'));
+assert.equal((await circlePost('together-b',{action:'close',circle:togetherCircle})).status,200);
+assert.equal((await circlePost('together-b',{action:'together_list',circle:togetherCircle})).status,403,'closed circles cannot expose Together');
+console.log('Together consent, retries, circle authorization, blocks, pause, history, closure, reports, pagination, deletion and write-time revocation passed.');

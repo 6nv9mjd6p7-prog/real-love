@@ -888,3 +888,16 @@ html[data-keyboard-open] .qa-keyboard>div:first-child span{float:right}
  .profile-sections{gap:14px}
  .profile-panel{padding:16px}
 }
+
+/* Cooperation stays a compact part of a circle, not a separate feed. */
+.together-panel{border:1px solid var(--line,#d6d7e2);border-radius:16px;margin:12px 0;background:var(--surface,#fff)}
+.together-panel>summary{cursor:pointer;padding:12px 14px;font-weight:750;min-height:44px}
+.together-panel>summary span{font-weight:400;font-size:.82em;margin-left:8px;color:var(--muted,#5c5e70)}
+.together-content{padding:0 14px 14px;max-height:min(60dvh,40rem);overflow:auto;overscroll-behavior:contain}
+.together-form{border:1px solid var(--line,#d6d7e2);border-radius:12px;padding:14px;margin:12px 0}
+.together-form label{display:grid;gap:6px;margin:12px 0}.together-form label.consent{display:flex;align-items:flex-start;gap:10px}
+.together-form input:not([type=checkbox]),.together-form textarea,.together-form select{width:100%;min-width:0}
+.together-post{border-top:1px solid var(--line,#d6d7e2);padding:14px 0;overflow-wrap:anywhere}
+.together-post-heading{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}.together-post-heading span{font-size:.85em}
+.together-body{white-space:pre-wrap}.together-content .inline-actions{flex-wrap:wrap}.together-content button{min-height:44px}
+@media(max-width:360px){.together-panel>summary span{display:block;margin:4px 0 0}.together-content{padding-inline:10px}.together-form{padding:10px}}

@@ -22,7 +22,7 @@ export async function messageRevision(
   // A later join must not reveal edits to messages posted before that member arrived.
   const rows = await store
     .prepare(
-      `SELECT m.rowid,m.id,m.sender,m.edit_count,m.deleted_at,m.reply_to,(m.audio_key<>'' OR m.attachment_key<>'') AS media,json_extract(p.data,'$.name') AS name FROM ${table} m LEFT JOIN profiles p ON p.id=m.sender WHERE m.${column}=? ${visibleHistory} ORDER BY m.rowid`,
+      `SELECT m.rowid,m.id,m.sender,m.edit_count,m.deleted_at,m.reply_to,${isCircle ? 'm.cooperation_status' : "''"} AS cooperation_status,(m.audio_key<>'' OR m.attachment_key<>'') AS media,json_extract(p.data,'$.name') AS name FROM ${table} m LEFT JOIN profiles p ON p.id=m.sender WHERE m.${column}=? ${visibleHistory} ORDER BY m.rowid`,
     )
     .bind(...messageBindings)
     .all();

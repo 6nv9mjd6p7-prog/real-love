@@ -148,6 +148,13 @@
       "when": 1792118396033,
       "tag": "0020_private_circle_invites",
       "breakpoints": true
+    },
+    {
+      "idx": 21,
+      "version": "6",
+      "when": 1792124034596,
+      "tag": "0021_circle_together",
+      "breakpoints": true
     }
   ]
 }
