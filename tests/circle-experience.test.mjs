@@ -2,7 +2,7 @@ import ts from 'typescript';
 import {readFileSync} from 'node:fs';
 import assert from 'node:assert/strict';
 const compile=s=>'data:text/javascript;base64,'+Buffer.from(ts.transpileModule(s,{compilerOptions:{module:ts.ModuleKind.ESNext}}).outputText).toString('base64');
-const {circleStatus,circleGroups,circleRequestGroup}=await import(compile(readFileSync('app/circle-experience.ts','utf8')));
+const {circleStatus,circleGroups,circleRequestGroup}=await import(compile(readFileSync('app/circle-experience.ts','utf8').replace("from './location'",`from '${compile(readFileSync('app/location.ts','utf8'))}'`)));
 const base={id:'test',title:'History together',description:'Read and talk',tags:['History'],activity:'Sunday reading',status:'open',membership:null,role:null,canApprove:false,count:2};
 const proposal={...base,id:'proposal',status:'pending',membership:'accepted',role:'host',awaitingYourAgreement:true};
 const hosted={...base,id:'hosted',membership:'accepted',role:'host',joinRequests:2};
@@ -14,3 +14,11 @@ assert.deepEqual(circleGroups(circles,'Requests','').map(g=>[g.title,g.circles.m
 assert.deepEqual(circleGroups(circles,'Joined','').flatMap(g=>g.circles).map(c=>c.id),['hosted','member'],'pending founders do not look like open joined circles');assert(!circleGroups(circles,'Discover','').flatMap(g=>g.circles).some(c=>c.status==='pending'),'private proposals never appear as discoverable');assert.equal(circleGroups(circles,'Requests',' NO MATCH ').length,0);assert.equal(circleGroups(circles,'Joined',' sunday ').flatMap(g=>g.circles).length,2);assert.equal(circleRequestGroup(member),null);
 const guided={...base,id:'guided',membershipRules:'Ask before giving advice'};assert.deepEqual(circleGroups([guided],'Discover','advice').flatMap(g=>g.circles).map(c=>c.id),['guided'],'members can find circles by their participation guidelines');
 console.log('Circle membership labels, private proposal separation, request groups, and topic search passed');
+
+const austin={city:'Austin',region:'Texas',country:'United States'},austinMN={city:'Austin',region:'Minnesota',country:'United States'};
+const local={...base,id:'local',area:austin},other={...base,id:'other',area:austinMN};
+assert.deepEqual(circleGroups([local,other,base],'Discover','',austin).flatMap(g=>g.circles).map(c=>c.id),['local'],'all area parts match; missing areas are excluded');
+assert.deepEqual(circleGroups([local,other,base],'Discover','',null).flatMap(g=>g.circles).map(c=>c.id),['local','other','test']);
+assert.equal(circleGroups([{...other,membership:'accepted'}],'Joined','',austin)[0].circles.length,1,'area filter never hides joined circles');
+assert.equal(circleGroups([{...other,membership:'requested'}],'Requests','',austin)[0].circles.length,1,'area filter never hides requests');
+assert.equal(circleGroups([local],'Discover','texas')[0].circles.length,1,'shared areas are searchable');

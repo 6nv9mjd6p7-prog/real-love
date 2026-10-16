@@ -870,3 +870,40 @@ assert.equal((await circlePost('project-b',projectAction('project_update',racePr
 assert.equal((await circlePost('project-c',{action:'leave',circle:projectCircle})).status,200);assert.equal((await circlePost('project-c',projectAction('project_details',newProject.id))).status,403);
 assert.equal((await post('project-a',{action:'delete'})).status,200);assert.equal((await circlePost('project-b',projectAction('project_details',newProject.id))).status,403,'deleting a project author removes project context');
 console.log('Project author/host controls, member updates, retries, bounded history, reports, block privacy, stale states, step cap, pagination, closure and write-time races passed.');
+
+// Circle areas copy only a deliberately shared display label, never profile coordinates.
+const areaLabel={city:'Austin',region:'Texas',country:'United States'};
+for(const who of ['area-a','area-b','area-outside']){assert.equal((await post(who,{action:'profile',profile:{...draft(who),...areaLabel,areaLat:30.2672,areaLon:-97.7431,locationPlaceId:'N/123'}})).status,200);assert.equal((await review({action:'admit',target:who,reason:'Reviewed adult eligibility and conduct rules',adultReviewed:true})).status,200);}
+sql.prepare("INSERT INTO connections (id,sender,recipient,status,kind,proposal,created) VALUES ('area-connection','area-a','area-b','accepted','Connect','Talk about a circle',?)").run(new Date().toISOString());
+const areaDraft={action:'propose',connection:'area-connection',title:'Local reading circle',description:'Read and talk together about shared interests.',tags:[],activity:'Choose a short story together.'};
+const areaKey=(await import(locationUrl)).locationKey(areaLabel);
+async function areaPropose(fields={}){sql.prepare("DELETE FROM safety_events WHERE actor='area-a' AND kind='circle_propose'").run();return circlePost('area-a',{...areaDraft,...fields});}
+assert.equal((await areaPropose({shareArea:'yes'})).status,400,'sharing must be a boolean');
+assert.equal((await areaPropose({shareArea:true,areaKey:'a different saved area'})).status,409,'a stale label cannot authorize a changed area');
+assert.equal((await areaPropose({shareArea:true,areaKey,category:'worker_organizing',workerConsent:true,membershipRules:'Hosts review people seeking respectful worker discussion.'})).status,400,'organizing circles cannot carry a structured shared area');
+assert.equal((await areaPropose({area:{...areaLabel,areaLat:1,areaLon:2}})).status,200);
+let noArea=(await circleGet('area-b')).data.circles.find(c=>c.title===areaDraft.title);assert.equal(noArea.area,null,'a client-supplied object never implies consent');
+assert.equal((await areaPropose({title:'Austin local reading',shareArea:true,areaKey,area:{city:'Injected city',areaLat:1}})).status,200);
+let areaCircle=(await circleGet('area-b')).data.circles.find(c=>c.title==='Austin local reading');assert.deepEqual(areaCircle.area,areaLabel,'cofounder reviews exactly the saved city, region and country');
+assert.deepEqual(Object.keys(areaCircle.area).sort(),['city','country','region']);
+assert(!(await circleGet('area-outside')).data.circles.some(c=>c.id===areaCircle.id),'pending listing remains private');
+assert.equal((await circlePost('area-b',{action:'approve',circle:areaCircle.id})).status,200);
+let publicAreaCircle=(await circleGet('area-outside')).data.circles.find(c=>c.id===areaCircle.id);assert.deepEqual(publicAreaCircle.area,areaLabel);
+assert.equal((await circlePost('area-outside',{action:'together_list',circle:areaCircle.id})).status,403,'area discovery grants no message access');
+assert.equal((await circlePost('area-outside',{action:'clear_area',circle:areaCircle.id})).status,403,'nonmembers cannot remove an area');
+assert.equal((await circlePost('area-outside',{action:'request',circle:areaCircle.id})).status,200);assert.equal((await circlePost('area-b',{action:'admit',circle:areaCircle.id,target:'area-outside'})).status,200);
+assert.equal((await circlePost('area-outside',{action:'clear_area',circle:areaCircle.id})).status,403,'ordinary participants cannot remove the listing area');
+assert.equal((await circlePost('area-b',{action:'clear_area',circle:areaCircle.id})).status,200);assert.equal((await circleGet('area-outside')).data.circles.find(c=>c.id===areaCircle.id).area,null);
+assert.equal((await circlePost('area-b',{action:'clear_area',circle:areaCircle.id})).status,200,'privacy removal is safe to retry');
+const ownAreaResponse=(await circleGet('area-a')).data;assert.deepEqual(ownAreaResponse.myArea,areaLabel);assert(!JSON.stringify(ownAreaResponse).includes('areaLat'),'the circle endpoint never exposes profile coordinates');
+console.log('Circle area defaults, stale-consent rejection, organizing exclusion, founder review, listing privacy, member boundaries and removal passed.');
+sql.prepare('UPDATE circles SET area=? WHERE id=?').run(JSON.stringify(areaLabel),areaCircle.id);
+sql.prepare("UPDATE profiles SET active=0 WHERE id='area-b'").run();
+assert.equal((await circlePost('area-b',{action:'clear_area',circle:areaCircle.id})).status,200,'paused hosts retain the ability to remove disclosure');
+sql.prepare("UPDATE profiles SET active=1 WHERE id='area-b'").run();
+sql.prepare('UPDATE circles SET area=? WHERE id=?').run(JSON.stringify(areaLabel),areaCircle.id);
+globalThis.__beforeRun=(query)=>{if(query.startsWith("UPDATE circles SET area=''")){globalThis.__beforeRun=null;sql.prepare("UPDATE circle_members SET status='left' WHERE circle=? AND member='area-b'").run(areaCircle.id);}};
+assert.equal((await circlePost('area-b',{action:'clear_area',circle:areaCircle.id})).status,409,'host membership is rechecked inside the privacy update');globalThis.__beforeRun=null;
+assert.notEqual(sql.prepare('SELECT area FROM circles WHERE id=?').get(areaCircle.id).area,'');
+sql.prepare("UPDATE circle_members SET status='accepted' WHERE circle=? AND member='area-b'").run(areaCircle.id);
+assert.equal((await circlePost('area-b',{action:'clear_area',circle:areaCircle.id})).status,200);

@@ -23,3 +23,7 @@ const {publicProfile}=await import('data:text/javascript;base64,'+Buffer.from(ph
 const visible=publicProfile({id:'p',name:'P',age:30,gender:'Prefer not to say',city:'Austin',region:'Texas',country:'United States',areaLat:30.2672,areaLon:-97.7431,locationPlaceId:'R/1',remote:true,intentions:['Connect'],orientation:'Prefer not to label',expectation:'Unsure',affection:'',faith:'',about:'Hi',responsibility:'',space:'',growth:'',interests:['History'],active:true});
 assert.equal('areaLat' in visible,false);assert.equal('areaLon' in visible,false);assert.equal('locationPlaceId' in visible,false);assert.equal(visible.city,'Austin');
 console.log('Structured area normalization, distance, privacy, legacy compatibility, connection metadata, and confirmation expiry passed');
+
+const {broadArea}=location;
+assert.deepEqual(broadArea({city:' Austin ',region:'Texas',country:'United States',areaLat:30.27,areaLon:-97.74,locationPlaceId:'place',locationConfirmationKey:'private'}),{city:'Austin',region:'Texas',country:'United States'});
+assert.equal(broadArea({city:'Austin'}),null);assert.equal(broadArea(null),null);

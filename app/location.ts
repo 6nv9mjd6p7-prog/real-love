@@ -46,3 +46,12 @@ export function locationIsConfirmed(value:Partial<BroadLocation>&{locationConfir
  const time=Date.parse(value.locationConfirmedAt||'');
  return !!locationKey(value)&&value.locationConfirmationKey===locationKey(value)&&Number.isFinite(time)&&time<=now&&time>=now-90*86400000;
 }
+
+// Deliberately copies only a display area, never profile coordinates or location confirmation.
+export function broadArea(value:unknown):BroadLocation|null{
+ if(!value||typeof value!=='object'||Array.isArray(value))return null;
+ const source=value as Record<string,unknown>;
+ const field=(key:string,max:number)=>typeof source[key]==='string'?source[key].trim().replace(/\s+/g,' ').slice(0,max):'';
+ const city=field('city',60),region=field('region',80),country=field('country',80);
+ return city&&region&&country?{city,region,country}:null;
+}

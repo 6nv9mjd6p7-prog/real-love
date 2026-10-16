@@ -1,0 +1,1 @@
+ALTER TABLE `circles` ADD `area` text DEFAULT '' NOT NULL;

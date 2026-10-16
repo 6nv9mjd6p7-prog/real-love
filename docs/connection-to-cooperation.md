@@ -16,7 +16,7 @@ Drafts stay in the existing account- and circle-scoped tab storage with its expi
 
 This is low-risk peer discussion and planning: knowledge, time, simple activities and shared ideas. The form explicitly excludes money requests, sales, lending arrangements, hazardous tasks and care/transport for minors. General app conduct rules remain in force. Text filtering and acknowledgement cannot guarantee compliance; report inappropriate posts through the existing message-report route. The app does not verify offers or guarantee safe meetings.
 
-No payments, pooled funds, resource inventories, reservations, lending/dispute process, participant commitments, home-address fields, public post discovery, public participation indicators, or new location disclosure were added. A circle listing never includes Together content. New members receive only posts created after admission, including when an earlier project remains open. Hosts can restate an idea in a new post rather than expose old history automatically.
+The initial version added no payments, pooled funds, resource inventories, reservations, lending/dispute process, participant commitments, home-address fields, public post discovery, public participation indicators, or new location disclosure. Later extensions are described below. A circle listing never includes Together content. New members receive only posts created after admission, including when an earlier project remains open. Hosts can restate an idea in a new post rather than expose old history automatically.
 
 ## Next steps
 
@@ -53,3 +53,18 @@ Closed projects reject new steps, updates, step-state changes and child-message 
 Project progress drafts and retry attempts use the existing tab storage, partitioned by account, circle and project. Saving a step preserves an independent update draft. Failures preserve drafts and attempt identities. Circle leave/close clears the current account’s project draft kinds for that circle; existing sign-out/deletion/expiry cleanup remains in effect. UI read generations and abort signals prevent superseded project responses from replacing current content; access-loss failures clear previously displayed details.
 
 Automated API coverage includes author/host boundaries, ordinary member updates, known-ID denial, admission history, reports, blocks, duplicate attempts, explicit step revisions, the step cap, update pagination, closed-project behavior, deletion and a project closing during a write. Component tests cover role-specific forms, independent drafts, failure recovery, retries, reporting, closure and stale/access-loss responses. Real browser, screen-reader, touch and multiple-account QA remain unverified.
+
+
+## Finding Together from Circles
+
+The Circles list now has a visible Together entry. Choose an accepted, open, unrestricted circle and select Open Together; the existing member-only panel opens expanded. Joined-circle cards provide the same shortcut. The panel remains manually collapsible. No membership, message or activity response is created by opening it.
+
+## Optional circle areas
+
+When proposing a discoverable friendship, industry or local worker circle, a founder may explicitly choose to share their saved profile city, region and country as the circle’s general area. The default is off. The server copies only these three display fields; it ignores client-supplied area objects and never copies coordinates, place IDs, confirmation metadata, member addresses or live locations. The submitted area key must match the current saved profile area, so a changed profile cannot silently authorize a different disclosure. Sharing is a snapshot and does not follow later profile changes.
+
+The other founder sees the area in the proposal and review before agreeing. It becomes discoverable with the existing circle listing only after both founders agree. It describes the circle, not where its members live or where an activity meets. Unlisted organizing circles reject structured area sharing and never render an area label. Membership, blocking, listing eligibility and message/history access remain unchanged; a listing area grants no access to Together content.
+
+Browse offers Any area by default and My area when the viewer has a complete saved area. My area matches normalized city, region and country; it never uses city alone. This is an exact general-area filter over the existing returned listings (currently up to 100), not a distance search or a complete geographic directory. Listings without an area remain in Any area. Joined and Requests ignore this filter, and the Together circle selector also remains unfiltered. A host can remove a shared area, including while paused; host membership is checked again inside the update. Removing the label cannot recall copies already saved elsewhere. Existing circles start without an area; this version does not add areas retroactively or allow changing an open circle to a different area without renewed founder review.
+
+Migration `0024_circle_general_area.sql` adds the optional stored label with an empty default. API, component and helper tests cover defaults, explicit choice, stale disclosure, unlisted exclusion, same-name cities in different regions, missing areas, review labels, profile-coordinate omission, member-only content, host-only removal, paused removal and membership revocation during removal. Distance-based discovery and live device/browser validation remain future work.
