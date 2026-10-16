@@ -39,6 +39,8 @@ const localBindingConfig = {
     { name: "RATE_LIMITER_API", namespace_id: "8073106011", simple: { limit: 300, period: 60 as const } },
     { name: "RATE_LIMITER_AUTH", namespace_id: "8073106012", simple: { limit: 30, period: 60 as const } },
   ],
+  // Expired private report evidence and old safety records are purged daily.
+  triggers: { crons: ["17 4 * * *"] },
 };
 
 export default defineConfig(async ({ command }) => {
