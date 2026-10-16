@@ -1,5 +1,5 @@
 import {locationKey,CIRCLE_DISTANCE_CHOICES,type BroadLocation} from './location';
-export type CircleSummary={nearbyEnabled?:boolean;distanceMiles?:number|null;area?:BroadLocation|null;category?:string;membershipRules?:string;id:string;inviteId?:string|null;title:string;description:string;tags:string[];activity:string;status:string;membership:string|null;role:string|null;canApprove:boolean;awaitingYourAgreement?:boolean;count:number;restricted?:boolean;reportTarget?:string;joinRequests?:number};
+export type CircleSummary={hostCount?:number;hostInvitation?:boolean;nearbyEnabled?:boolean;distanceMiles?:number|null;area?:BroadLocation|null;category?:string;membershipRules?:string;id:string;inviteId?:string|null;title:string;description:string;tags:string[];activity:string;status:string;membership:string|null;role:string|null;canApprove:boolean;awaitingYourAgreement?:boolean;count:number;restricted?:boolean;reportTarget?:string;joinRequests?:number};
 export type CircleSection='Discover'|'Joined'|'Requests';
 export function circleStatus(c:CircleSummary){
  if(c.status==='pending')return c.awaitingYourAgreement||c.canApprove?'Your agreement needed':'Awaiting the other founder';

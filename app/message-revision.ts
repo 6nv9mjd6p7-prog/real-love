@@ -54,9 +54,9 @@ export async function messageRevision(
   const members = isCircle
     ? await store
         .prepare(
-          "SELECT m.member,m.status,m.role,m.history_after,json_extract(p.data,'$.name') AS name FROM circle_members m LEFT JOIN profiles p ON p.id=m.member JOIN safety_accounts a ON a.id=m.member WHERE m.circle=? AND (m.status='accepted' OR (?=1 AND m.status='requested')) AND a.status='admitted' AND NOT EXISTS (SELECT 1 FROM blocks b WHERE (b.actor=? AND b.target=m.member) OR (b.actor=m.member AND b.target=?)) ORDER BY m.member",
+          "SELECT m.member,m.status,m.role,m.history_after,CASE WHEN m.member=? OR ?=1 THEN m.host_invited_by ELSE '' END AS host_invited_by,json_extract(p.data,'$.name') AS name FROM circle_members m LEFT JOIN profiles p ON p.id=m.member JOIN safety_accounts a ON a.id=m.member WHERE m.circle=? AND (m.status='accepted' OR (?=1 AND m.status='requested')) AND a.status='admitted' AND NOT EXISTS (SELECT 1 FROM blocks b WHERE (b.actor=? AND b.target=m.member) OR (b.actor=m.member AND b.target=?)) ORDER BY m.member",
         )
-        .bind(scope, includeRequests ? 1 : 0, viewer, viewer)
+        .bind(viewer, includeRequests ? 1 : 0, scope, includeRequests ? 1 : 0, viewer, viewer)
         .all()
     : { results: [] };
 

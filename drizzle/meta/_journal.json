@@ -183,6 +183,13 @@
       "when": 1792127174020,
       "tag": "0025_circle_distance_discovery",
       "breakpoints": true
+    },
+    {
+      "idx": 26,
+      "version": "6",
+      "when": 1792133184512,
+      "tag": "0026_circle_host_handover",
+      "breakpoints": true
     }
   ]
 }

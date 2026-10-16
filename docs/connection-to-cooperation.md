@@ -89,3 +89,11 @@ Circle conversations now put Together, activity, purpose/access, alerts, host co
 ## Natural page scrolling
 
 The subsequent scrolling revision removes fixed-height and fixed-position chat shells from both stylesheets, including the mobile browser HTML/body lock and the native fixed-height variant. Direct and circle conversations now remain in document flow, like other main screens. Expanded context, circle tools and conversation help grow with the page; typing no longer hides those sections. Mobile transcripts retain their own viewport-aware height (at least ten rem), with scroll chaining into the document at the end of their history. The keyboard measurement sizes only that transcript; it does not reposition or lock the page. Dialog focus containment and temporary background scroll locking remain intentional while a dialog is open. Browser/device validation is still outstanding.
+
+## Circle management and continuity
+
+Both hosts share management powers. Hosts can update the circle purpose and next activity; the title, category, membership rules and location consent cannot be changed through this editor. Edits require current host authority at write time and match the version originally opened, preventing silent overwrites.
+
+When a host leaves an open circle, another current host must remain. The remaining host sees a co-host reminder and may invite an admitted current member. Nomination grants no powers; the member explicitly accepts or declines. Acceptance rechecks current membership, account eligibility, blocks, the inviting host and the two-host limit. Promotion never changes the member’s admission-bounded history. Hosts can cancel pending co-host invitations. The final host must hand over or deliberately close the circle before leaving. Account deletion keeps its existing privacy flow and closes any circle left without hosts. Original founding records remain historical; reports also accept current or former successor hosts.
+
+This release uses consent-based co-host handover, not a member voting system. A co-host role inside Real Love does not establish union or legal representation.

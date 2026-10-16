@@ -282,6 +282,8 @@ assert.equal((await post('charlie',{action:'profile',profile:draft('charlie')}))
 assert.equal((await circlePost('charlie',{action:'request',circle:circle.id})).status,403,'profile recreation cannot evade circle removal');
 assert.equal((await circlePost('alice',{action:'leave',circle:circle.id})).status,200);
 assert.equal((await circlePost('bob',{action:'conversation',circle:circle.id})).status,200,'circle can continue with one host');
+assert.equal((await circlePost('bob',{action:'leave',circle:circle.id})).status,409,'last host must hand over or explicitly close');
+assert.equal((await circlePost('bob',{action:'close',circle:circle.id})).status,200);
 assert.equal((await circlePost('bob',{action:'leave',circle:circle.id})).status,200);
 assert.equal((await circleGet('bob')).data.circles.length,0,'last host leaving closes circle');
 assert.equal((await post('alice',{action:'visibility',active:false})).status,200);
@@ -383,7 +385,7 @@ assert.equal((await post('circle-b',{action:'visibility',active:false})).status,
 assert.equal((await circlePost('circle-c',{action:'request',circle:circleId})).status,200);assert.equal((await circleGet('circle-a')).data.circles.find(c=>c.id===circleId).joinRequests,1);assert.equal((await get('circle-a')).data.circleAlerts.joinRequests,1);assert.equal((await circlePost('circle-a',{action:'conversation',circle:circleId})).data.members.find(m=>m.id==='circle-c').canAdmit,true);
 assert.equal((await post('circle-c',{action:'visibility',active:false})).status,200);assert.equal((await circleGet('circle-a')).data.circles.find(c=>c.id===circleId).joinRequests,0);assert.equal((await get('circle-a')).data.circleAlerts.joinRequests,0);assert.equal((await circlePost('circle-a',{action:'conversation',circle:circleId})).data.members.find(m=>m.id==='circle-c').canAdmit,false);
 assert.equal((await post('circle-c',{action:'visibility',active:true})).status,200);assert.equal((await circlePost('circle-d',{action:'request',circle:circleId})).status,200);assert.equal((await circlePost('circle-a',{action:'admit',circle:circleId,target:'circle-d'})).status,200);assert.equal((await post('circle-c',{action:'block',target:'circle-d'})).status,200);assert.equal((await circleGet('circle-a')).data.circles.find(c=>c.id===circleId).joinRequests,0,'a block involving any participant makes approval unavailable');assert.equal((await get('circle-a')).data.circleAlerts.joinRequests,0);assert.equal((await circlePost('circle-a',{action:'conversation',circle:circleId})).data.members.find(m=>m.id==='circle-c').canAdmit,false);assert.equal((await circlePost('circle-c',{action:'leave',circle:circleId})).status,200,'restricted applicants can withdraw');
-assert.equal((await circlePost('circle-a',{action:'leave',circle:circleId})).status,200);assert((await circleGet('circle-b')).data.circles.some(c=>c.id===circleId),'leaving one host preserves the circle');assert.equal((await circlePost('circle-b',{action:'leave',circle:circleId})).status,200);assert(!(await circleGet('circle-d')).data.circles.some(c=>c.id===circleId),'last host leaving closes the circle');
+assert.equal((await circlePost('circle-a',{action:'leave',circle:circleId})).status,200);assert((await circleGet('circle-b')).data.circles.some(c=>c.id===circleId),'leaving one host preserves the circle');assert.equal((await circlePost('circle-b',{action:'leave',circle:circleId})).status,409);assert.equal((await circlePost('circle-b',{action:'close',circle:circleId})).status,200);assert.equal((await circlePost('circle-b',{action:'leave',circle:circleId})).status,200);assert(!(await circleGet('circle-d')).data.circles.some(c=>c.id===circleId),'last host leaving closes the circle');
 console.log('Founder agreement states, actionable circle request counts, and host leave behavior passed');
 
 // Safety review: reporting never grants access outside an authorized history.
@@ -933,3 +935,77 @@ assert.equal(sql.prepare('SELECT area_point FROM circles WHERE id=?').get(distan
 radiusCircle=(await circleGet('area-outside')).data.circles.find(c=>c.id===distanceCircle.id);assert.equal(radiusCircle.nearbyEnabled,false);assert.equal(radiusCircle.distanceMiles,null);
 delete globalThis.__circleAreaSuggestions;
 console.log('Independent distance opt-in, provider-only area resolution, coarse bands, missing-location recovery, founder review, content isolation and withdrawal passed.');
+
+// Circle management preserves host authority, history boundaries and explicit handover.
+for(const who of ['govern-a','govern-b','govern-c','govern-d','govern-outsider']){assert.equal((await post(who,{action:'profile',profile:draft(who)})).status,200);assert.equal((await review({action:'admit',target:who,reason:'Reviewed adult eligibility and conduct rules',adultReviewed:true})).status,200);}
+sql.prepare("INSERT INTO connections (id,sender,recipient,status,kind,proposal,created) VALUES ('govern-connection','govern-a','govern-b','accepted','Connect','Talk about a circle',?)").run(new Date().toISOString());
+assert.equal((await circlePost('govern-a',{action:'propose',connection:'govern-connection',title:'Community planning circle',description:'Plan small useful projects together.',tags:[],activity:'Choose a weekend activity together.'})).status,200);
+const govern=(await circleGet('govern-b')).data.circles.find(c=>c.title==='Community planning circle');
+assert.equal((await circlePost('govern-b',{action:'approve',circle:govern.id})).status,200);
+assert.equal((await circlePost('govern-a',{action:'message',circle:govern.id,text:'Private history before later members joined'})).status,200);
+for(const who of ['govern-c','govern-d']){assert.equal((await circlePost(who,{action:'request',circle:govern.id})).status,200);assert.equal((await circlePost('govern-a',{action:'admit',circle:govern.id,target:who})).status,200);}
+const governEdit={action:'update_circle',circle:govern.id,description:'Plan a community garden together.',activity:'Meet to agree on a small first step.',expectedDescription:govern.description,expectedActivity:govern.activity};
+assert.equal((await circlePost('govern-c',governEdit)).status,403);
+assert.equal((await circlePost('govern-outsider',governEdit)).status,403);
+assert.equal((await circlePost('govern-a',{...governEdit,title:'Renamed'})).status,400,'titles stay fixed');
+assert.equal((await circlePost('govern-a',governEdit)).status,200);
+assert.equal((await circlePost('govern-b',governEdit)).status,409,'stale edits cannot overwrite another host');
+assert.equal(sql.prepare('SELECT title FROM circles WHERE id=?').get(govern.id).title,govern.title);
+assert.equal((await circlePost('govern-a',{action:'invite_host',circle:govern.id,target:'govern-c'})).status,409,'circle already has two hosts');
+assert.equal((await circlePost('govern-a',{action:'leave',circle:govern.id})).status,200);
+assert.equal((await circleGet('govern-b')).data.circles.find(c=>c.id===govern.id).hostCount,1);
+assert.equal((await circlePost('govern-b',{action:'leave',circle:govern.id})).status,409,'a remaining host cannot silently orphan the circle');
+assert.equal((await circlePost('govern-c',{action:'invite_host',circle:govern.id,target:'govern-d'})).status,403);
+assert.equal((await circlePost('govern-b',{action:'invite_host',circle:govern.id,target:'govern-outsider'})).status,409);
+assert.equal((await circlePost('govern-b',{action:'invite_host',circle:govern.id,target:'govern-c'})).status,200);
+assert.equal(sql.prepare('SELECT role FROM circle_members WHERE circle=? AND member=?').get(govern.id,'govern-c').role,'member','nomination does not promote without consent');
+assert.equal((await circleGet('govern-c')).data.circles.find(c=>c.id===govern.id).hostInvitation,true);
+assert.equal((await circlePost('govern-d',{action:'accept_host',circle:govern.id})).status,403);
+assert.equal((await circlePost('govern-c',{action:'decline_host',circle:govern.id})).status,200);
+assert.equal((await circlePost('govern-c',{action:'accept_host',circle:govern.id})).status,403);
+assert.equal((await circlePost('govern-b',{action:'invite_host',circle:govern.id,target:'govern-c'})).status,200);
+const historyBeforePromotion=sql.prepare('SELECT history_after FROM circle_members WHERE circle=? AND member=?').get(govern.id,'govern-c').history_after;
+// A competing acceptance between preflight and write cannot create a third host.
+globalThis.__beforeRun=query=>{if(query.startsWith("UPDATE circle_members SET role='host'")){globalThis.__beforeRun=null;sql.prepare("UPDATE circle_members SET role='host' WHERE circle=? AND member='govern-d'").run(govern.id);}};
+assert.equal((await circlePost('govern-c',{action:'accept_host',circle:govern.id})).status,409);globalThis.__beforeRun=null;
+sql.prepare("UPDATE circle_members SET role='member' WHERE circle=? AND member='govern-d'").run(govern.id);
+assert.equal((await circlePost('govern-c',{action:'accept_host',circle:govern.id})).status,200);
+assert.equal(sql.prepare('SELECT history_after FROM circle_members WHERE circle=? AND member=?').get(govern.id,'govern-c').history_after,historyBeforePromotion);
+assert(!(await circlePost('govern-c',{action:'conversation',circle:govern.id})).data.messages.some(m=>m.body.includes('Private history before')),'promotion never unlocks earlier messages');
+const promotedEdit={...governEdit,expectedDescription:governEdit.description,expectedActivity:governEdit.activity,activity:'Agree on a date for our first shared activity.'};
+assert.equal((await circlePost('govern-c',promotedEdit)).status,200,'accepted co-host can edit');
+const reportHost=await post('govern-d',{action:'report',target:'govern-c',type:'circle',scope:govern.id,reason:'Harassment',details:'Review conduct by the newly selected circle host.'});assert.equal(reportHost.status,200,'new hosts remain reportable');
+assert.equal((await circleGet('govern-d')).data.circles.find(c=>c.id===govern.id).reportTarget,'govern-b','circle reports target a current host');
+// The final write, not the stale screen, determines whether a host can leave.
+globalThis.__beforeRun=query=>{if(query.startsWith('UPDATE circle_members SET history_before=CASE')){globalThis.__beforeRun=null;sql.prepare("UPDATE circle_members SET status='left' WHERE circle=? AND member='govern-c'").run(govern.id);}};
+assert.equal((await circlePost('govern-b',{action:'leave',circle:govern.id})).status,409);globalThis.__beforeRun=null;
+assert.equal(sql.prepare('SELECT status FROM circle_members WHERE circle=? AND member=?').get(govern.id,'govern-b').status,'accepted');
+sql.prepare("UPDATE circle_members SET status='accepted' WHERE circle=? AND member='govern-c'").run(govern.id);
+assert.equal((await circlePost('govern-b',{action:'leave',circle:govern.id})).status,200);
+assert.equal((await circlePost('govern-c',{action:'invite_host',circle:govern.id,target:'govern-d'})).status,200);
+assert.equal((await circlePost('govern-c',{action:'cancel_host_invite',circle:govern.id,target:'govern-d'})).status,200);
+assert.equal((await circlePost('govern-d',{action:'accept_host',circle:govern.id})).status,403);
+assert.equal((await circlePost('govern-c',{action:'leave',circle:govern.id})).status,409);
+assert.equal((await circlePost('govern-c',{action:'close',circle:govern.id})).status,200);
+assert.equal((await circlePost('govern-c',{action:'leave',circle:govern.id})).status,200);
+console.log('Circle edits, immutable title, current-host reporting, consent-based co-host roles, history isolation, stale edits and last-host race guards passed.');
+
+// Notification details use current access and explicit destinations, never message text.
+for(const who of ['notice-a','notice-b']){assert.equal((await post(who,{action:'profile',profile:draft(who)})).status,200);assert.equal((await review({action:'admit',target:who,reason:'Reviewed adult eligibility and conduct rules',adultReviewed:true})).status,200);}
+sql.prepare("INSERT INTO connections (id,sender,recipient,status,kind,proposal,created) VALUES ('notice-connection','notice-a','notice-b','accepted','Connect','A thoughtful introduction',?)").run(new Date().toISOString());
+assert.equal((await post('notice-a',{action:'message',connection:'notice-connection',text:'Secret text that belongs only in the chat'})).status,200);
+as('notice-b');let notificationDetailsFeed=await (await notificationsApi.GET()).json();
+let messageAlert=notificationDetailsFeed.notifications.find(n=>n.kind==='message');assert.equal(messageAlert.title,'notice-a sent you a message');assert.equal(messageAlert.detail,'Private conversation with notice-a');assert.equal(messageAlert.actionLabel,'Open chat');assert.equal(messageAlert.url,'#chat/notice-connection');assert(!JSON.stringify(notificationDetailsFeed).includes('Secret text'));assert(!JSON.stringify(notificationDetailsFeed).includes('actor_data'));
+const noticeMessage=sql.prepare("SELECT id FROM messages WHERE connection='notice-connection'").get().id;
+assert.equal((await post('notice-b',{action:'react',connection:'notice-connection',message:noticeMessage,emoji:'❤️'})).status,200);
+as('notice-a');notificationDetailsFeed=await (await notificationsApi.GET()).json();assert.equal(notificationDetailsFeed.notifications.find(n=>n.kind==='reaction').title,'notice-b reacted to your message');
+assert.equal((await post('notice-a',{action:'close',connection:'notice-connection'})).status,200);
+as('notice-b');messageAlert=(await (await notificationsApi.GET()).json()).notifications.find(n=>n.kind==='message');assert.equal(messageAlert.available,false);assert.equal(messageAlert.url,'');assert(!messageAlert.title.includes('notice-a'),'unavailable activities do not reveal current profile names');
+as('govern-d');let closedCircleAlert=(await (await notificationsApi.GET()).json()).notifications.find(n=>n.kind==='circle_host_invitation');assert(closedCircleAlert);assert.equal(closedCircleAlert.available,false);assert(!closedCircleAlert.detail.includes(govern.title),'closed or unlisted circle metadata is not re-exposed');
+// A private organizing invitation alone permits listing context, not conversation access.
+const privateNoticeCircle='notification-private-circle';sql.prepare("INSERT INTO circles (id,founder_a,founder_b,connection,title,description,tags,activity,status,proposer,created,category,membership_rules) VALUES (?,'notice-a','notice-b','notice-connection','Unlisted worker discussion','Private worker concerns to discuss','[]','Agree on a safe first step','open','notice-a',?,'worker_organizing','Respect privacy and review admission rules.')").run(privateNoticeCircle,new Date().toISOString());
+sql.prepare("INSERT INTO circle_invites (id,circle,inviter,invitee,status,created,expires) VALUES ('notification-private-invite',?,'notice-a','notice-b','pending',?,?)").run(privateNoticeCircle,new Date().toISOString(),new Date(Date.now()+86400000).toISOString());
+sql.prepare('INSERT INTO notifications (id,member,actor,kind,scope,title,url,created) VALUES (?,?,?,?,?,?,?,?)').run('notification-private-alert','notice-b','notice-a','circle_invite',privateNoticeCircle,'A private invitation','#circles/work/requests',new Date().toISOString());
+as('notice-b');let privateNotice=(await (await notificationsApi.GET()).json()).notifications.find(n=>n.id==='notification-private-alert');assert.equal(privateNotice.detail,'Unlisted worker discussion');assert.equal(privateNotice.url,'#circles/work/requests');
+sql.prepare("UPDATE circle_invites SET status='declined' WHERE id='notification-private-invite'").run();as('notice-b');privateNotice=(await (await notificationsApi.GET()).json()).notifications.find(n=>n.id==='notification-private-alert');assert.equal(privateNotice.available,false);assert(!privateNotice.detail.includes('Unlisted worker discussion'));
+console.log('Person-specific notification details, exact chat/request routes, message-text omission and revoked private-circle metadata passed.');

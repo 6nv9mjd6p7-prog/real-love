@@ -60,3 +60,9 @@ Chat rows now show the name, latest-message timestamp, latest message and unread
 ## Settings list presentation
 
 Settings now use one shared surface with full-width section rows and separators. The privacy topics form one vertical list on desktop and mobile instead of nested cards in a two-column grid. Supporting details and conduct rules use the same row treatment, with no repeated card frames; rule text and all controls remain available. Quick access links still open, scroll to and focus their group. Visibility, safety, notifications, account actions and the separate deletion confirmation retain their behavior.
+
+## Circle management and notification detail
+
+Manage circle is a compact disclosure near the conversation header. Hosts edit the purpose and next activity in a single local form; a fixed-title label makes the boundary explicit. The remaining host gets a co-host selection form; invited members see a separate accept/decline card. Leave review explains the handover requirement beside the disabled submit control and links back into circle management.
+
+In-app notifications now resolve person names, circle titles, event-specific descriptions and action labels using current account and membership access. Direct activity opens the correct chat or request screen; circle activity identifies the circle. Closed, paused or inaccessible activity uses a generic unavailable state instead of exposing current profile or private-circle metadata. Exact timestamps remain available while the list uses a shorter local date and time. Message bodies and uploaded media are not copied into notifications, and lock-screen push alerts remain generic.
