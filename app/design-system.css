@@ -292,3 +292,16 @@ html[data-native-platform] .app-shell:has(.conversation-screen,.circle-conversat
  html:not([data-native-platform]) .notification-bell>span:not(.count){position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0)}
  html:not([data-native-platform]) .notification-bell>.count{position:absolute;top:0;right:0;min-width:18px;padding:1px 4px;font-size:.625rem;line-height:1.5}
 }
+
+/* Chats read as one inbox list, with message content ahead of card decoration. */
+.app-shell .conversation-row.chat-list-row{margin:0;padding:0;gap:12px;min-height:76px;border:0;border-bottom:1px solid var(--border);border-radius:0;background:transparent;box-shadow:none}
+.app-shell .chat-row-avatar{padding:10px 0}
+.app-shell .chat-row-avatar :is(.shared-avatar,.shared-avatar-trigger){width:44px;height:44px;min-width:44px;min-height:44px;flex-basis:44px}
+.app-shell .chat-row-open{min-height:76px;padding:12px 4px;gap:3px;border-radius:0}
+.app-shell .chat-row-title{display:flex;flex-direction:row;align-items:baseline;gap:8px}
+.app-shell .chat-row-title strong{flex:1;min-width:0;font-size:.9375rem;font-weight:600}
+.app-shell .chat-row-title time{flex:0 0 auto;font-size:.75rem;line-height:1.5;white-space:nowrap}
+.app-shell .chat-row-preview{font-size:.875rem;line-height:1.5;padding-right:28px}
+.app-shell .chat-unread .chat-row-title strong{font-weight:700}
+.app-shell .chat-unread .chat-row-preview{font-weight:600;color:var(--ink)}
+.app-shell .chat-row-count{right:4px;bottom:12px;max-width:3rem;overflow:hidden;text-overflow:ellipsis}
