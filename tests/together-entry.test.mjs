@@ -23,3 +23,9 @@ nodes.find(n=>n.type==='form').props.onSubmit({preventDefault(){}});assert.equal
 opened=null;tree=Entry({...props,circles:[]});nodes=elements(tree);assert(!nodes.some(n=>n.type==='select'));nodes.find(n=>n.type==='button').props.onClick();assert.equal(browsed,1);
 for(const state of [{loading:true},{failed:true},{active:false}]){tree=Entry({...props,...state});assert(!elements(tree).some(n=>n.type==='select'),'unavailable state cannot open a circle');assert(!renderToStaticMarkup(tree).includes('Join a circle or start one'),'unavailable is not an empty membership state');}
 console.log('Together entry selection, access filtering, unavailable states and browse action passed');
+
+const compact=Entry(props),compactNodes=elements(compact),guide=compactNodes.find(n=>n.type==='details');
+assert(guide,'explanatory content stays available in a labelled disclosure');assert(!guide.props.open,'explanatory detail starts collapsed');
+assert(renderToStaticMarkup(guide).includes('Participation is always optional'));
+assert(!elements(guide).some(n=>n.type==='select'||n.type==='form'),'the circle picker remains directly available');
+assert(compactNodes.some(n=>n.type==='form'),'opening Together never requires opening the help disclosure');

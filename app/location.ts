@@ -55,3 +55,15 @@ export function broadArea(value:unknown):BroadLocation|null{
  const city=field('city',60),region=field('region',80),country=field('country',80);
  return city&&region&&country?{city,region,country}:null;
 }
+
+
+export const CIRCLE_DISTANCE_CHOICES=[5,10,25,50,100] as const;
+// Resolve a public area label to a provider area point, never a member's device position.
+export function circleAreaPoint(area:BroadLocation,suggestions:BroadLocationPoint[]){
+ const candidate=suggestions.find(p=>locationKey(p)===locationKey(area)&&point(p));
+ return candidate?{areaLat:Math.round(candidate.areaLat*100)/100,areaLon:Math.round(candidate.areaLon*100)/100}:null;
+}
+export function circleDistanceBand(viewer:{areaLat?:unknown;areaLon?:unknown},areaPoint:{areaLat?:unknown;areaLon?:unknown}|null){
+ const distance=areaPoint?locationDistanceMiles(viewer,areaPoint):null;
+ return distance===null?null:Math.max(5,Math.ceil(distance/5)*5);
+}

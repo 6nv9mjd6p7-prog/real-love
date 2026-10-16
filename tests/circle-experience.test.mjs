@@ -22,3 +22,10 @@ assert.deepEqual(circleGroups([local,other,base],'Discover','',null).flatMap(g=>
 assert.equal(circleGroups([{...other,membership:'accepted'}],'Joined','',austin)[0].circles.length,1,'area filter never hides joined circles');
 assert.equal(circleGroups([{...other,membership:'requested'}],'Requests','',austin)[0].circles.length,1,'area filter never hides requests');
 assert.equal(circleGroups([local],'Discover','texas')[0].circles.length,1,'shared areas are searchable');
+
+const near={...local,id:'near',nearbyEnabled:true,distanceMiles:25};
+const far={...local,id:'far',nearbyEnabled:true,distanceMiles:30};
+const distanceIds=(miles)=>circleGroups([near,far,local,{...near,id:'invalid',distanceMiles:NaN}],'Discover','',null,miles)[0].circles.map(c=>c.id);
+assert.deepEqual(distanceIds(25),['near']);assert.deepEqual(distanceIds(50),['near','far']);assert.deepEqual(distanceIds(26),[],'unsupported distance choices fail closed');
+assert.equal(circleGroups([{...far,membership:'accepted'}],'Joined','',null,5)[0].circles.length,1);
+assert.equal(circleGroups([{...far,membership:'requested'}],'Requests','',null,5)[0].circles.length,1);

@@ -92,9 +92,9 @@ export function connectionContext(a:Profile,b:Profile){
  if(a.expectation&&b.expectation&&a.expectation!=='Unsure'&&b.expectation!=='Unsure'&&a.expectation!==b.expectation)discuss.push('You list different sexual expectations for a possible future relationship. Discuss them only if relevant; starting a friendship creates no sexual expectation.');
  return {exact,related,activities,availability,distanceMiles,sameArea:sameArea(a,b),online:a.remote&&b.remote,discuss};
 }
-// Discover is for new connections; accepted contacts remain in the inbox.
+// Discover is for new introductions; pending invitations and accepted contacts live in the inbox.
 export function newDiscoveryPeople<T extends {id:string}>(people:T[],connections:{status:string;person:{id:string}}[]){
- const connected=new Set(connections.filter(c=>c.status==='accepted').map(c=>c.person.id));
+ const connected=new Set(connections.filter(c=>c.status==='pending'||c.status==='accepted').map(c=>c.person.id));
  return people.filter(p=>!connected.has(p.id));
 }
 

@@ -70,9 +70,10 @@ console.log('Connection explanations and shared-interest visibility checks passe
 assert.equal(discoveryScore({...basic,activities:['Conversation','Conversation']},{...moved,activities:['Conversation']}),discoveryScore({...basic,activities:['Conversation']},{...moved,activities:['Conversation']}),'duplicate activities cannot inflate ordering');
 
 const candidates=[{id:'accepted'},{id:'pending'},{id:'closed'},{id:'new'}];
-assert.deepEqual(newDiscoveryPeople(candidates,[{status:'accepted',person:{id:'accepted'}},{status:'pending',person:{id:'pending'}},{status:'closed',person:{id:'closed'}}]).map(p=>p.id),['pending','closed','new']);
+assert.deepEqual(newDiscoveryPeople(candidates,[{status:'accepted',person:{id:'accepted'}},{status:'pending',person:{id:'pending'}},{status:'closed',person:{id:'closed'}}]).map(p=>p.id),['closed','new']);
 assert.deepEqual(candidates.map(p=>p.id),['accepted','pending','closed','new'],'saved/profile source stays intact');
 assert.deepEqual(newDiscoveryPeople(candidates,[]),candidates);
-console.log('Accepted contacts excluded from new discovery without altering saved/profile data');
+assert.deepEqual(newDiscoveryPeople(candidates,[{status:'pending',person:{id:'pending'}}]).map(p=>p.id),['accepted','closed','new'],'pending invitations are hidden before acceptance');
+console.log('Pending invitations and accepted contacts excluded from discovery without altering saved/profile data');
 
 const changedIdentity={...b,gender:'Self-described',genderDescription:'My own words',background:'Different cultural background'};assert.equal(discoveryScore(a,b),discoveryScore(a,changedIdentity),'gender and race do not change ranking');assert.equal(eligible(a,b),eligible(a,changedIdentity),'gender and race do not change friendship eligibility');

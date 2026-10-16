@@ -176,6 +176,13 @@
       "when": 1792126778852,
       "tag": "0024_circle_general_area",
       "breakpoints": true
+    },
+    {
+      "idx": 25,
+      "version": "6",
+      "when": 1792127174020,
+      "tag": "0025_circle_distance_discovery",
+      "breakpoints": true
     }
   ]
 }

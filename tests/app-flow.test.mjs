@@ -21,7 +21,7 @@ const webPushUrl=compile('app/web-push.ts');globalThis.__pushTasks=[];const noti
 const voiceAccessUrl=compile('app/voice-access.ts',s=>s.replace("import {env} from 'cloudflare:workers';",'const env=globalThis.__rlEnv;').replace("from './safety'",`from '${safetyUrl}'`));
 const revisionUrl=compile('app/message-revision.ts');
 const historyUrl=compile('app/history-tools.ts',s=>s.replace("from './safety'",`from '${safetyUrl}'`));const analyticsUrl=compile('app/product-analytics.ts');
-function replacements(s){return s.replace("from '../../message-revision'",`from '${revisionUrl}'`).replace("from '../../history-tools'",`from '${historyUrl}'`).replace("from '../../product-analytics'",`from '${analyticsUrl}'`).replace("from '../../voice-access'",`from '${voiceAccessUrl}'`).replace("from '../../notifications-server'",`from '${notificationServerUrl}'`).replace("from '../../web-push'",`from '${webPushUrl}'`).replace("from '../../chat-server'",`from '${chatServerUrl}'`).replace("import { env } from 'cloudflare:workers';","const env=globalThis.__rlEnv;").replace("import {env} from 'cloudflare:workers';","const env=globalThis.__rlEnv;").replace("import {getChatGPTUser} from '../../chatgpt-auth';","const getChatGPTUser=async()=>globalThis.__rlUser;").replace("from '../../circle-policy'",`from '${circlePolicyUrl}'`).replace("from '../../invitations'",`from '${invitationUrl}'`).replace("from '../../location'",`from '${locationUrl}'`).replace("from '../../model'",`from '${modelUrl}'`).replace("from '../../photo-policy'",`from '${policyUrl}'`).replace("from '../../safety'",`from '${safetyUrl}'`).replace("from '../../moderation-policy'",`from '${modPolicyUrl}'`).replace("from 'zod'",`from '${pathToFileURL(require.resolve('zod')).href}'`);}
+function replacements(s){return s.replace("import {searchBroadLocations} from '../../location-search';",'const searchBroadLocations=async()=>globalThis.__circleAreaSuggestions??[];').replace("from '../../message-revision'",`from '${revisionUrl}'`).replace("from '../../history-tools'",`from '${historyUrl}'`).replace("from '../../product-analytics'",`from '${analyticsUrl}'`).replace("from '../../voice-access'",`from '${voiceAccessUrl}'`).replace("from '../../notifications-server'",`from '${notificationServerUrl}'`).replace("from '../../web-push'",`from '${webPushUrl}'`).replace("from '../../chat-server'",`from '${chatServerUrl}'`).replace("import { env } from 'cloudflare:workers';","const env=globalThis.__rlEnv;").replace("import {env} from 'cloudflare:workers';","const env=globalThis.__rlEnv;").replace("import {getChatGPTUser} from '../../chatgpt-auth';","const getChatGPTUser=async()=>globalThis.__rlUser;").replace("from '../../circle-policy'",`from '${circlePolicyUrl}'`).replace("from '../../invitations'",`from '${invitationUrl}'`).replace("from '../../location'",`from '${locationUrl}'`).replace("from '../../model'",`from '${modelUrl}'`).replace("from '../../photo-policy'",`from '${policyUrl}'`).replace("from '../../safety'",`from '${safetyUrl}'`).replace("from '../../moderation-policy'",`from '${modPolicyUrl}'`).replace("from 'zod'",`from '${pathToFileURL(require.resolve('zod')).href}'`);}
 const voice=await import(compile('app/api/voice/route.ts',replacements));
 const chatImage=await import(compile('app/api/chat-image/route.ts',replacements));
 const notificationsApi=await import(compile('app/api/notifications/route.ts',replacements));const reports=await import(compile('app/api/reports/route.ts',replacements)),moderation=await import(compile('app/api/moderation/route.ts',replacements));const app=await import(compile('app/api/app/route.ts',replacements));const photo=await import(compile('app/api/photo/route.ts',replacements));const circles=await import(compile('app/api/circles/route.ts',replacements));
@@ -902,8 +902,34 @@ sql.prepare("UPDATE profiles SET active=0 WHERE id='area-b'").run();
 assert.equal((await circlePost('area-b',{action:'clear_area',circle:areaCircle.id})).status,200,'paused hosts retain the ability to remove disclosure');
 sql.prepare("UPDATE profiles SET active=1 WHERE id='area-b'").run();
 sql.prepare('UPDATE circles SET area=? WHERE id=?').run(JSON.stringify(areaLabel),areaCircle.id);
-globalThis.__beforeRun=(query)=>{if(query.startsWith("UPDATE circles SET area=''")){globalThis.__beforeRun=null;sql.prepare("UPDATE circle_members SET status='left' WHERE circle=? AND member='area-b'").run(areaCircle.id);}};
+globalThis.__beforeRun=(query)=>{if(query.startsWith("UPDATE circles SET area='',area_point=''")){globalThis.__beforeRun=null;sql.prepare("UPDATE circle_members SET status='left' WHERE circle=? AND member='area-b'").run(areaCircle.id);}};
 assert.equal((await circlePost('area-b',{action:'clear_area',circle:areaCircle.id})).status,409,'host membership is rechecked inside the privacy update');globalThis.__beforeRun=null;
 assert.notEqual(sql.prepare('SELECT area FROM circles WHERE id=?').get(areaCircle.id).area,'');
 sql.prepare("UPDATE circle_members SET status='accepted' WHERE circle=? AND member='area-b'").run(areaCircle.id);
 assert.equal((await circlePost('area-b',{action:'clear_area',circle:areaCircle.id})).status,200);
+
+// Distance discovery is an independent opt-in and uses a provider's area point.
+assert.equal((await areaPropose({title:'Distance without area',shareNearby:true})).status,400);
+globalThis.__circleAreaSuggestions=[{...areaLabel,region:'Minnesota',areaLat:30.5,areaLon:-97.75,locationPlaceId:'wrong-region'}];
+assert.equal((await areaPropose({title:'Distance reading circle',shareArea:true,shareNearby:true,areaKey})).status,503,'a same-name place in a different region cannot resolve the area');
+globalThis.__circleAreaSuggestions=[{...areaLabel,areaLat:30.5012,areaLon:-97.7512,locationPlaceId:'provider-public-area'}];
+assert.equal((await areaPropose({title:'Distance reading circle',shareArea:true,shareNearby:true,areaKey,areaPoint:{areaLat:0,areaLon:0}})).status,200);
+let distanceCircle=(await circleGet('area-b')).data.circles.find(c=>c.title==='Distance reading circle');
+assert(distanceCircle.nearbyEnabled,'the other founder sees the distance-discovery choice before agreeing');
+assert.deepEqual(JSON.parse(sql.prepare('SELECT area_point FROM circles WHERE id=?').get(distanceCircle.id).area_point),{areaLat:30.5,areaLon:-97.75},'retained point comes only from the provider and is coarsened');
+assert(!(await circleGet('area-outside')).data.circles.some(c=>c.id===distanceCircle.id));
+assert.equal((await circlePost('area-b',{action:'approve',circle:distanceCircle.id})).status,200);
+let radiusResponse=(await circleGet('area-outside')).data;let radiusCircle=radiusResponse.circles.find(c=>c.id===distanceCircle.id);
+assert.equal(radiusResponse.canNearby,true);assert.equal(radiusCircle.distanceMiles,20,'only the rounded distance band is returned');
+assert(!JSON.stringify(radiusResponse).includes('areaLat'));assert(!JSON.stringify(radiusResponse).includes('area_point'));assert(!JSON.stringify(radiusResponse).includes('provider-public-area'));
+assert.equal((await circlePost('area-outside',{action:'together_list',circle:distanceCircle.id})).status,403,'distance discovery never grants content access');
+assert.equal((await circleGet('area-b')).data.circles.find(c=>c.id===noArea.id).distanceMiles,null,'old circles are not silently enrolled');
+const savedRadiusProfile=sql.prepare("SELECT data FROM profiles WHERE id='area-outside'").get().data;
+sql.prepare("UPDATE profiles SET data=json_remove(data,'$.areaLat','$.areaLon') WHERE id='area-outside'").run();
+radiusResponse=(await circleGet('area-outside')).data;assert.equal(radiusResponse.canNearby,false);assert.equal(radiusResponse.circles.find(c=>c.id===distanceCircle.id).distanceMiles,null,'missing viewer area point never becomes zero distance');
+sql.prepare("UPDATE profiles SET data=? WHERE id='area-outside'").run(savedRadiusProfile);
+assert.equal((await circlePost('area-b',{action:'clear_area',circle:distanceCircle.id})).status,200);
+assert.equal(sql.prepare('SELECT area_point FROM circles WHERE id=?').get(distanceCircle.id).area_point,'','removing the area also removes the distance point');
+radiusCircle=(await circleGet('area-outside')).data.circles.find(c=>c.id===distanceCircle.id);assert.equal(radiusCircle.nearbyEnabled,false);assert.equal(radiusCircle.distanceMiles,null);
+delete globalThis.__circleAreaSuggestions;
+console.log('Independent distance opt-in, provider-only area resolution, coarse bands, missing-location recovery, founder review, content isolation and withdrawal passed.');

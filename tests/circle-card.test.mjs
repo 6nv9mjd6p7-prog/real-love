@@ -33,3 +33,5 @@ assert(render({...proposal,area:withArea.area},true).includes('This appears in t
 assert(render({...withArea,membership:'accepted',role:'host'}).includes('Remove shared area'));
 assert(!render({...withArea,membership:'accepted',role:'member'}).includes('Remove shared area'));
 assert(!render({...withArea,category:'worker_organizing'}).includes('Circle area ·'));
+
+const distanceReview=render({...proposal,area:withArea.area,nearbyEnabled:true,distanceMiles:25},true);assert(distanceReview.includes('also included in approximate distance searches'));assert(distanceReview.includes('Within about 25 miles'));

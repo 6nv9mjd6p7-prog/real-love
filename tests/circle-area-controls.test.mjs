@@ -23,3 +23,18 @@ nodes.find(n=>n.type==='select').props.onChange({target:{value:'mine'}});assert.
 tree=CircleAreaFilter({area:null,value:true,disabled:false,onChange:change});nodes=elements(tree);
 assert.equal(nodes.find(n=>n.type==='select').props.value,'any');assert(nodes.find(n=>n.type==='option'&&n.props.value==='mine').props.disabled);
 console.log('Circle area disclosure is optional, explicit and reviewable; filtering starts at Any area and handles missing profile areas.');
+
+let nearby=false,miles=25;
+const setNearby=v=>nearby=v;
+tree=CircleAreaProposal({area,checked:true,disabled:false,onChange:change,nearby:false,onNearbyChange:setNearby});nodes=elements(tree);
+const consent=nodes.filter(n=>n.type==='input');assert.equal(consent.length,2);assert.equal(consent[1].props.checked,false);consent[1].props.onChange({target:{checked:true}});assert.equal(nearby,true);
+assert.equal(elements(CircleAreaProposal({area,checked:false,disabled:false,onChange:change,nearby:false,onNearbyChange:setNearby})).filter(n=>n.type==='input').length,1,'distance choice requires area sharing');
+tree=CircleAreaFilter({area,value:false,disabled:false,onChange:change,nearby:true,canNearby:true,miles,onNearbyChange:setNearby,onMilesChange:v=>miles=v});nodes=elements(tree);
+let selects=nodes.filter(n=>n.type==='select');assert.equal(selects[0].props.value,'nearby');assert.deepEqual(elements(selects[1]).filter(n=>n.type==='option').map(n=>n.props.value),[5,10,25,50,100]);
+selects[1].props.onChange({target:{value:'50'}});assert.equal(miles,50);selects[0].props.onChange({target:{value:'any'}});assert.equal(nearby,false);assert.equal(value,false);
+assert(!elements(CircleAreaFilter({area,value:false,disabled:false,onChange:change,nearby:true,canNearby:false,miles,onNearbyChange:setNearby})).some(n=>n.type==='select'&&n.props.value===25),'no radius without an area point');
+
+const compactFilter=CircleAreaFilter({area,value:false,disabled:false,onChange:change}),compactFilterNodes=elements(compactFilter),filterGuide=compactFilterNodes.find(n=>n.type==='details');
+assert(filterGuide&&!filterGuide.props.open,'area guidance is available on demand');
+assert(renderToStaticMarkup(filterGuide).includes('Joined circles and requests'));
+assert(!elements(filterGuide).some(n=>n.type==='select'),'area selection remains outside supporting guidance');

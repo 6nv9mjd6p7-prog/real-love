@@ -12,7 +12,7 @@ export default function ChatComposer({accountId,kind,scope,value,onChange,textar
 }){
  useEffect(()=>{
   // Capacitor resizes the native WebView for the iOS keyboard. Let its layout
-  // viewport drive the chat instead of layering browser viewport offsets on it.
+  // viewport drive the transcript sizing instead of applying browser measurements.
   const root=document.documentElement;
   const nativePlatform=root.hasAttribute('data-native-platform')||navigator.userAgent.includes('RealLoveNative/');
   if(nativePlatform)return;
@@ -27,6 +27,7 @@ export default function ChatComposer({accountId,kind,scope,value,onChange,textar
       const state=chatViewportState(layoutHeight,window.innerHeight,viewport?.height??null,viewport?.offsetTop??null,document.activeElement===textareaRef.current);
       layoutHeight=state.layoutHeight;
       root.toggleAttribute('data-keyboard-open',state.keyboardOpen);
+      // This height sizes the message pane; the page itself stays in normal flow.
       if(state.keyboardOpen){
         root.style.setProperty('--app-viewport',`${state.height}px`);
         root.style.setProperty('--app-viewport-top',`${state.top}px`);

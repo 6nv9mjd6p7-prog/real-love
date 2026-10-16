@@ -27,3 +27,13 @@ console.log('Structured area normalization, distance, privacy, legacy compatibil
 const {broadArea}=location;
 assert.deepEqual(broadArea({city:' Austin ',region:'Texas',country:'United States',areaLat:30.27,areaLon:-97.74,locationPlaceId:'place',locationConfirmationKey:'private'}),{city:'Austin',region:'Texas',country:'United States'});
 assert.equal(broadArea({city:'Austin'}),null);assert.equal(broadArea(null),null);
+
+const {circleAreaPoint,circleDistanceBand}=location;
+const cityArea={city:'Austin',region:'Texas',country:'United States'};
+assert.deepEqual(circleAreaPoint(cityArea,[{...cityArea,areaLat:30.2672,areaLon:-97.7431}]),{areaLat:30.27,areaLon:-97.74},'only a coarse matching provider area point is retained');
+assert.equal(circleAreaPoint(cityArea,[{...cityArea,region:'Minnesota',areaLat:43.66,areaLon:-92.97}]),null);
+assert.equal(circleAreaPoint(cityArea,[{...cityArea,areaLat:NaN,areaLon:0}]),null);
+assert.equal(circleDistanceBand({areaLat:0,areaLon:0},{areaLat:0,areaLon:0}),5,'zero coordinates and same areas work');
+assert.equal(circleDistanceBand({areaLat:0,areaLon:0},null),null);
+assert.equal(circleDistanceBand({areaLat:NaN,areaLon:0},{areaLat:0,areaLon:0}),null);
+assert.equal(circleDistanceBand({areaLat:0,areaLon:0},{areaLat:0,areaLon:.1}),10,'distance is rounded up in five-mile bands');

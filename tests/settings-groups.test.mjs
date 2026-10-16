@@ -43,3 +43,12 @@ globalThis.document={getElementById:id=>({focus:()=>focused=id,scrollIntoView:()
 button('Safety & reports').props.onClick();assert.equal(focused,'settings-safety');assert.equal(scrolled,'settings-safety');
 nodes.find(n=>n.type==='details'&&n.props.className==='form-section settings-delete').props.onToggle({currentTarget:{open:false}});assert.equal(confirm,false);
 console.log('Settings grouping, shortcut focus, safety controls, account links, and separate deletion confirmation passed (render/action checks).');
+
+for(const group of ['visibility','safety','account','privacy']){
+ const disclosure=nodes.find(n=>n.type==='details'&&n.props.id==='settings-'+group);assert(disclosure,'complete settings group remains accessible');
+ assert(elements(disclosure).some(n=>n.type==='summary'),'each group has a native keyboard-operated control');
+ assert.equal(!!disclosure.props.open,group==='visibility','frequent visibility choices begin expanded');
+}
+let opened=false;globalThis.document={getElementById:id=>({tagName:'DETAILS',set open(value){opened=value;},focus:()=>focused=id,scrollIntoView:()=>scrolled=id})};
+button('Safety & reports').props.onClick();assert(opened,'settings shortcut opens its group before scrolling and focus');
+delete globalThis.document;

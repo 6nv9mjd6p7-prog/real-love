@@ -1,5 +1,5 @@
 /* Shared visual foundations. Screen-specific rules belong in globals.css. */
-:root{--surface:#fff;--surface-soft:#f8f9fc;--border:var(--line);--border-strong:#d5d6e4;--accent:var(--indigo);--accent-soft:#eeedff;--focus-ring:#747df0;--danger:#9e3434;--space-1:4px;--space-2:8px;--space-3:12px;--space-4:16px;--space-5:20px;--space-6:24px;--space-8:32px;--control-size:48px;--control-radius:10px;--card-radius:16px;--panel-radius:16px;--site-utility-height:64px;--app-sidebar-width:238px}
+:root{--surface:#fff;--surface-soft:#f8f9fc;--border:var(--line);--border-strong:#d5d6e4;--accent:var(--indigo);--accent-soft:#eeedff;--focus-ring:#747df0;--danger:#9e3434;--space-1:4px;--space-2:8px;--space-3:12px;--space-4:16px;--space-5:20px;--space-6:24px;--space-8:32px;--control-size:44px;--control-radius:8px;--card-radius:12px;--panel-radius:14px;--site-utility-height:64px;--app-sidebar-width:238px}
 .app-shell{display:flex;min-height:calc(100vh - var(--site-utility-height))}
 .sidebar{width:var(--app-sidebar-width);flex:0 0 var(--app-sidebar-width);position:sticky;top:var(--site-utility-height);height:calc(100vh - var(--site-utility-height));background:var(--surface);border-right:1px solid var(--border);padding:34px 22px 20px;display:flex;flex-direction:column}
 .sidebar nav{display:flex;flex-direction:column;gap:6px}
@@ -33,7 +33,7 @@
 .site-utility .install-app{flex:0 0 auto;margin:0;padding:0;border:0;background:transparent;text-align:left}
 .install-guide{position:absolute;z-index:40;right:16px;top:calc(100% - 2px);width:min(26rem,calc(100vw - 24px));padding:18px;background:white;border:1px solid var(--border);border-radius:0 0 14px 14px;box-shadow:0 12px 30px #18193624}
 .install-guide h2{font-size:1.1rem;margin-bottom:10px}.install-guide p{margin:10px 0;font-size:.875rem;line-height:1.6}
-.app-shell:has(.conversation-screen,.circle-conversation){height:calc(100vh - var(--site-utility-height));min-height:0}
+.app-shell:has(.conversation-screen,.circle-conversation){height:auto;min-height:100vh}
 .app-shell:has(.conversation-screen,.circle-conversation)>.sidebar{height:100%}
 .notice{position:relative;z-index:3;display:flex;align-items:center;justify-content:space-between;gap:12px;max-height:5.5rem;overflow:auto;margin:0;padding:8px 24px;background:#e8edff;border-bottom:1px solid #cfdbff;font-size:.875rem;line-height:1.45}
 .loading-space{padding:20px 0}.loading-heading{display:grid;gap:12px;width:min(28rem,75%);margin:4px 0 22px}.loading-heading i,.loading-card i{display:block;border-radius:8px;background:linear-gradient(90deg,#eceef5 20%,#f7f8fb 38%,#eceef5 60%);background-size:220% 100%;animation:loading-shimmer 1.4s ease-in-out infinite}
@@ -41,11 +41,11 @@
 @keyframes loading-shimmer{to{background-position:-220% 0}}
 @media(min-width:1500px){.app-shell .content{max-width:1400px}.profile-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
 @media(max-width:1000px){:root{--app-sidebar-width:195px}.sidebar{padding:28px 15px}.app-shell .topbar{padding-inline:24px}.app-shell .content{padding:28px 24px}.loading-grid{gap:14px}}
-@media(max-width:720px){:root{--site-utility-height:112px;--app-sidebar-width:100%}.app-shell{display:block;min-height:100vh}.sidebar{position:relative;top:auto;width:100%;height:auto;flex:0 0 auto;padding:15px 20px 9px;z-index:10;border-right:0;border-bottom:1px solid var(--border)}.sidebar nav{position:fixed;inset:auto 0 0;z-index:20;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:2px;margin:0;padding:6px max(6px,env(safe-area-inset-right)) calc(6px + env(safe-area-inset-bottom)) max(6px,env(safe-area-inset-left));background:white;border-top:1px solid var(--border)}.sidebar nav .nav-item{position:relative;display:flex;flex-direction:column;justify-content:center;align-items:center;flex:1 1 0;gap:3px;min-width:0;min-height:60px;padding:4px 2px;font-size:.75rem;text-align:center;line-height:1.2}.site-utility{align-content:center;align-items:center;flex-wrap:wrap;gap:6px 12px;padding:8px 14px}.site-utility .support-banner.support-top{flex:1 1 100%;min-height:36px}.site-utility .support-top p{display:none}.site-utility .install-app{display:flex;justify-content:flex-end;width:100%;min-height:36px}.site-utility .support-top>a,.site-utility .install-app>.secondary{width:auto;min-height:36px;padding:5px 10px;font-size:.78rem}.app-shell .content{padding:22px 16px 24px}.profile-grid,.care-grid,.loading-grid{grid-template-columns:minmax(0,1fr);gap:14px}.app-shell:has(.conversation-screen,.circle-conversation){height:calc(100dvh - var(--site-utility-height));min-height:0}.app-shell:has(.conversation-screen,.circle-conversation)>.sidebar{height:auto}.app-shell:has(.conversation-screen,.circle-conversation)>main{min-height:0}.loading-card{min-height:150px}.notice{max-height:4.5rem;padding:7px 14px}}
+@media(max-width:720px){:root{--site-utility-height:112px;--app-sidebar-width:100%}.app-shell{display:block;min-height:100vh}.sidebar{position:relative;top:auto;width:100%;height:auto;flex:0 0 auto;padding:15px 20px 9px;z-index:10;border-right:0;border-bottom:1px solid var(--border)}.sidebar nav{position:fixed;inset:auto 0 0;z-index:20;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:2px;margin:0;padding:6px max(6px,env(safe-area-inset-right)) calc(6px + env(safe-area-inset-bottom)) max(6px,env(safe-area-inset-left));background:white;border-top:1px solid var(--border)}.sidebar nav .nav-item{position:relative;display:flex;flex-direction:column;justify-content:center;align-items:center;flex:1 1 0;gap:3px;min-width:0;min-height:60px;padding:4px 2px;font-size:.75rem;text-align:center;line-height:1.2}.site-utility{align-content:center;align-items:center;flex-wrap:wrap;gap:6px 12px;padding:8px 14px}.site-utility .support-banner.support-top{flex:1 1 100%;min-height:36px}.site-utility .support-top p{display:none}.site-utility .install-app{display:flex;justify-content:flex-end;width:100%;min-height:36px}.site-utility .support-top>a,.site-utility .install-app>.secondary{width:auto;min-height:36px;padding:5px 10px;font-size:.78rem}.app-shell .content{padding:22px 16px 24px}.profile-grid,.care-grid,.loading-grid{grid-template-columns:minmax(0,1fr);gap:14px}.app-shell:has(.conversation-screen,.circle-conversation){height:auto;min-height:100dvh}.app-shell:has(.conversation-screen,.circle-conversation)>.sidebar{height:auto}.app-shell:has(.conversation-screen,.circle-conversation)>main{min-height:0}.loading-card{min-height:150px}.notice{max-height:4.5rem;padding:7px 14px}}
 @media(max-width:380px){.sidebar nav .nav-item{font-size:.67rem}.site-utility{padding-inline:10px}.site-utility .support-top h2{font-size:.82rem}.site-utility .support-top>a,.site-utility .install-app>.secondary{font-size:.73rem;padding-inline:8px}.sidebar .nav-item{font-size:.67rem!important;padding-inline:1px!important}.sidebar nav .nav-item svg{width:17px}}
 @media(prefers-reduced-motion:reduce){.loading-heading i,.loading-card i{animation:none}}
 html[data-native-platform] .site-utility{display:none!important}
-html[data-native-platform] .app-shell:has(.conversation-screen,.circle-conversation){height:100dvh}
+html[data-native-platform] .app-shell:has(.conversation-screen,.circle-conversation){height:auto}
 
 /* Shared sizing and spacing scale for repeated controls and content surfaces. */
 .app-shell .primary,.app-shell .secondary,.app-shell .danger{min-height:var(--control-size);border-radius:var(--control-radius)}
@@ -67,3 +67,133 @@ html[data-native-platform] .app-shell:has(.conversation-screen,.circle-conversat
 .chat-composer:focus-within{border-color:var(--accent);box-shadow:0 0 0 3px #747df033}
 :root body .chat-composer .composer-controls>textarea{border:0!important;background:transparent!important;padding:10px 8px;min-height:48px;outline:0!important;box-shadow:none!important}
 :root body .chat-composer .composer-controls>textarea:focus{border:0!important;background:transparent!important;outline:0!important;box-shadow:none!important}
+
+
+/* Compact hierarchy: one clear task, with supporting detail available on demand. */
+.app-shell .page-heading{gap:12px;margin-bottom:16px;align-items:center}
+.app-shell .page-heading h1{font-family:Arial,Helvetica,sans-serif;font-size:clamp(1.5rem,2.6vw,2rem);font-weight:700;line-height:1.2;letter-spacing:-.025em}
+.app-shell .page-heading p{margin-top:6px;font-size:.9375rem;line-height:1.5;max-width:52rem}
+.app-shell .page-heading .eyebrow{font-size:.6875rem;letter-spacing:.08em;margin-bottom:6px}
+.app-shell .content{padding:24px 28px}
+.app-shell .topbar{min-height:56px;padding:8px 28px}
+.app-shell :is(.form-section,.care-card,.entry-card,.empty-state,.connection-summary){padding:16px}
+.app-shell :is(.form-section,.care-card,.entry-card,.empty-state) h2{font-size:1.0625rem;line-height:1.4}
+.app-shell :is(.profile-section-card,.profile-panel){padding:16px}
+.app-shell .profile-section-card{gap:6px;box-shadow:none}
+.app-shell .profile-section-summary{font-size:.9375rem;line-height:1.5}
+.app-shell :is(.profile-grid,.care-grid,.profile-section-grid,.worker-resources,.support-paths){gap:12px}
+.app-shell .section-tabs{gap:4px;margin-block:12px}
+.app-shell .section-tabs button{padding:8px 12px;font-size:.875rem;line-height:1.35}
+.app-shell :is(.policy-disclosure,.activity-disclosure,.conversation-details,.circle-guide){border:0;border-bottom:1px solid var(--border);border-radius:0;background:transparent;padding:0;margin:8px 0}
+.app-shell :is(.policy-disclosure,.activity-disclosure,.conversation-details,.circle-guide)>summary{min-height:44px;padding:10px 0;font-size:.9375rem;line-height:1.5;font-weight:600;color:var(--ink);cursor:pointer}
+.app-shell :is(.policy-disclosure,.activity-disclosure,.conversation-details,.circle-guide)[open]{padding-bottom:12px}
+.app-shell .inline-guide{min-width:0;margin:0;border:0;background:transparent}
+.app-shell .inline-guide>summary{cursor:pointer;min-height:44px;padding:10px 0;color:var(--indigo);font-size:.8125rem;font-weight:600;line-height:1.5}
+.app-shell .inline-guide[open]>p{margin:8px 0;font-size:.875rem;line-height:1.6}
+.app-shell .together-entry{padding:12px 14px;margin:12px 0;border-radius:12px;background:var(--surface-soft);border-color:var(--border);box-shadow:none}
+.app-shell .together-entry-heading{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:4px 12px}
+.app-shell .together-entry-heading>div{min-width:0}
+.app-shell .together-entry-heading h2{font-size:1rem;line-height:1.4}
+.app-shell .together-entry-heading p{margin:2px 0}
+.app-shell .together-entry-heading .inline-guide[open]{flex-basis:100%}
+.app-shell .together-entry-controls{gap:8px;margin-top:8px}
+.app-shell .together-entry-controls :is(select,button){min-height:44px}
+.app-shell .circle-start-actions{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:10px 0}
+.app-shell .circle-start-actions>.cofounder-next-step{flex:1 1 100%}
+.app-shell .circle-start-actions>.primary{padding:8px 14px;font-size:.875rem}
+.app-shell .circle-guide .policy-disclosure,.app-shell .circle-guide .chat-privacy{margin:0}
+.app-shell .circle-area-filter{display:flex;flex-wrap:wrap;align-items:start;gap:4px 12px;padding:10px 0;margin:8px 0;border:0;border-radius:0}
+.app-shell .circle-area-filter>label{flex:1 1 190px;margin:0;font-size:.8125rem;font-weight:600}
+.app-shell .circle-area-filter>.inline-guide{flex:1 1 100%}
+.app-shell .circle-area-filter>.inline-guide>summary{min-height:44px;padding:10px 0}
+.app-shell .circle-card{padding:16px;box-shadow:none}
+.app-shell .circle-card h2{font-size:1.0625rem}
+.app-shell .circle-card .first-step{padding:10px 12px;margin:12px 0}
+.app-shell .circle-card .circle-card-meta{font-size:.8125rem;margin-block:10px}
+.app-shell .settings-shortcuts{gap:6px;margin-block:12px}
+.app-shell .settings-shortcuts button{padding:8px 12px;font-size:.8125rem}
+.app-shell .settings-group{box-shadow:none}
+.app-shell .settings-group>h2{font-size:1.0625rem}
+.app-shell .worker-resources .care-card{padding:14px;box-shadow:none}
+.app-shell .worker-resources .care-card p{font-size:.875rem;line-height:1.6}
+.app-shell .notification-list>li>button{padding:12px 14px}
+.app-shell .notification-list-heading{margin:14px 0 10px;gap:12px}
+.app-shell .notification-list-heading h2{font-size:1.0625rem}
+@media(max-width:720px){
+ .app-shell .content{padding:16px 14px 24px}
+ .app-shell .page-heading{margin-bottom:12px}
+ .app-shell .page-heading h1{font-size:1.5rem}
+ .app-shell .page-heading p{font-size:.875rem}
+ .app-shell :is(.form-section,.care-card,.entry-card,.empty-state,.profile-section-card,.profile-panel){padding:14px}
+ .app-shell .section-tabs button{flex:0 1 auto;min-height:44px;padding:8px 10px}
+ .app-shell .profile-section-grid{gap:10px}
+ .app-shell .support-paths{gap:10px}
+ .app-shell .together-entry{padding:10px 12px}
+ .app-shell .circle-area-filter>label{flex-basis:140px}
+ .app-shell .inline-guide>summary{max-width:100%;overflow-wrap:anywhere}
+ .app-shell .content:has(.conversation-screen,.circle-conversation){padding:0}
+}
+
+/* Settings keep their complete controls in labelled, keyboard-operated groups. */
+.app-shell .settings-group{padding:0;margin:0;border:0;border-bottom:1px solid var(--border);border-radius:0;box-shadow:none;background:transparent}
+.app-shell .settings-group>summary{cursor:pointer;min-height:48px;padding:12px 0;color:var(--ink)}
+.app-shell .settings-group>summary h2{display:inline;font-size:1rem;line-height:1.5}
+.app-shell .settings-group[open]{padding-bottom:16px}
+.app-shell .settings-group[open]>summary{margin-bottom:8px}
+
+/* Keep text entry readable and avoid automatic zoom when a phone field receives focus. */
+.app-shell input:not([type=checkbox]):not([type=radio]),.app-shell select,.app-shell textarea{font-size:1rem}
+
+
+/* Content-first profile and discovery layouts, with complete details one step away. */
+.app-shell .compact-person{padding:16px;box-shadow:none;border-color:var(--border)}
+.app-shell .compact-person .person-title{align-items:center;gap:8px;margin:4px 0}
+.app-shell .compact-person .person-title h2{font-size:1.0625rem;line-height:1.4}
+.app-shell .compact-person .connection-summary{padding:8px 0;margin:0 0 8px;border:0;border-bottom:1px solid var(--border);border-radius:0;background:transparent}
+.app-shell .compact-person .connection-summary strong{font-size:.8125rem}
+.app-shell .compact-person .connection-summary p{margin-top:2px;font-size:.8125rem;line-height:1.5}
+.app-shell .compact-person .bio-meta{margin:4px 0 10px;font-size:.8125rem;line-height:1.5}
+.app-shell .compact-person .about{font-size:.9375rem;line-height:1.6;margin:10px 0}
+.app-shell .compact-person .inline-actions{margin-top:8px}
+.app-shell .compact-person .profile-link{width:100%;justify-content:center;min-height:44px}
+.app-shell .compact-person .card-starter{padding:10px 0;margin:0;border:0;background:transparent}
+.app-shell .compact-person .card-starter p{white-space:pre-wrap;overflow-wrap:anywhere}
+.app-shell :is(.card-connect-details,.profile-inline-details,.discovery-view-create){margin:6px 0;border:0;border-bottom:1px solid var(--border);border-radius:0;background:transparent}
+.app-shell :is(.card-connect-details,.profile-inline-details,.discovery-view-create)>summary{cursor:pointer;min-height:44px;padding:10px 0;font-size:.875rem;font-weight:600;color:var(--indigo);line-height:1.5}
+.app-shell .profile-sections{gap:12px}
+.app-shell .profile-sections>.profile-panel{padding:14px 0;border:0;border-bottom:1px solid var(--border);border-radius:0;background:transparent;box-shadow:none}
+.app-shell .profile-sections>.profile-panel h2{font-size:1rem;line-height:1.5}
+.app-shell .profile-sections>.profile-panel>summary{cursor:pointer;min-height:44px;padding:6px 0;color:var(--ink)}
+.app-shell .profile-sections>.profile-panel>summary h2{display:inline-flex;align-items:center;gap:8px;margin:0}
+.app-shell .profile-sections .profile-detail-section{border:0;border-bottom:1px solid var(--border);border-radius:0;background:transparent}
+.app-shell .profile-sections .profile-detail-section>summary{padding:12px 0;min-height:44px;font-size:.9375rem}
+.app-shell .profile-sections .profile-answer-list{padding:0}
+.app-shell .profile-sections .full-prompt{padding:12px 0}
+.app-shell .profile-sections .first-step{margin-top:8px}
+.app-shell .profile-sections .profile-inline-details .practical-facts{margin:8px 0}
+.app-shell .profile-identity h1{font-family:Arial,Helvetica,sans-serif;font-size:1.5rem;line-height:1.25;font-weight:700;letter-spacing:-.025em}
+.app-shell .profile-identity .identity-facts{gap:4px 12px;font-size:.875rem}
+.app-shell .discovery-views{padding:12px 0;border:0;border-top:1px solid var(--border);border-radius:0;background:transparent}
+.app-shell .discovery-views-heading .field-help{font-size:.8125rem}
+.app-shell .discovery-view-save{margin-top:6px;gap:8px}
+.app-shell .discovery-view-remove,.app-shell .discovery-view-list .secondary{min-height:44px}
+.app-shell .discovery-view-remove{min-width:44px;width:44px}
+.app-shell .returning-activity{padding:12px 14px;margin:12px 0;border-radius:12px;box-shadow:none}
+.app-shell .activity-heading h2{font-size:1rem}
+.app-shell .activity-recent{gap:6px}
+.app-shell .activity-recent>button,.app-shell .activity-shortcuts>button{min-height:44px;padding:10px 12px;font-size:.875rem}
+.app-shell .campaign-card{padding:16px;box-shadow:none}
+.app-shell .campaign-card h2{font-size:1.0625rem}
+.app-shell .campaign-card>p{margin-top:6px;line-height:1.5}
+.app-shell .campaign-toolbar{gap:8px;margin-block:12px}
+@media(max-width:720px){
+ .app-shell .compact-person{padding:14px}
+ .app-shell .profile-sections{gap:8px}
+ .app-shell .profile-sections>.profile-panel{padding:12px 0}
+ .app-shell .profile-identity{gap:10px}
+ .app-shell .activity-recent{grid-template-columns:minmax(0,1fr)}
+}
+
+/* Keep account entry available without repeating onboarding above each destination. */
+.entry-sign-in{display:flex;align-items:center;justify-content:space-between;gap:8px 16px;flex-wrap:wrap;padding:4px 0 12px;margin-bottom:16px;border-bottom:1px solid var(--line);color:var(--muted);font-size:.875rem}
+.entry-sign-in .text-button{display:inline-flex;align-items:center;flex-shrink:0;color:var(--accent);font-weight:600}

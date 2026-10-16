@@ -371,7 +371,7 @@ input:not([type=checkbox]):not([type=radio]),select,textarea{border-radius:var(-
 .message-search{border:1px solid var(--line);border-radius:12px;padding:10px 14px;background:#fff;margin:8px 0}.message-search>summary{cursor:pointer;min-height:32px;font-weight:600;color:var(--indigo)}.message-search form>label{display:block;font-size:.875rem;font-weight:600;margin:10px 0 5px}.message-search-controls{display:flex;gap:8px}.message-search-controls input{flex:1;min-width:0}.message-search-controls button{flex:0 0 auto}.message-search-results{display:grid;gap:8px;margin-top:12px}.message-search-result{margin:0;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:var(--bg);overflow-wrap:anywhere}.message-search-result>div{display:flex;justify-content:space-between;gap:10px;align-items:baseline}.message-search-result time{font-size:.75rem;color:var(--muted)}.message-search-result p{margin:5px 0 0;white-space:pre-wrap}
 @media(max-width:600px){.photo-viewer{padding:12px}.photo-viewport{max-height:60dvh}.metric-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 
-/* Keep the transcript and composer within the visible mobile viewport. */
+/* Keep chat controls readable while allowing the page to scroll. */
 .voice-playback-status{font-size:.875rem;line-height:1.5;margin:6px 0}
 .message.mine .voice-playback-status,.message.mine .voice-message>span{color:#eef0ff}
 .message.mine .voice-message .secondary{background:white;color:var(--indigo)}
@@ -380,7 +380,7 @@ input:not([type=checkbox]):not([type=radio]),select,textarea{border-radius:var(-
 .chat-help{margin-top:10px;border-top:1px solid var(--line);padding-top:6px}
 .chat-help>summary{min-height:44px;color:var(--indigo)}
 @media(max-width:720px),(max-width:1024px) and (max-height:500px){
-.app-shell:has(.conversation-screen,.circle-conversation){display:flex;flex-direction:column;height:var(--app-viewport,100dvh);min-height:0;overflow:hidden}
+.app-shell:has(.conversation-screen,.circle-conversation){display:flex;flex-direction:column;height:auto;min-height:100dvh;overflow:visible}
 .app-shell:has(.conversation-screen,.circle-conversation)>.sidebar{position:static;flex:0 0 auto;padding:4px 8px;width:100%;height:auto}
 .app-shell:has(.conversation-screen,.circle-conversation)>.sidebar .brand,.app-shell:has(.conversation-screen,.circle-conversation) .sidebar-bottom{display:none}
 .app-shell:has(.conversation-screen,.circle-conversation)>.sidebar nav{flex-direction:row;margin:0;gap:4px}
@@ -392,20 +392,20 @@ input:not([type=checkbox]):not([type=radio]),select,textarea{border-radius:var(-
 .app-shell:has(.conversation-screen,.circle-conversation) .content{display:flex;flex-direction:column;flex:1;min-height:0;width:100%;margin:0;padding:8px}
 .content:has(.circle-conversation)>.section-tabs{display:none}
 .app-shell:has(.conversation-screen,.circle-conversation) .notice{flex:0 0 auto;max-height:15%;overflow:auto;margin:4px 8px;padding:4px 8px}
-.conversation-screen,.circle-conversation{display:flex;flex-direction:column;flex:1;min-height:0;height:auto;overflow:hidden;padding:12px;margin:0}
-.chat-context-area{flex:0 1 auto;max-height:25%;overflow-y:auto;overscroll-behavior:contain;padding:0 2px}
+.conversation-screen,.circle-conversation{display:flex;flex-direction:column;flex:0 0 auto;min-height:0;height:auto;overflow:visible;padding:12px;margin:0}
+.chat-context-area{flex:0 0 auto;max-height:none;overflow:visible;padding:0 2px}
 .conversation-heading,.chat-heading{margin:4px 0;padding-bottom:8px}
 .conversation-heading p{margin:4px 0}
-.conversation-screen .conversation-messages,.circle-conversation .conversation-messages{flex:1 1 0;min-height:0;max-height:none;margin:0;padding:12px 0;overflow-y:auto}
+.conversation-screen .conversation-messages,.circle-conversation .conversation-messages{flex:0 0 auto;height:clamp(10rem,calc(var(--app-viewport,100dvh)*.6),40rem);min-height:10rem;max-height:none;margin:0;padding:12px 0;overflow-y:auto;overscroll-behavior-y:auto;-webkit-overflow-scrolling:touch}
 .chat-composer{flex:0 0 auto;margin-top:6px;background:#f6f7fb}
 .chat-help{flex:0 0 auto;margin-top:4px}
-.chat-help[open]{max-height:30%;overflow-y:auto;overscroll-behavior:contain}
+.chat-help[open]{max-height:none;overflow:visible}
 .conversation-screen>.field-help,.conversation-screen>.inline-error{flex:0 0 auto;margin:4px 0;font-size:.875rem}
 .latest-messages{flex:0 0 auto;min-height:36px;margin:4px 0}
 }
 @media(max-width:1024px) and (max-height:420px){
 .app-shell:has(.conversation-screen,.circle-conversation) .topbar{display:none}
-.app-shell:has(.conversation-screen,.circle-conversation) .chat-context-area{max-height:20%}
+.app-shell:has(.conversation-screen,.circle-conversation) .chat-context-area{max-height:none}
 }
 
 .inbox-section[hidden]{display:none}.voice-recorder-actions meter{width:7rem;max-width:100%;height:1rem;accent-color:var(--indigo)}.voice-recorder-actions>span[role=status]{flex-basis:100%;font-size:1rem}.support-banner>button{flex-shrink:0;min-width:44px}
@@ -450,22 +450,22 @@ input:not([type=checkbox]):not([type=radio]),select,textarea{border-radius:var(-
 .approval-status{max-width:52rem}
 .returning-activity{margin:0 0 20px;padding:14px;border:1px solid var(--line);border-radius:12px;background:white}
 .introduction-invite{margin-top:14px}
-.conversation-row.chat-list-row{padding:0 0 0 12px;gap:8px;flex-wrap:nowrap;align-items:stretch;overflow:hidden}
-.chat-row-avatar{display:flex;align-items:center;flex-shrink:0;padding:10px 0}
-.chat-row-open{position:relative;display:flex;flex-direction:column;justify-content:center;gap:5px;flex:1;min-width:0;min-height:76px;padding:14px 16px;text-align:left;border-radius:0 10px 10px 0}
+.conversation-row.chat-list-row{display:grid;grid-template-columns:auto minmax(0,1fr);padding:0 0 0 12px;gap:8px;flex-wrap:nowrap;align-items:stretch;overflow:hidden}
+.chat-row-avatar{min-width:0;display:flex;align-items:center;flex-shrink:0;padding:10px 0}
+.chat-row-open{width:100%;max-width:100%;box-sizing:border-box;position:relative;display:flex;flex-direction:column;justify-content:center;gap:5px;flex:1;min-width:0;min-height:76px;padding:14px 16px;text-align:left;border-radius:0 10px 10px 0}
 .chat-row-open:hover{background:var(--hover-surface,#eeedff)}
 .chat-row-open:focus-visible{outline-offset:-4px}
 .chat-row-title{display:flex;align-items:baseline;justify-content:space-between;gap:8px;width:100%;min-width:0}
-.chat-row-title strong{color:var(--ink);overflow-wrap:anywhere}
+.chat-row-title strong{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--ink)}
 .chat-row-title time{font-size:.75rem;color:var(--muted);flex-shrink:0}
-.chat-row-preview{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;overflow-wrap:anywhere;padding-right:32px}
+.chat-row-preview{width:100%;min-width:0;max-width:100%;box-sizing:border-box;white-space:normal;line-height:1.5;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;overflow-wrap:anywhere;padding-right:32px}
 .chat-row-count{position:absolute;right:12px;bottom:14px;margin:0;color:white!important}
 .notification-preferences{margin-top:24px;border-top:1px solid var(--line);padding-top:16px}
 .notification-settings{margin:12px 0}
 .notification-settings>summary{cursor:pointer;min-height:44px;font-weight:600}
 .notification-settings[open]>summary{margin-bottom:12px}
 .notification-settings p{margin:8px 0}
-@media(max-width:400px){.chat-row-title{align-items:flex-start;flex-direction:column;gap:2px}.chat-row-open{padding:12px}.chat-row-title time{font-size:.7rem}}
+@media(max-width:400px){.chat-row-title{align-items:flex-start;flex-direction:column;gap:2px}.chat-row-title strong{max-width:100%}.chat-row-open{padding:12px}.chat-row-title time{font-size:.7rem}}
 .invitation-modal h2{margin-bottom:16px}
 .invitation-modal>label{display:block;margin:12px 0}
 .invitation-modal textarea{min-height:120px}
@@ -510,9 +510,8 @@ html[data-native-platform] .app-shell>.sidebar nav{display:flex;flex-flow:row no
 html[data-native-platform] .app-shell>.sidebar .nav-item{flex:1 1 0;min-width:0;min-height:48px;padding:5px;justify-content:center;flex-direction:column;gap:1px;font-size:.75rem}
 html[data-native-platform] .app-shell>.sidebar .nav-item svg{width:19px;height:19px}
 html[data-native-platform] .app-shell>.sidebar .nav-item .count{position:absolute;transform:translate(14px,-13px);margin:0}
-html[data-native-platform] .app-shell:has(.conversation-screen,.circle-conversation){display:flex;height:var(--app-viewport,100dvh);min-height:0;padding-bottom:calc(62px + env(safe-area-inset-bottom));overflow:hidden}
-html[data-native-platform] .app-shell:has(.conversation-screen,.circle-conversation){height:100dvh!important;padding-top:0;padding-bottom:0;position:static}
-/* A conversation is a focused detail screen; give all resized space to it. */
+html[data-native-platform] .app-shell:has(.conversation-screen,.circle-conversation){display:flex;height:auto;min-height:100dvh;padding-top:0;padding-bottom:0;position:static;overflow:visible}
+/* A conversation remains a scrollable detail page without the tab bar. */
 html[data-native-platform] .app-shell:has(.conversation-screen,.circle-conversation)>.sidebar{display:none!important}
 html[data-native-platform] .app-shell:has(.conversation-screen,.circle-conversation)>main{min-height:0}
 html[data-native-platform] footer{padding-bottom:max(22px,env(safe-area-inset-bottom))}
@@ -569,7 +568,7 @@ html[data-native-platform] footer{padding-bottom:max(22px,env(safe-area-inset-bo
 .support-path{display:flex;flex-direction:column;align-items:flex-start;gap:12px;margin:0;min-width:0}
 .support-path h2{font-size:1.25rem;line-height:1.35;margin:0}
 .support-path p{margin:0}.support-path>button{margin-top:auto}.support-path a{white-space:normal}
-.chat-row-context{display:-webkit-box;-webkit-line-clamp:1;-webkit-box-orient:vertical;overflow:hidden;color:var(--indigo);font-size:.8125rem;line-height:1.5}
+.chat-row-context{width:100%;min-width:0;max-width:100%;white-space:normal;overflow-wrap:anywhere;display:-webkit-box;-webkit-line-clamp:1;-webkit-box-orient:vertical;overflow:hidden;color:var(--indigo);font-size:.8125rem;line-height:1.5}
 .conversation-details{margin:8px 0;background:var(--surface)}
 .conversation-details .communication-card{margin-top:8px}
 .circle-card>h2{font-size:1.4rem;line-height:1.3;margin-bottom:10px}
@@ -725,17 +724,12 @@ html[data-native-platform] footer{padding-bottom:max(22px,env(safe-area-inset-bo
 .app-shell:has(.conversation-screen,.circle-conversation) .composer-controls>textarea{min-height:44px;max-height:88px;padding:8px 4px;font-size:16px;line-height:22px}
 .app-shell:has(.conversation-screen,.circle-conversation) .chat-help{margin-top:2px}
 .app-shell:has(.conversation-screen,.circle-conversation) .chat-composer:focus-within .composer-controls{align-items:center;gap:4px}
-.app-shell:has(.chat-composer:focus-within) .chat-help{display:none}
-.app-shell:has(.chat-composer:focus-within) .conversation-messages{min-height:0;padding:4px 0;scroll-padding-block:4px}
+.app-shell:has(.chat-composer:focus-within) .conversation-messages{min-height:10rem;padding:4px 0;scroll-padding-block:4px}
 .app-shell:has(.conversation-screen,.circle-conversation) .composer-icon,
 .app-shell:has(.conversation-screen,.circle-conversation) .composer-send{min-width:40px;min-height:40px}
-/* In browser previews, track iOS Safari's visible viewport while the keyboard is open. */
+/* Chat pages use document scrolling; the visible viewport sizes only the transcript. */
 body:has(.conversation-screen,.circle-conversation) .site-utility{display:none!important}
-html:not([data-native-platform]):has(.conversation-screen,.circle-conversation),
-html:not([data-native-platform]) body:has(.conversation-screen,.circle-conversation){height:var(--app-viewport,100dvh);overflow:hidden;overscroll-behavior:none}
-html:not([data-native-platform]) .app-shell:has(.conversation-screen,.circle-conversation){position:fixed;top:var(--app-viewport-top,0px);left:0;right:0;height:var(--app-viewport,100dvh)!important;min-height:0}
-.app-shell:has(.conversation-screen .chat-composer:focus-within) .chat-context-area>:not(.conversation-heading),
-.app-shell:has(.circle-conversation .chat-composer:focus-within) .chat-context-area>:not(.chat-heading){display:none}
+
 }
 
 /* Shared compact sizing for every mobile-web screen. Use responsive layout
@@ -909,3 +903,28 @@ html[data-keyboard-open] .qa-keyboard>div:first-child span{float:right}
 .together-entry{border:1px solid var(--line);border-radius:16px;padding:18px;margin:16px 0;background:var(--surface,#fff)}.together-entry h2{margin-top:0}.together-entry p{margin:8px 0}.together-entry label{display:block;margin:14px 0 6px}.together-entry-controls{display:flex;gap:10px;flex-wrap:wrap}.together-entry-controls select{flex:1 1 180px;min-width:0;max-width:100%;min-height:44px}.together-entry-controls button{min-height:44px}
 
 .circle-area-option,.circle-area-filter{padding:14px;border:1px solid var(--line);border-radius:12px;margin:14px 0}.circle-area-option h3{margin-top:0}.circle-area-filter label{display:grid;gap:6px}.circle-area-filter select{width:100%;min-width:0;min-height:44px}.circle-area-label{color:var(--muted);overflow-wrap:anywhere}
+
+
+/* Circle controls must never consume the transcript's viewport. */
+.circle-chat-tools{margin:6px 0;border-bottom:1px solid var(--line)}
+.circle-chat-tools>summary{position:sticky;top:0;z-index:2;min-height:44px;padding:10px 4px;background:var(--surface,#fff);cursor:pointer;font-weight:700;color:var(--indigo)}
+.circle-chat-tools>summary span{margin-left:8px;font-weight:400;font-size:.82em;color:var(--muted)}
+.circle-chat-tools-content{padding:4px 2px 12px}
+.circle-chat-tools .together-content{max-height:none;overflow:visible;overscroll-behavior:auto}
+@media(max-width:720px),(max-width:1024px) and (max-height:500px){
+ .app-shell:has(.circle-conversation) .chat-context-area{flex:0 0 auto;max-height:none;overflow:visible}
+ .app-shell:has(.circle-conversation) .chat-heading{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;align-items:center;margin:0;padding:0 0 4px}
+ .app-shell:has(.circle-conversation) .chat-heading h1{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-family:Arial,Helvetica,sans-serif;font-size:1rem;font-weight:700;line-height:1.35;letter-spacing:0}
+ .app-shell:has(.circle-conversation) .chat-heading>button{min-height:44px;max-width:44vw;padding:6px 8px;font-size:.8125rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+ .app-shell:has(.circle-conversation) .conversation-messages{flex:0 0 auto;min-height:10rem;overflow-y:auto;overscroll-behavior-y:auto;-webkit-overflow-scrolling:touch;touch-action:pan-y}
+ .app-shell:has(.circle-conversation) .chat-help:not([open])>summary{min-height:36px;padding:6px 0;font-size:.8125rem}
+ .app-shell:has(.circle-conversation) .circle-chat-tools{margin:0}
+ .app-shell:has(.circle-conversation) .circle-chat-tools>summary{padding-block:8px}
+}
+@media(max-width:360px){.circle-chat-tools>summary span{display:block;margin:2px 0 0;font-size:.75em}}
+
+/* Keep the document on its vertical axis without suppressing zoom or control gestures. */
+html,body{max-width:100%;overflow-x:clip;overscroll-behavior-x:none}
+.app-shell{width:100%;min-width:0}
+.app-shell>main,.app-shell .content{min-width:0}
+.conversation-messages{overflow-x:hidden;overscroll-behavior-x:none}
