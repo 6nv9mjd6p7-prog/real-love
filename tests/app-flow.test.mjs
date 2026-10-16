@@ -310,6 +310,27 @@ for(const messageId of [blockedPhoto.id,leavePhoto.id,removedPhoto.id]){const st
 for(const messageId of [blockedAudio.id,leaveAudio.id,removedAudio.id]){const stored=sql.prepare('SELECT audio_key FROM circle_messages WHERE id=?').get(messageId);if(stored?.audio_key)memory.delete(stored.audio_key);sql.prepare('DELETE FROM circle_messages WHERE id=?').run(messageId);}
 console.log('Chat media URLs re-check current circle membership and block state after block, leave, and removal.');
 
+// Account removal deletes private chat media objects and invalidates their old URLs.
+const deleteDirectPhoto=await testImagePost('worker-a','worker-connection');assert.equal(deleteDirectPhoto.response.status,200);
+const deleteDirectPhotoUrl='/api/chat-image?kind=direct&scope=worker-connection&message='+encodeURIComponent(deleteDirectPhoto.id);
+const deleteDirectVoice=await testVoicePost('worker-a','worker-connection');assert.equal(deleteDirectVoice.response.status,200);
+const deleteDirectVoiceUrl='/api/voice?kind=direct&scope=worker-connection&message='+encodeURIComponent(deleteDirectVoice.id);
+const deleteCirclePhoto=await testImagePost('worker-a',mediaCircle.id);assert.equal(deleteCirclePhoto.response.status,200);
+const deleteCirclePhotoUrl='/api/chat-image?kind=circle&scope='+encodeURIComponent(mediaCircle.id)+'&message='+encodeURIComponent(deleteCirclePhoto.id);
+const deleteCircleVoice=await testVoicePost('worker-a',mediaCircle.id);assert.equal(deleteCircleVoice.response.status,200);
+const deleteCircleVoiceUrl='/api/voice?kind=circle&scope='+encodeURIComponent(mediaCircle.id)+'&message='+encodeURIComponent(deleteCircleVoice.id);
+for(const url of [deleteDirectPhotoUrl,deleteCirclePhotoUrl])assert.equal((await testImageGet('worker-b',url)).status,200);
+for(const url of [deleteDirectVoiceUrl,deleteCircleVoiceUrl])assert.equal((await testVoiceGet('worker-b',url)).status,200);
+const deleteDirectPhotoKey=sql.prepare('SELECT attachment_key FROM messages WHERE id=?').get(deleteDirectPhoto.id).attachment_key;
+const deleteDirectVoiceKey=sql.prepare('SELECT audio_key FROM messages WHERE id=?').get(deleteDirectVoice.id).audio_key;
+const deleteCirclePhotoKey=sql.prepare('SELECT attachment_key FROM circle_messages WHERE id=?').get(deleteCirclePhoto.id).attachment_key;
+const deleteCircleVoiceKey=sql.prepare('SELECT audio_key FROM circle_messages WHERE id=?').get(deleteCircleVoice.id).audio_key;
+assert.equal((await post('worker-a',{action:'delete'})).status,200);
+for(const url of [deleteDirectPhotoUrl,deleteCirclePhotoUrl])assert.notEqual((await testImageGet('worker-b',url)).status,200,'account removal invalidates saved photo URLs');
+for(const url of [deleteDirectVoiceUrl,deleteCircleVoiceUrl])assert.notEqual((await testVoiceGet('worker-b',url)).status,200,'account removal invalidates saved voice URLs');
+for(const key of [deleteDirectPhotoKey,deleteDirectVoiceKey,deleteCirclePhotoKey,deleteCircleVoiceKey])assert.equal(memory.has(key),false,'account removal deletes the stored chat media object');
+console.log('Account removal deletes direct and circle chat media and invalidates retained links.');
+
 // Consent version 2 is explicit ongoing sharing; existing version 1 is never upgraded implicitly.
 for(const member of ['ongoing-a','ongoing-b','ongoing-legacy']){
  sql.prepare('INSERT INTO safety_accounts (id,status,updated) VALUES (?,?,?)').run(member,'admitted',new Date().toISOString());
