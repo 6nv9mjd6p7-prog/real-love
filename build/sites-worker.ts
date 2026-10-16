@@ -23,7 +23,24 @@ export default {
         },
       };
     }
-    const response = await runWithConnectorBinding(binding, () => handler.fetch(request, env, ctx));
+    const path=new URL(request.url).pathname;
+    let response:Response;
+    // Apply Cloudflare's edge limiter before API handlers, so abusive request
+    // bursts are rejected before they consume D1, storage, or authentication work.
+    const edgeLimiter=path==='/api/auth'?env.RATE_LIMITER_AUTH:path.startsWith('/api/')?env.RATE_LIMITER_API:undefined;
+    const clientIp=request.headers.get('CF-Connecting-IP');
+    if(edgeLimiter&&clientIp){
+      let allowed=true;
+      try{
+        allowed=(await edgeLimiter.limit({key:clientIp})).success;
+      }catch{
+        // Keep the app available if Cloudflare's limiter has a transient error;
+        // existing per-account database quotas still protect individual actions.
+      }
+      response=allowed
+        ?await runWithConnectorBinding(binding,()=>handler.fetch(request,env,ctx))
+        :Response.json({error:'Too many requests. Please wait a minute and try again.'},{status:429,headers:{'Retry-After':'60','Cache-Control':'no-store'}});
+    }else response=await runWithConnectorBinding(binding,()=>handler.fetch(request,env,ctx));
     const security = new Headers(response.headers);
     security.set('X-Content-Type-Options','nosniff');
     security.set('Referrer-Policy','no-referrer');
