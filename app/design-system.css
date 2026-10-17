@@ -715,3 +715,10 @@ html[data-native-platform] .app-shell:has(.conversation-screen,.circle-conversat
  .app-shell .inbox-screen .invitation-card{padding:12px}
  .app-shell .invitation-heading>.field-help{flex-basis:100%;margin:0}
 }
+
+/* A consistent action baseline makes saved/discovery rows easier to scan. */
+.app-shell .profile-grid>.compact-person{display:flex;flex-direction:column;min-width:0}
+.app-shell .profile-grid>.compact-person>.discovery-card-actions{margin-top:auto}
+.app-shell .profile-grid>.compact-person>.card-interests{margin-top:0}
+.app-shell .profile-grid>.compact-person>.connection-summary{margin-top:0}
+.app-shell .profile-grid>.compact-person>.about{margin-top:4px}

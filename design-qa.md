@@ -371,3 +371,20 @@ Five fidelity surfaces:
 Live interaction checks: keyboard moves View profile → Withdraw → Report without activating decisions. Nonmatching search shows No sent invitations match this name; clearing restores the card. Requests tab selects Requests and shows its appropriate empty state; URL is `#conversations/requests`. Closed disclosure opens with Enter; no items exist. No invitation accepted, declined, withdrawn, sent or reported. Inspected console batch contained browser-extension metadata errors only. Three relevant test files (invitations, chat experience, design system), TypeScript and production build passed. Generated TypeScript incremental metadata was restored before build/source commit.
 
 Comparison history: baseline → grouped metadata/action layout → published v179 → final screenshot and joint comparison. No further actionable desktop P0/P1/P2 issue identified in the checked Sent state. Actual 320px/390px rendering, long-content mobile appearance, touch, screen reader and populated incoming requests remain unverified. Supported viewport resizing/local-preview browser capability remains unavailable; desktop checks do not establish mobile acceptance.
+
+## Saved/discovery card action alignment — v181 (2026-10-17 Chicago)
+
+Final result: blocked for phone acceptance; scoped desktop Saved checks passed. CSS-only source `app/design-system.css`. Published source `73a97735eda354c94378bfdea71809d5b7281ece`. Saved already inherits compact Discover navigation; this pass aligns the primary actions across cards rather than redesigning the shared interface.
+
+Evidence: `/workspace/scratch/real-love-saved-before.jpg`, `/workspace/scratch/real-love-saved-after.jpg` (both 1363 × 936), `/workspace/scratch/real-love-saved-comparison.jpg`. Baseline/final inspected together. State: existing account with two saved, available profiles; no bookmarks, filters or account records changed.
+
+Five fidelity surfaces:
+- Typography: unchanged readable name, metadata, interest and intro hierarchy.
+- Spacing: shared compact-person cards use column layout and flexible space above their action area. Both View profile controls now start at y719.19 and are 44px high. Before, the second action started at y647.69, a 71.5px mismatch. Final card height remains 399px at 474px width, matching baseline; vertical content margins adjusted for flex layout without increasing the card height. No horizontal document overflow.
+- Colors: unchanged existing indigo, border and neutral surfaces.
+- Assets: unchanged.
+- Copy: all card fields, shared-interest detail, profile navigation, optional disclosure and bookmark controls preserved. No TSX, logic, routes or backend edits. Shared CSS also applies to Discover/demo cards, but populated Saved is the visually tested surface.
+
+Verification: opening a saved profile shows Back to Saved; that control restores the two-card Saved list. Neither Unsave action was activated. Two relevant test files (design system, discovery preferences) and production build passed for both CSS iterations. Inspected console batch contained extension metadata errors only.
+
+Comparison history: baseline → v180 aligned actions → 16px extra height caused by changed margin behavior detected → v181 explicit compact margins → final 399px cards and aligned actions → joint comparison inspected. No further actionable desktop P0/P1/P2 issue identified in checked Saved state. Actual 320px/390px rendering, touch, screen reader and expanded optional first-step disclosure remain unverified; supported viewport resizing/local preview remains unavailable. Desktop checks do not establish mobile acceptance.
