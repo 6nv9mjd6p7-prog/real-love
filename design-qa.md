@@ -219,3 +219,24 @@ Five fidelity surfaces:
 Interaction review: Enter opens Ideas & curiosity and reveals all five existing answers; Enter closes it. Space opens Activities & availability, retaining participation, activities and weekends. Existing saved-profile preview opens, shows saved status and mutual photo-sharing explanation, scrolls within dialog, and closes. Returned to overview with All changes saved; no mutations submitted. Demo profile cannot receive messages. Live connection actions were unchanged in source, not submitted during QA. Profile grouping/interaction cues/topic browsing and design-system test files passed; production build passed. No TypeScript source changed. Inspected console batch contained only browser-extension metadata errors.
 
 Comparison history: baseline → compact CSS → published screenshot and joint comparison. No further actionable desktop P0/P1/P2 issue identified in this scoped pass. Phone viewport resizing/local-preview browser skill remains unavailable; actual 320px/390px rendering, touch/keyboard, screen-reader and long-content device verification remain pending.
+
+## Circles overview compaction — v169 (2026-10-16 Chicago)
+
+Final result: blocked for phone acceptance; scoped desktop checks passed. Source: `app/circles.tsx` and `app/design-system.css`; final published source `47d3b1e8058c988a431d2b6a0bb079d8267a2a33`. Existing option 2 compact language applied to overview without changing circle action payloads or access rules.
+
+Evidence: `/workspace/scratch/real-love-circles-before.jpg` (1348 × 926), `/workspace/scratch/real-love-circles-after.jpg` (1363 × 936), and `/workspace/scratch/real-love-circles-comparison.jpg`. Baseline and final full layout inspected together on the comparison board. State: signed-in host, Browse, Any area, no search, guide collapsed, Together chooser unchanged. Private screenshots remain local.
+
+Five fidelity surfaces:
+- Typography: 24px sans heading and smaller labels align with compact screens. Search input remains normal weight; label weight is distinct.
+- Spacing: title and creation action share a wrapping header. Together chooser is beside its introduction on desktop when joined circles exist. Search and area controls share a row at desktop width. Final first card begins y591.08, fully visible in the 1363 × 936 capture; search and area top edges both y471.08. No horizontal overflow. Mobile stacks via default one-column toolbar and wrapping header.
+- Colors: existing indigo, neutral surfaces and borders retained, underlined selected tab follows compact navigation.
+- Assets: existing icons and circle cards unchanged, no assets added.
+- Copy: all detailed guidance, worker resources, collective-action routes, membership states, circle card actions and form fields preserved.
+
+Comparison history: baseline → v168 overview → small alignment correction → v169 recapture and joint comparison. Initial area/search top edges differed; final top edges align. Tabs now fill overview width. No further actionable desktop P0/P1/P2 issue found in this scoped review.
+
+Interactions: Joined retains host card and controls. Requests shows the correct empty state. Enter opens Circle guide; Space opens worker/collective disclosure with Work & Worker Support, Start union organizing and Collective Action links. On v169, unmatched search shows its empty state and Clear search restores the card. Creation opens all existing cofounder, area, name, purpose, first activity, guidelines and tag fields; Cancel returns to Browse. No proposal, join, leave, report or preference change submitted. Existing Together chooser remains disabled until a selection; logic covered by its access/selection test. No new/private messages opened for QA. Inspected log batch contained only extension metadata errors.
+
+Seven relevant test files passed: Together entry, circle area controls, circle cards, chat layout, circle management, worker support and design system. TypeScript and production build passed. Final CSS adjustment passed design-system checks and fresh production build. New-user/no-joined, paused, loading/error cases remain covered by existing render tests; no account state was changed to simulate those in production.
+
+Outstanding: actual phone 320px/390px rendering, touch/keyboard and screen-reader checks remain pending because this session lacks supported viewport resizing/local-preview browser capability. Desktop results do not constitute mobile acceptance.
