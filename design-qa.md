@@ -576,6 +576,27 @@ Scoped desktop creation interactions: passed. Overall visual acceptance remains 
 
 final result: blocked
 
+## v194 — First shared plan entry (2026-10-17)
+
+Scope: the Plans action now says Create a plan (Continue plan draft when a draft exists). New drafts default to Activity; existing valid drafts retain their stored kind through the unchanged parser. Offer, Request, Activity and Project remain selectable. Type becomes What are you sharing?, with a description example matched to each kind. Optional timing note and activity start move into a collapsed Add timing disclosure; existing timing is indicated by Timing added. Limits, explicit consent and final Post to circle remain visible. Date conversion, payloads, retries, response consent, privacy, and access are unchanged.
+
+Published source `77fc59fc2d662d6fdf3e70d09f3795c112ac7c1b`; saved version 194; deployment `appgdep_6ad3f5e9cd6481918cebbfd59a77a609` succeeded. Audience preserved.
+
+Source truth: `/workspace/scratch/real-love-first-plan-before.jpg` (v193, fresh empty Offer draft opened). Implementation: `/workspace/scratch/real-love-first-plan-after.jpg` (v194, fresh empty Activity draft opened). Same account/circle, no fields entered, no consent checked; changing the initial kind is intentional. Both browser screenshot files 1348 × 926 pixels. Current measured browser CSS viewport is 1363 × 936; capture extent excludes the edge region. Source CSS viewport was not separately measured, so no pixel-perfect claim or percentage reduction is made. Full joint comparison `/workspace/scratch/real-love-first-plan-comparison.jpg`; focused native-pixel form comparison `/workspace/scratch/real-love-first-plan-detail.jpg`, inspected together. Evidence stays local and is not committed.
+
+Baseline P2 hierarchy issue: a first shared plan starts as a generic post and defaults to Offer; timing fields compete with the required idea. New entry uses the Plans vocabulary and an activity default, with optional timing disclosed on demand. Final form measures 503.39px high in the checked desktop state and shows description, limits, acknowledgement and actions. No actionable desktop P0/P1/P2 in the compared state.
+
+Five fidelity surfaces: existing font/heading scale and field text retained. Full description textarea preserved; only timing presentation collapses, with existing rhythm and 44px disclosure affordance. Existing indigo, borders and surface tokens retained. Brand/icons unchanged; no new image assets. Existing privacy/safety/voluntary participation detail and all four kinds remain; examples are short, kind-specific prompts rather than saved content.
+
+Live QA: Create a plan opens the form and focuses its heading. Activity is selected and all four options are present. Timing starts collapsed; opening reveals note, device-local activity start, device-timezone guidance and leave-blank guidance. Closing timing and Keep draft & close remove the form and return focus to Create a plan; reopening works. Consent stays unchecked and Post to circle disabled. No kind selection, description, timing or new draft content was entered; no plan, participation response, cancellation or closure was submitted. Existing posts were only read. Inspected browser console batches show extension metadata errors only; no horizontal overflow observed.
+
+Validation: three existing Circle Together/workspace/entry test files passed, TypeScript and production build passed, whitespace checks passed. Existing focus/retry/duplicate-identity/time-conversion/participation/cancellation/access-loss tests continue to run with the new action label; added the behavior assertion that a new draft starts as Activity while preserving all type choices. No new effect/listener/fetch/storage mechanism or dependency.
+
+Scoped desktop planning-entry result: passed. New-post submission, populated timing browser validation, alternate-kind visual states, phone/touch and screen-reader acceptance remain pending. Existing functional tests cover alternate kinds and timing behavior, not production posting. Next: review the simplified Discover, Chats and Circles journeys together for consistency.
+
+final result: blocked
+
+
 
 
 
