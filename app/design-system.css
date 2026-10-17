@@ -175,8 +175,19 @@ html[data-native-platform] .app-shell:has(.conversation-screen,.circle-conversat
 .app-shell .compact-person .card-starter p{white-space:pre-wrap;overflow-wrap:anywhere}
 .app-shell :is(.card-connect-details,.profile-inline-details,.discovery-view-create){margin:6px 0;border:0;border-bottom:1px solid var(--border);border-radius:0;background:transparent}
 .app-shell :is(.card-connect-details,.profile-inline-details,.discovery-view-create)>summary{cursor:pointer;min-height:44px;padding:10px 0;font-size:.875rem;font-weight:600;color:var(--indigo);line-height:1.5}
-.app-shell .profile-sections{gap:12px}
-.app-shell .profile-sections>.profile-panel{padding:14px 0;border:0;border-bottom:1px solid var(--border);border-radius:0;background:transparent;box-shadow:none}
+.app-shell .member-screen{max-width:960px;min-width:0}
+.app-shell .member-screen>button:first-child{margin-bottom:12px;min-height:44px;font-size:.8125rem}
+.app-shell .profile-sections{gap:0;min-width:0}
+.app-shell .profile-sections>.profile-identity{padding:16px;margin:0 0 4px;border:1px solid var(--border);border-radius:12px;background:var(--surface)}
+.app-shell .profile-sections .profile-section-title{margin:0 0 8px!important;padding:0;border:0;gap:8px}
+.app-shell .profile-sections>.profile-panel{padding:12px 0;margin:0;border:0;border-bottom:1px solid var(--border);border-radius:0;background:transparent;box-shadow:none}
+.app-shell .profile-sections .profile-panel>summary .profile-section-title{margin:0!important}
+.app-shell .profile-sections .profile-introduction>p{margin:0;white-space:pre-wrap;overflow-wrap:anywhere}
+.app-shell .profile-sections .interest-tags{gap:6px}
+.app-shell .profile-sections .interest-action{padding:7px 10px;font-size:.8125rem;min-height:44px;max-width:100%;overflow-wrap:anywhere}
+.app-shell .profile-sections .profile-detail-groups{gap:0}
+.app-shell .profile-sections .profile-panel .first-step{padding:10px 12px;margin:0 0 4px}
+.app-shell .profile-sections .profile-inline-details{margin:0}
 .app-shell .profile-sections>.profile-panel h2{font-size:1rem;line-height:1.5}
 .app-shell .profile-sections>.profile-panel>summary{cursor:pointer;min-height:44px;padding:6px 0;color:var(--ink)}
 .app-shell .profile-sections>.profile-panel>summary h2{display:inline-flex;align-items:center;gap:8px;margin:0}

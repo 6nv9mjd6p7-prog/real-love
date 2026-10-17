@@ -202,3 +202,20 @@ Interactions checked on published v166: Alert settings scrolls to and focuses th
 Comparison history: baseline → implementation → live joint comparison. No actionable desktop P0/P1/P2 issue identified in this scoped pass. Four test files passed: notification view (web/native render), filters, delivery/routing/privacy (mocked delivery), and design system. TypeScript and production build passed. Real push delivery was not tested.
 
 Outstanding: no supported phone resizing/local-preview browser skill in this session. 320px/390px rendering, real touch/keyboard and screen-reader verification remain pending. Existing wrap rules retained; that does not constitute mobile visual acceptance.
+
+## Profile details compaction — v167 (2026-10-16 Chicago)
+
+Final result: blocked for phone design acceptance; scoped desktop review passed. CSS-only implementation in `app/design-system.css`; deployed source `8be58482323ea2901349a9fc4d83a034f85bef89`. Existing option 2 compact language applied to detailed profiles and shared profile preview layout.
+
+Evidence: `/workspace/scratch/real-love-detail-before.jpg` (1348 × 926), `/workspace/scratch/real-love-detail-after.jpg` (1363 × 936), `/workspace/scratch/real-love-detail-comparison.jpg`, and `/workspace/scratch/real-love-detail-preview.jpg` (1363 × 936). Baseline and implementation inspected together on comparison board. Primary state: Jules fictional example, collapsed optional answers. Secondary state: existing saved-profile preview; no profile edits or saves.
+
+Five fidelity surfaces:
+- Typography: compact existing identity heading retained; section headings lose redundant underline/padding, maintaining title hierarchy and icons.
+- Spacing: 960px main detail width aligns with other compact screens, reduced panel gaps, compact first-step block and wrapping interest buttons (44px minimum). Deeper answer summaries end at y835.28, y882.78, y930.28 in the checked desktop view. Normal document and dialog scrolling remain. No horizontal overflow at 1363 × 936.
+- Colors: indigo/neutral palette retained, identity uses a simple white bordered surface in place of gradient and heavy top rule.
+- Assets: existing avatar, optional photo, icons and shared-interest labels remain. No assets added.
+- Copy: no answers, fields, privacy copy, action handlers or access behavior changed. No truncation introduced.
+
+Interaction review: Enter opens Ideas & curiosity and reveals all five existing answers; Enter closes it. Space opens Activities & availability, retaining participation, activities and weekends. Existing saved-profile preview opens, shows saved status and mutual photo-sharing explanation, scrolls within dialog, and closes. Returned to overview with All changes saved; no mutations submitted. Demo profile cannot receive messages. Live connection actions were unchanged in source, not submitted during QA. Profile grouping/interaction cues/topic browsing and design-system test files passed; production build passed. No TypeScript source changed. Inspected console batch contained only browser-extension metadata errors.
+
+Comparison history: baseline → compact CSS → published screenshot and joint comparison. No further actionable desktop P0/P1/P2 issue identified in this scoped pass. Phone viewport resizing/local-preview browser skill remains unavailable; actual 320px/390px rendering, touch/keyboard, screen-reader and long-content device verification remain pending.
