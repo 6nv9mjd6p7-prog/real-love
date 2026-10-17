@@ -756,3 +756,19 @@ html[data-native-platform] .app-shell:has(.conversation-screen,.circle-conversat
  .app-shell .direct-chat .photo-exchange-status:not(:has(.check-line))>p{margin-bottom:6px}
  .app-shell .direct-chat .photo-exchange-status:not(:has(.check-line))>button{margin-top:4px}
 }
+
+/* Together keeps its complete post form in a compact, normally scrolling flow. */
+.app-shell .circle-workspace .together-content>p{margin:8px 0;font-size:.875rem;line-height:1.5}
+.app-shell .circle-workspace .together-content .inline-actions{gap:8px}
+.app-shell .circle-workspace .together-content .inline-actions>button{min-height:44px;padding:8px 12px;font-size:.875rem;line-height:1.4}
+.app-shell .circle-workspace .together-form{display:grid;gap:8px;margin:12px 0;padding:12px;border-radius:10px}
+.app-shell .circle-workspace .together-form>h2{margin:0;font-size:1rem;font-weight:700;line-height:1.4}
+.app-shell .circle-workspace .together-form>label{gap:4px;margin:0;font-size:.875rem;line-height:1.5}
+.app-shell .circle-workspace .together-form :is(input:not([type=checkbox]),select,textarea){font-size:1rem}
+.app-shell .circle-workspace .together-form>p{margin:0;font-size:.875rem;line-height:1.5}
+.app-shell .circle-workspace .together-form>label.consent{min-height:44px;align-items:center;gap:10px}
+.app-shell .circle-workspace .together-form>.inline-actions{margin:0}
+.app-shell .circle-workspace .together-post{padding:12px 0}
+.app-shell .circle-workspace .together-post-heading{gap:8px;align-items:center;font-size:.875rem;line-height:1.5}
+.app-shell .circle-workspace .together-post>.together-body{margin:8px 0;font-size:.875rem;line-height:1.5}
+.app-shell .circle-workspace .together-post>.field-help{margin:6px 0;font-size:.8125rem;line-height:1.5}
