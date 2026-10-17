@@ -928,3 +928,8 @@ html,body{max-width:100%;overflow-x:clip;overscroll-behavior-x:none}
 .app-shell{width:100%;min-width:0}
 .app-shell>main,.app-shell .content{min-width:0}
 .conversation-messages{overflow-x:hidden;overscroll-behavior-x:none}
+
+/* Keep everyday circle actions separate from membership and safety options. */
+.circle-card-options{border-top:1px solid var(--line);margin-top:12px;padding-top:8px}
+.circle-card-options>summary{cursor:pointer;color:var(--indigo);font-size:.875rem;font-weight:600;min-height:44px;align-content:center}
+.circle-card-options .inline-actions{margin-top:8px;gap:8px}

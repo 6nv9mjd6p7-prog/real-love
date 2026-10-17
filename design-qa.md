@@ -616,3 +616,22 @@ Validation: six relevant test files passed (circle-experience, circle-chat-layou
 Scoped desktop consistency result: passed. Phone/touch, screen reader, real audio capture/playback, first signup and production proposal/join/acceptance submissions remain unverified in this pass. No claim of complete app acceptance or current-pass console verification. Next priority is phone validation of scrolling, composer sizing and navigation.
 
 final result: blocked
+
+## v196 — Circle card action hierarchy
+
+Scope: simplify the already selected compact design without removing circle content or actions. Joined, unrestricted circles now show Open circle and View plans as their main actions. Leave, Report and eligible host shared-area removal are inside a native Circle options disclosure. Restricted/removed members keep direct reporting; proposal and invitation consent remain unchanged. No new state, hook, listener, network request or dependency.
+
+Source visual: /workspace/scratch/real-love-audit-03-circles.jpg. Rendered implementation: /workspace/scratch/real-love-circle-options-after.jpg. Both are 1363 × 936 desktop captures of the same signed-in Circles browse state and content; no density normalization. Full comparison: /workspace/scratch/real-love-circle-options-full-compare.jpg. Focused card comparison: /workspace/scratch/real-love-circle-options-detail-compare.jpg, matching 485 × 330 crops. Intentional difference: secondary actions moved beneath Circle options. Main page geometry, primary actions and existing content retained. No remaining P0/P1/P2 difference in this bounded change.
+
+Fidelity surfaces: existing Arial typography, hierarchy and wrapping retained; disclosure uses the existing 0.875rem/600 control treatment. Layout retains card width, padding, radii and action spacing; disclosure adds a 44px minimum target. Existing ink, indigo and line tokens retained. Logos and imagery unchanged; no generated or substituted assets. Purpose, next activity, participant count, disclosures and action labels retained; only Circle options is new copy. Accessible disclosure name includes its visible label and the circle title.
+
+Local QA used a temporary fictional CircleCard fixture in actual 320px and 390px iframe viewports. At 320px, options expanded; Leave and Report reached local callback status messages; Return collapsed the disclosure. At 390px, expanded options remained readable. Evidence: /workspace/scratch/real-love-card-phone-fixture.jpg and /workspace/scratch/real-love-card-phone-expanded.jpg. These are component reflow checks, not physical-device or full mobile-app acceptance. The temporary fixture was removed before typecheck/build and is absent from the deployment route list. Initial fixture captures with default iframe sizing were rejected and replaced after correcting the fixture's CSP-blocked inline styles.
+
+Live QA: collapsed card exposes Open circle and View plans; Circle options expands to Leave and Report. Leave opens the existing review and host continuity guidance. Stay in circle cancels and restores focus to Leave; collapsing options restores the compact state. No membership change, report submission, message, proposal, consent or shared-area mutation was submitted. Inspected live warning/error log batch contained browser extension metadata errors only.
+
+Validation: existing circle-card, circle-experience and worker-support test files passed; TypeScript, production build and whitespace checks passed. No tests added for this reversible presentation change. Production code source: e430b6e2a9868111cc77238ff4492cf0e96b2492, published as v196.
+
+Checklist: preserve actions and privacy conditions — done; separate primary from secondary actions — done; compare full and focused desktop evidence — done; local narrow component interaction checks — done; confirm production leave review/cancel — done. Physical phone scrolling, keyboard/composer behavior and screen-reader testing remain broader follow-up work. The duplicate cross-circle Plans selector is retained in this bounded pass; simplifying that entry is a separate next step.
+
+Scoped Circle card result only:
+final result: passed
