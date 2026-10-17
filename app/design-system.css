@@ -725,3 +725,19 @@ html[data-native-platform] .app-shell:has(.conversation-screen,.circle-conversat
 
 /* Demo is an explicit mode with one exit, not an unselected member tab. */
 .app-shell .discovery-screen>.page-heading>.demo-exit{flex:0 0 auto;min-height:44px;margin:0;padding:8px 12px;font-size:.875rem}
+
+/* Optional conversation tools stay compact without hiding their wording. */
+.app-shell .chat-help .conversation-guidance{margin:0}
+.app-shell .chat-help .conversation-guidance>details{margin:0;padding:0;border:0;border-bottom:1px solid var(--border);border-radius:0;background:transparent}
+.app-shell .chat-help .conversation-guidance>details>summary{min-height:44px;margin:0;padding:10px 0;border:0;border-radius:0;background:transparent;font-size:.875rem;line-height:1.5}
+.app-shell .chat-help .conversation-guidance .field-help{margin:8px 0;font-size:.875rem;line-height:1.5}
+.app-shell .chat-help .prompt-options{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:8px 0}
+.app-shell .chat-help .prompt-choice{display:grid;grid-template-columns:minmax(0,1fr) auto;align-content:start;align-items:center;gap:4px 12px;min-width:0;min-height:44px;padding:10px 12px;border-radius:8px;text-align:left;line-height:1.45}
+.app-shell .chat-help .prompt-choice>strong{grid-column:1;grid-row:1;min-width:0;font-size:.875rem;white-space:normal;overflow-wrap:anywhere}
+.app-shell .chat-help .prompt-choice>span:first-of-type{grid-column:1/-1;grid-row:2;min-width:0;font-size:.875rem}
+.app-shell .chat-help .prompt-choice>span:last-child{grid-column:2;grid-row:1;flex:none;font-size:.8125rem;font-weight:600;color:var(--indigo);white-space:nowrap}
+.app-shell .chat-help .conversation-feedback fieldset{margin:12px 0}
+.app-shell .chat-help .conversation-feedback legend{margin-bottom:4px;font-size:.875rem;line-height:1.5}
+@media(max-width:600px){
+ .app-shell .chat-help .prompt-options{grid-template-columns:minmax(0,1fr)}
+}
