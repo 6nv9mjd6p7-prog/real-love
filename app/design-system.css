@@ -698,3 +698,20 @@ html[data-native-platform] .app-shell:has(.conversation-screen,.circle-conversat
  .app-shell .modal-backdrop .report-modal{padding:16px;scroll-padding-top:16px}
  .app-shell .report-modal>.dialog-actions>button{flex:1 1 140px}
 }
+
+/* Invitation metadata and decisions stay together; full openings remain readable. */
+.app-shell .inbox-screen .invitation-card{padding:16px;margin:8px 0 12px}
+.invitation-card>div{width:100%;min-width:0}
+.invitation-heading{display:flex;align-items:center;flex-wrap:wrap;gap:6px 12px}
+.app-shell .invitation-heading>h3{margin:0;font-size:1rem;font-weight:700;line-height:1.4;overflow-wrap:anywhere}
+.app-shell .invitation-heading>.invitation-status{margin:0;padding:3px 8px;font-size:.8125rem;line-height:1.4}
+.app-shell .invitation-heading>.field-help{margin:0 0 0 auto;font-size:.8125rem;line-height:1.5}
+.app-shell .invitation-card .invitation-context{margin:12px 0;padding:10px 12px;overflow-wrap:anywhere}
+.app-shell .invitation-card .invitation-context>p{margin:4px 0 0}
+.app-shell .invitation-card>div>p{margin:8px 0;font-size:.875rem;line-height:1.5;white-space:pre-wrap;overflow-wrap:anywhere}
+.app-shell .invitation-card .invitation-actions{gap:8px;margin-top:12px}
+.app-shell .invitation-actions>button{margin:0;min-height:44px;padding:8px 12px;font-size:.875rem;line-height:1.4}
+@media(max-width:600px){
+ .app-shell .inbox-screen .invitation-card{padding:12px}
+ .app-shell .invitation-heading>.field-help{flex-basis:100%;margin:0}
+}

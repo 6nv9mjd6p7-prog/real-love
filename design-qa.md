@@ -354,3 +354,20 @@ Five fidelity surfaces:
 Interaction checks: initial focus reaches Close report. Shift+Tab wraps to Block this member; Tab wraps back to Close. Enter opens the complete reporting explanation. Submit remains disabled with blank details. Escape dismisses and restores focus to Report profile, with body scroll restored. No records changed. Inspected error batch contained browser-extension metadata errors only. Four relevant test files (invitations, chat experience, settings groups, design system), TypeScript and production build passed.
 
 Comparison history: baseline → compact CSS/grouped invitation markup → published v178 → fully rendered screenshot and joint board. No further actionable desktop P0/P1/P2 issue identified in checked report state. Invitation/new-recipient, appeal and end-connection visual states remain unverified; no synthetic production records used to enable them. Actual 320px/390px rendering, touch/keyboard and screen-reader review remain pending because supported viewport resizing/local preview was unavailable. Desktop checks do not establish mobile acceptance.
+
+## Requests and Sent invitation cards — v179 (2026-10-17 Chicago)
+
+Final result: blocked for phone/populated incoming-request acceptance; scoped desktop Sent and empty Requests checks passed. Sources: `app/love-app.tsx`, `app/design-system.css`. Published source `62296205ae59da4b59ebc231a408a4b44fdc134f`. Continues selected option 2 compact visual language.
+
+Evidence: `/workspace/scratch/real-love-sent-before.jpg`, `/workspace/scratch/real-love-sent-after.jpg`, `/workspace/scratch/real-love-sent-comparison.jpg`; before/final both 1363 × 936. Also `/workspace/scratch/real-love-requests-before.jpg` and `/workspace/scratch/real-love-requests-after.jpg`. Sent baseline/final inspected together. Existing signed-in account has one pending outgoing invitation, no incoming or closed items. No production test records created.
+
+Five fidelity surfaces:
+- Typography: 16px bold recipient name, 13px secondary status/time, 14px body/actions; readable input unchanged.
+- Spacing: wrapping name/status/time header replaces three stacked rows; date uses available desktop space and gets its own row below 600px. Full-width content preserves long openings and quoted answers with overflow wrapping. Card 960 × 230.19 CSS pixels versus baseline 960 × 322.78 (28.7% shorter). Actions share an 8px-gap group, each 44px tall; former touching borders separated. No horizontal overflow at checked viewport.
+- Colors: existing indigo/neutral surfaces, status outline and quoted-answer tint retained.
+- Assets: no assets changed.
+- Copy: full opening, quoted profile answer, status, exact local timestamp, request acceptance explanation and all actions retained. Incoming View profile now sits beside Accept/Decline/Report. Outgoing View profile/Withdraw/Report grouped. Eligibility/busy/unavailable guards and action payloads unchanged. Chats and closed-item cards retain their existing markup.
+
+Live interaction checks: keyboard moves View profile → Withdraw → Report without activating decisions. Nonmatching search shows No sent invitations match this name; clearing restores the card. Requests tab selects Requests and shows its appropriate empty state; URL is `#conversations/requests`. Closed disclosure opens with Enter; no items exist. No invitation accepted, declined, withdrawn, sent or reported. Inspected console batch contained browser-extension metadata errors only. Three relevant test files (invitations, chat experience, design system), TypeScript and production build passed. Generated TypeScript incremental metadata was restored before build/source commit.
+
+Comparison history: baseline → grouped metadata/action layout → published v179 → final screenshot and joint comparison. No further actionable desktop P0/P1/P2 issue identified in the checked Sent state. Actual 320px/390px rendering, long-content mobile appearance, touch, screen reader and populated incoming requests remain unverified. Supported viewport resizing/local-preview browser capability remains unavailable; desktop checks do not establish mobile acceptance.
