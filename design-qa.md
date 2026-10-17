@@ -554,5 +554,28 @@ Scoped Requests/Sent-search desktop result: passed. Default empty Sent was revie
 
 final result: blocked
 
+## v193 — Focused Circle proposal view (2026-10-17)
+
+Scope: improve Circle creation within the existing architecture. While composing, Plans entry, browse tabs/search/results and existing-circle cards are not rendered; returning restores the normal overview. The heading identifies Start a circle and the former Start button becomes a secondary Back to circles action. Back no longer runs the founder-selection assignment. The required founder/name/purpose controls precede a collapsed Activity & listing details disclosure containing first activity, optional area/nearby consent, general-circle guidelines and tags. Worker admission rules and worker consent remain required outside this optional disclosure. The send payload, founder agreement, discovery/unlisted rules and backend access are unchanged.
+
+Published source `90eddbb0627d03eb88cdd363045a6ca4d31b1228`; version 193; successful deployment `appgdep_6ad3f3e4d04081918332f134582b4e74`. Audience remains public.
+
+Visual source truth `/workspace/scratch/real-love-circle-create-before.jpg` (v192, fully rendered new-circle route). Implementation `/workspace/scratch/real-love-circle-create-after.jpg` (v193, same account/cofounder and empty text fields). The first capture after clicking Start still showed the list while route rendering settled; that capture was replaced with the settled proposal capture before comparison. Source dimensions 1348 × 926; implementation dimensions/CSS viewport 1363 × 936, density 1. The browser surface changed dimensions between captures and offers no resize capability. Joint full-view comparison `/workspace/scratch/real-love-circle-create-comparison.jpg` uses a common 1348 × 926 crop without resampling; focused form crops `/workspace/scratch/real-love-circle-create-detail.jpg` retain native pixels. Comparison is intentionally not exact viewport fidelity: do not attribute small positional differences to CSS or claim a precise percentage reduction. Full and focused boards inspected jointly.
+
+Baseline P2 findings: creation competed with Plans and the list; optional area preceded required name/purpose; header repeated Start a circle although that button returned to the list. Changes focus the screen and group optional detail. In the final desktop viewport, form top is 300.19px and height 581.58px, with the purpose field and send/cancel action visible. No actionable P0/P1/P2 seen in this checked general-circle creation state.
+
+Five fidelity surfaces: existing font family, heading sizes, field labels and legible text retained. Form width limited to 48rem with 16px padding and compact 12px control rhythm; required fields remain readable, not squeezed into short rows. Existing indigo/surface/border tokens and secondary Back styling retained. Brand and library icon assets unchanged. All proposal, privacy, host, optional detail and agreement copy remains; only header/context/back wording changed. No new assets, dependency or fake production data.
+
+Live checks: refresh of the new-circle route shows the focused form without Plans or list controls. Opening optional detail reveals first activity, explicit unchecked area sharing, guidelines and tags, with existing area/privacy explanation. Closing works. Back restores Plans, tabs, area/search controls and the existing circle; reopening shows the proposal form. No text was entered, area/nearby consent toggled, or proposal submitted. The existing default founder selection was retained as before. Inspected browser logs contain extension metadata errors only; document scroll width equals viewport.
+
+Joining was reviewed in source and existing rendered-component tests. It already requires an explicit disclosure review before Send join request; requested/nonmember/removed/host/worker/unlisted cases retain access and consent distinctions. No joining change was needed in this scoped pass. The account has only an already-joined visible circle, so no live join request or approval was performed.
+
+Validation: eight existing Circle, worker-support and navigation test files passed; TypeScript and production build passed; whitespace checks passed. No new listener/effect/request/persistence mechanism. No new test added for this presentation grouping. No final send, founder agreement, member approval, live worker proposal, actual phone/touch or screen-reader exercise performed.
+
+Scoped desktop creation interactions: passed. Overall visual acceptance remains blocked for actual phone coverage and an exact matched-viewport comparison; production proposal/join mutations were intentionally not used as QA. Next review: simplify the path from a Circle conversation to its first shared plan.
+
+final result: blocked
+
+
 
 

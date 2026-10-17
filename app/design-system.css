@@ -103,6 +103,13 @@ html[data-native-platform] .app-shell:has(.conversation-screen,.circle-conversat
 .app-shell .circle-start-actions>.primary{padding:8px 14px;font-size:.875rem}
 .app-shell .circle-guide .policy-disclosure,.app-shell .circle-guide .chat-privacy{margin:0}
 .app-shell .circles-overview{max-width:960px;min-width:0}
+.app-shell .circle-proposal-form{padding:16px;margin:12px 0;max-width:48rem}
+.circle-proposal-form>label{display:block;margin:12px 0}
+.circle-proposal-form>label :is(input,select,textarea){width:100%;margin-top:6px}
+.circle-proposal-options{margin:12px 0;border-top:1px solid var(--border);border-bottom:1px solid var(--border)}
+.circle-proposal-options>summary{min-height:44px;padding:12px 0;color:var(--indigo);font-weight:600;cursor:pointer}
+.circle-proposal-options>label,.circle-proposal-options>details{display:block;margin:12px 0}
+.circle-proposal-options>label textarea{width:100%;margin-top:6px}
 .circle-overview-heading{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px 16px;margin-bottom:12px}
 .app-shell .circle-overview-heading>.page-heading{flex:1 1 340px;margin:0;min-width:0}
 .app-shell .circle-overview-heading h1{font-family:Arial,Helvetica,sans-serif;font-size:1.5rem;font-weight:700;line-height:1.3;letter-spacing:0}
