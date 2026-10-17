@@ -337,3 +337,20 @@ Interaction review on published v177: Tab from Back to Real Love reaches Send me
 Five relevant test files passed: email auth (mock provider/session/linking/guards), approval status, onboarding next-action guidance, profile editor sections, and design system. Production build passed. TypeScript source unchanged. New-user, OTP, resend/expiry, error and pending-profile states were inspected in source/test coverage, not exercised through live account transitions.
 
 Comparison history: baseline → compact CSS → published screenshot and joint comparison. No actionable desktop P0/P1/P2 issue identified in the checked account-link state. Actual 320px/390px rendering, mobile keyboard, screen-reader and full signup/OTP browser testing remain pending; no supported viewport resizing/local-preview browser capability was available for this pass. No claim of full onboarding or mobile acceptance.
+
+## Reporting and invitation dialogs — v178 (2026-10-17 Chicago)
+
+Final result: blocked for phone and invitation visual acceptance; scoped desktop report checks passed. Sources: `app/design-system.css`, `app/love-app.tsx`. Published source: `3daf71b715415b6d3cdadf633c59a042d259909e`. Continues selected option 2 compact language.
+
+Evidence: `/workspace/scratch/real-love-report-before.jpg`, `/workspace/scratch/real-love-report-after.jpg` (both 1348 × 926 captured images), `/workspace/scratch/real-love-report-comparison.jpg`. Baseline/final inspected jointly. DOM viewport 1363 × 936. State: existing connected member's profile, blank report; no report, block or invitation submitted. An immediate post-open capture showed the underlying page; replaced with a fresh capture after confirming the rendered dialog.
+
+Five fidelity surfaces:
+- Typography: 20px bold sans heading, 14px labels/body/actions; input text remains 16px.
+- Spacing: consistent 20px desktop / 16px narrow padding replaces excess top space; heading reserves a close-control lane. Field margins 12px, action gaps 8px. Report is 670 × 431 CSS pixels; expanded guidance 527px high, no internal clipping or horizontal document overflow in the checked desktop view. Close and action controls remain 44px high, select 48px, textarea 74px.
+- Colors: existing indigo, white surfaces, muted copy, border/focus colors retained.
+- Assets: unchanged.
+- Copy: all report reasons, evidence/privacy guidance, invitation context, availability, consent distinction, draft guidance and fields retained. Invitation Send and Keep draft actions now share the existing wrapping action group; handlers and disabling conditions unchanged. End-connection confirmation also inherits shared dialog spacing, but was not exercised live.
+
+Interaction checks: initial focus reaches Close report. Shift+Tab wraps to Block this member; Tab wraps back to Close. Enter opens the complete reporting explanation. Submit remains disabled with blank details. Escape dismisses and restores focus to Report profile, with body scroll restored. No records changed. Inspected error batch contained browser-extension metadata errors only. Four relevant test files (invitations, chat experience, settings groups, design system), TypeScript and production build passed.
+
+Comparison history: baseline → compact CSS/grouped invitation markup → published v178 → fully rendered screenshot and joint board. No further actionable desktop P0/P1/P2 issue identified in checked report state. Invitation/new-recipient, appeal and end-connection visual states remain unverified; no synthetic production records used to enable them. Actual 320px/390px rendering, touch/keyboard and screen-reader review remain pending because supported viewport resizing/local preview was unavailable. Desktop checks do not establish mobile acceptance.
