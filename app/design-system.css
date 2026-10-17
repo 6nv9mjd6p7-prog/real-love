@@ -135,6 +135,29 @@ html[data-native-platform] .app-shell:has(.conversation-screen,.circle-conversat
 .app-shell .settings-group>h2{font-size:1.0625rem}
 .app-shell .worker-resources .care-card{padding:14px;box-shadow:none}
 .app-shell .worker-resources .care-card p{font-size:.875rem;line-height:1.6}
+.app-shell .worker-support{max-width:960px;min-width:0}
+.app-shell .worker-support>.page-heading{margin-bottom:12px}
+.app-shell:not(:has(.conversation-screen,.circle-conversation)) .worker-support h1{font-family:Arial,Helvetica,sans-serif;font-size:1.5rem;line-height:1.3;font-weight:700;letter-spacing:0}
+.worker-support>.page-heading p{margin-top:6px;font-size:.875rem}
+.app-shell .worker-support .support-paths{margin:12px 0;align-items:start}
+.app-shell .worker-support .support-path{padding:14px;gap:8px;min-height:0;box-shadow:none}
+.app-shell .worker-support .support-path h2{margin:0;font-size:1rem;line-height:1.4}
+.app-shell .worker-support .support-path p{margin:0;font-size:.875rem;line-height:1.5}
+.app-shell .worker-support .support-path>.field-help{font-size:.8125rem}
+.app-shell .worker-support .support-path>button{margin:0;min-height:44px;padding:8px 12px;font-size:.8125rem}
+.app-shell .worker-support .support-path>a{margin:0;font-size:.8125rem}
+.worker-support .support-path .inline-guide>summary{min-height:44px;padding:10px 0;font-size:.8125rem}
+.app-shell .worker-support>.form-section{padding:14px;margin:12px 0}
+.worker-support>.form-section>h2{margin:0 0 8px;font-size:1rem;line-height:1.5}
+.worker-support>.form-section>p{margin:8px 0;font-size:.875rem;line-height:1.5}
+.app-shell .worker-support .worker-resources{display:block;margin-top:12px;padding:0 14px;border:1px solid var(--border);border-radius:12px;background:var(--surface)}
+.app-shell .worker-support .worker-resources>.worker-resource{margin:0;padding:0;border:0;border-bottom:1px solid var(--border);border-radius:0;background:transparent;box-shadow:none}
+.app-shell .worker-support .worker-resource:last-child{border-bottom:0}
+.app-shell .worker-support .worker-resource>summary{display:list-item;min-height:64px;padding:12px 0;cursor:pointer;border:0;border-radius:0;background:transparent;color:var(--ink)}
+.worker-resource>summary>h3{display:inline;margin:0;font-size:.9375rem;line-height:1.5}
+.worker-resource-publisher{display:block;margin:4px 0 0 16px;color:var(--muted);font-size:.8125rem;font-weight:400;line-height:1.4}
+.app-shell .worker-support .worker-resource[open]{padding-bottom:12px}
+.worker-resource>a{min-height:44px;font-size:.8125rem}
 .app-shell .notification-list>li>button{padding:12px 14px}
 .app-shell .notification-list-heading{margin:14px 0 10px;gap:12px}
 .app-shell .notification-list-heading h2{font-size:1.0625rem}

@@ -278,3 +278,22 @@ Interaction checks: Enter opens/closes reviewer management, retaining member sel
 Comparison history: baseline → v171 grouped sections → inherited double-border P2 identified → v172 summary border override and final recapture. Final section and summary bounds checked within container. No further actionable desktop P0/P1/P2 issue identified in this scoped pass. Moderation view and design-system test files passed; TypeScript and production build passed. Final CSS correction passed design-system and fresh production build. Inspected console batch contained browser-extension metadata errors only.
 
 Outstanding: actual 320px/390px rendering, touch/keyboard, screen-reader and populated live-case behavior remain pending. This session lacks supported viewport resizing/local-preview browser capability. Desktop verification is not mobile acceptance.
+
+## Work & Worker Support compaction — v174 (2026-10-16 Chicago)
+
+Final result: blocked for phone acceptance; scoped desktop checks passed. Source: `app/worker-support.tsx`, `app/design-system.css`; final published source `f7678e74ef059be38c193cf2e660596deac07c4e`. Extends option 2 compact hierarchy; all resources, descriptions, privacy/representation limits and entry paths retained.
+
+Evidence: `/workspace/scratch/real-love-worker-before.jpg`, `/workspace/scratch/real-love-worker-after.jpg`, `/workspace/scratch/real-love-worker-resources-before.jpg`, `/workspace/scratch/real-love-worker-resources-after.jpg`, and `/workspace/scratch/real-love-worker-comparison.jpg`. Baselines 1348 × 926; final captures 1363 × 936. Overview and focused resources baseline/final pairs were inspected together on one comparison board. States: worker hub at top; resource shortcut focused heading, All selected, all seven entries collapsed.
+
+Five fidelity surfaces:
+- Typography: 24px sans heading, compact path titles and resource titles. Publisher and resource type are secondary text on a distinct line.
+- Spacing: 960px max width, content-sized entry cards with reduced gaps/padding and no auto-spaced buttons. Resources are compact native disclosure rows rather than large expanded cards. Seven titles/publishers visible in checked resources viewport. Normal document scrolling and 44px minimum action targets retained. No horizontal overflow at 1363 × 936.
+- Colors: existing indigo, neutral surfaces, borders and focus style retained.
+- Assets: no new assets or external embeds.
+- Copy: legal/resource descriptions, URLs, reference dates, organizing privacy limitations, representation distinctions and optionality unchanged. Publishers/types remain visible before expansion; full descriptions and external links appear inside each resource. Resource content was not reverified or presented as updated legal guidance in this design pass.
+
+Interaction checks: Browse help resources moves focus to `worker-resources` and scrolls there. Safety filter leaves the OSHA resource. Enter (v173) and Space (v174) open the resource to show its full explanation and existing external URL. External provider was not opened and no complaint/referral submitted. Restored All and top overview. Existing worker-circle/organizing entry handlers remain unchanged; no circle created or joined. Worker-support render/routing and design-system test files passed; TypeScript and production build passed. Final heading revision passed both test files and fresh production build. Inspected console batch contained extension metadata errors only.
+
+Comparison history: baseline → v173 compact cards/disclosures → resource type/title running together identified → v174 title first, publisher/type on separate line → final screenshots and joint comparison. No further actionable desktop P0/P1/P2 issue identified in this scoped pass.
+
+Outstanding: real 320px/390px rendering, mobile touch/keyboard and screen-reader verification remain pending. Supported viewport resize/local-preview browser capability remains unavailable; desktop verification is not mobile acceptance. Disabled organizing/new-user states retain existing test coverage; no account status changed to simulate them live.
