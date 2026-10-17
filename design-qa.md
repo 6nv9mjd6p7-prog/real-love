@@ -183,3 +183,22 @@ Interaction verification on published v165:
 Comparison history: baseline → compact overview → live screenshot and joint comparison; no further desktop P0/P1/P2 issue identified in this scoped pass. Settings render/action, design system, account lifecycle and draft-storage tests passed (4 files). TypeScript and production build passed. Inspected console batch contained browser-extension metadata errors only, with no application-origin errors.
 
 Limitations: no supported phone viewport resizing or local-preview browser skill is available in this session. 320px/390px visual acceptance, mobile touch/keyboard and screen-reader checks remain outstanding. CSS provides two-column wrapping shortcuts below 600px, but that is not a rendered phone test.
+
+## Notifications compaction — v166 (2026-10-16)
+
+Final result: blocked for phone design acceptance; scoped desktop review passed. Implementation: `app/notification-center.tsx`, `app/design-system.css`; deployed source `84c0cb77b131d9a6e51904824cf3fdea3a876d76`. Continues selected option 2 compact hierarchy.
+
+Evidence: `/workspace/scratch/real-love-notifications-before.jpg` (1348 × 926), `/workspace/scratch/real-love-notifications-after.jpg` (1363 × 936), and `/workspace/scratch/real-love-notifications-comparison.jpg`. Both full layouts were inspected together in the comparison board. State: signed-in returning member, All activity, existing read alerts. No private screenshots uploaded to GitHub.
+
+Five fidelity surfaces:
+- Typography: 24px sans heading and existing readable row typography; title and timestamp share a wrapping heading line.
+- Spacing: 960px content width aligns with the other compact screens. Observed rows are 72px high, with first item y311. No horizontal overflow at 1363 × 936. Filters wrap and retain 44px targets. No clipping or line clamp introduced.
+- Colors: existing neutral surfaces, indigo accents and borders remain; selected category uses an underline and bold text.
+- Assets: existing navigation/brand assets retained; none added.
+- Copy: all event titles, conversation details, timestamps, read markers, action labels, retention copy and preference explanations remain. Alert settings shortcut added; no event grouping or deletion.
+
+Interactions checked on published v166: Alert settings scrolls to and focuses the named preference region; both preference disclosures remain accessible. Enter opens/closes Activity alert preferences; existing category controls are available but were not toggled. Circles filter shows the existing empty state, with pressed state set correctly. Show all activity restores All and all 67 current alerts. Refresh and mark-read controls remain; no alert was opened or marked read for QA. Preferences remained unchanged. Inspected error logs contained browser-extension metadata errors, no app-origin errors in that batch.
+
+Comparison history: baseline → implementation → live joint comparison. No actionable desktop P0/P1/P2 issue identified in this scoped pass. Four test files passed: notification view (web/native render), filters, delivery/routing/privacy (mocked delivery), and design system. TypeScript and production build passed. Real push delivery was not tested.
+
+Outstanding: no supported phone resizing/local-preview browser skill in this session. 320px/390px rendering, real touch/keyboard and screen-reader verification remain pending. Existing wrap rules retained; that does not constitute mobile visual acceptance.

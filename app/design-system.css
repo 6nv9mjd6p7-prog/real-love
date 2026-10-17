@@ -391,17 +391,26 @@ html[data-native-platform] .app-shell:has(.conversation-screen,.circle-conversat
 .app-shell .campaign-form .setup-actions{gap:8px;padding:8px 0 0;margin:0}
 
 /* Activity stays readable; filters and alert settings share the compact list language. */
+.app-shell .notification-center{max-width:960px;min-width:0}
+.app-shell .notification-center>.page-heading{align-items:center;margin-bottom:8px;gap:8px 16px}
+.app-shell .notification-center h1{margin:0;font-family:Arial,Helvetica,sans-serif;font-size:1.5rem;font-weight:700;line-height:1.3;letter-spacing:0}
+.notification-heading-actions{display:flex;align-items:center;flex-wrap:wrap;gap:8px}
+.app-shell .notification-heading-actions>.text-button{min-height:44px;padding:8px 12px;font-size:.8125rem}
 .app-shell .notification-center .notification-list-heading{margin:8px 0;gap:8px;min-height:44px}
 .app-shell .notification-list-heading>h2{margin:0;font-size:1rem}
 .app-shell .notification-list-heading>.text-button{min-height:44px;padding:6px 0;font-size:.8125rem}
-.app-shell .notification-filter-bar{flex-wrap:wrap;overflow:visible;gap:4px;padding:0;margin:0 0 12px}
-.app-shell .notification-filter-bar>button{min-height:44px;padding:7px 10px;border-radius:var(--control-radius);font-size:.8125rem;max-width:100%;white-space:normal}
+.app-shell .notification-filter-bar{flex-wrap:wrap;overflow:visible;gap:4px 12px;padding:0;margin:0 0 12px;border-bottom:1px solid var(--border)}
+.app-shell .notification-filter-bar>button{min-height:44px;padding:7px 4px;border:0;border-bottom:2px solid transparent;border-radius:0;background:transparent;color:var(--muted);font-size:.8125rem;max-width:100%;white-space:normal}
+.app-shell .notification-filter-bar>button.active{border-bottom-color:var(--indigo);background:transparent;color:var(--indigo);font-weight:700}
 .app-shell .notification-list{border-radius:var(--card-radius)}
 .app-shell .notification-list>li>button{min-height:72px;padding:10px 12px;gap:12px;align-items:flex-start}
 .app-shell .notification-list>li>button>span:first-child{flex:1;min-width:0;line-height:1.45}
 .app-shell .notification-list>li>button>span:first-child>strong{font-size:.875rem}
 .app-shell .notification-list .notification-detail{font-size:.8125rem;line-height:1.5;margin-top:3px}
 .app-shell .notification-list time{font-size:.75rem;line-height:1.5;margin-top:4px}
+.notification-item-heading{display:flex;align-items:baseline;justify-content:space-between;flex-wrap:wrap;gap:4px 16px}
+.notification-item-heading>span{min-width:0;overflow-wrap:anywhere;font-size:.875rem}
+.app-shell .notification-item-heading>time{margin:0;white-space:nowrap}
 .app-shell .notification-list .notification-open{align-self:center;max-width:6.5rem;font-size:.8125rem;line-height:1.4}
 .app-shell .notification-list>li>button:focus-visible{outline-offset:-4px}
 .app-shell .notification-preferences{margin-top:16px;padding:0 14px;border:1px solid var(--border);border-radius:var(--card-radius);background:var(--surface)}
