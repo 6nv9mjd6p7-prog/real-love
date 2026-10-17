@@ -10,6 +10,6 @@ export default function ReturningActivity({connections,requests,circleRequests,c
  {requests>0&&<button onClick={()=>onNavigate('conversations/requests')}><strong>Connection requests</strong><span>{requests} {requests===1?'invitation':'invitations'} to review</span></button>}
  {circleRequests>0?<button onClick={()=>onNavigate('circles/requests')}><strong>Circle requests</strong><span>{circleRequests} to review</span></button>:circleUpdates>0&&<button onClick={()=>onNavigate('notifications')}><strong>Circle activity</strong><span>{circleUpdates} new {circleUpdates===1?'update':'updates'}</span></button>}
  </div>}
- {chats.length>0&&<div className="activity-recent" aria-label="Recent conversations">{chats.map(c=><button key={c.id} onClick={()=>onNavigate('chat/'+encodeURIComponent(c.id))}><strong>{c.person.name}</strong><span>{c.unread?c.unread+' unread':'Continue conversation'} →</span></button>)}</div>}
+ {chats.length>0&&<div className="activity-recent" aria-label="Recent conversations">{chats.map(c=><button key={c.id} onClick={()=>onNavigate('chat/'+encodeURIComponent(c.id))}><strong>{c.person.name}</strong><span>{c.unread?c.unread+' unread':'Open chat'} →</span></button>)}</div>}
  </section>;
 }

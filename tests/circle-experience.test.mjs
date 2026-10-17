@@ -2,7 +2,7 @@ import ts from 'typescript';
 import {readFileSync} from 'node:fs';
 import assert from 'node:assert/strict';
 const compile=s=>'data:text/javascript;base64,'+Buffer.from(ts.transpileModule(s,{compilerOptions:{module:ts.ModuleKind.ESNext}}).outputText).toString('base64');
-const {circleStatus,circleGroups,circleRequestGroup}=await import(compile(readFileSync('app/circle-experience.ts','utf8').replace("from './location'",`from '${compile(readFileSync('app/location.ts','utf8'))}'`)));
+const {circleStatus,circleGroups,circleRequestGroup,circleFounderConnection}=await import(compile(readFileSync('app/circle-experience.ts','utf8').replace("from './location'",`from '${compile(readFileSync('app/location.ts','utf8'))}'`)));
 const base={id:'test',title:'History together',description:'Read and talk',tags:['History'],activity:'Sunday reading',status:'open',membership:null,role:null,canApprove:false,count:2};
 const proposal={...base,id:'proposal',status:'pending',membership:'accepted',role:'host',awaitingYourAgreement:true};
 const hosted={...base,id:'hosted',membership:'accepted',role:'host',joinRequests:2};
@@ -29,3 +29,13 @@ const distanceIds=(miles)=>circleGroups([near,far,local,{...near,id:'invalid',di
 assert.deepEqual(distanceIds(25),['near']);assert.deepEqual(distanceIds(50),['near','far']);assert.deepEqual(distanceIds(26),[],'unsupported distance choices fail closed');
 assert.equal(circleGroups([{...far,membership:'accepted'}],'Joined','',null,5)[0].circles.length,1);
 assert.equal(circleGroups([{...far,membership:'requested'}],'Requests','',null,5)[0].circles.length,1);
+
+const founders=[{id:'first',status:'accepted'},{id:'chosen',status:'accepted'},{id:'unavailable',status:'accepted',available:false},{id:'pending',status:'pending'}];
+assert.equal(circleFounderConnection(founders,'chosen'),'chosen','reopening preserves the selected eligible cofounder');
+assert.equal(circleFounderConnection(founders,'chosen','first'),'first','an explicit entry from a chat takes precedence');
+assert.equal(circleFounderConnection(founders,'chosen','unavailable'),'chosen','an unavailable explicit target cannot replace an eligible draft');
+assert.equal(circleFounderConnection(founders,'unavailable'),'first');
+assert.equal(circleFounderConnection(founders,'pending'),'first');
+assert.equal(circleFounderConnection(founders,'deleted'),'first');
+assert.equal(circleFounderConnection(founders.slice(2),'chosen'),'','no eligible connection leaves the required picker unanswered');
+assert.equal(founders.length,4,'selection does not modify connection data');

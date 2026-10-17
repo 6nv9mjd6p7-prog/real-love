@@ -600,3 +600,19 @@ final result: blocked
 
 
 
+
+## v195 — Discover, Chats and Circles consistency
+
+Scope: preserve the compact option-2 design and existing functionality while checking the journeys together. Published code source: 9eba71a392b5ee0aa53a55358d6610f860addcd3.
+
+Fixed a reproduced Circle creation bug: selecting the second eligible cofounder, returning to browse and reopening Start previously reset the choice to the first connection. Reopening now retains a still-eligible draft choice; an explicit chat entry takes precedence. Unavailable, pending or removed connections cannot become the selected founder. Live pre/post checks reproduced and resolved the reset. The original selection was restored; no proposal, message, membership or consent submission occurred.
+
+Discover shortcuts and accepted-profile actions now use Open chat consistently. Circle plan loading errors say Plans and the unknown-kind fallback says Plan. Internal route identifiers remain compatible. Live Discover Open chat opened the selected accepted chat; Back to Discover returned to Discover successfully.
+
+Evidence: real-love-consistency-before.jpg and real-love-consistency-after.jpg, both 1363 × 936 desktop captures, compared together in real-love-consistency-compare.jpg. Typography, spacing, colors, existing assets and component hierarchy remain unchanged except shorter consistent labels. No CSS, dependencies, effects, listeners, fetches or storage mechanisms added. Private chat transcripts were excluded from screenshot evidence.
+
+Validation: six relevant test files passed (circle-experience, circle-chat-layout, circle-together, returning-activity, navigation-workflow, worker-support), TypeScript and production build passed, and whitespace checks passed. Added behavioral coverage for retained eligible choice, explicit target precedence, unavailable/pending/deleted fallback, no eligible connection and unchanged input data. Copy-only changes require no new mirrored tests.
+
+Scoped desktop consistency result: passed. Phone/touch, screen reader, real audio capture/playback, first signup and production proposal/join/acceptance submissions remain unverified in this pass. No claim of complete app acceptance or current-pass console verification. Next priority is phone validation of scrolling, composer sizing and navigation.
+
+final result: blocked
