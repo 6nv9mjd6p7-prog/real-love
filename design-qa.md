@@ -436,3 +436,20 @@ Five fidelity surfaces:
 Live checks: Enter opens Conversation help and Conversation ideas. Communicate shows all six listening/clarification/pace/boundary/repair choices; Everyday restores six light ideas. Keyboard focus can move through ideas to optional feedback without adding a prompt. Enter opens feedback and exposes both questions, Yes/Partly/No controls and account/privacy explanation; closed without selecting an answer. Draft remains empty, no prompt inserted, feedback submitted or message sent. Inspected console batch contained extension metadata errors only. Three relevant test files (conversation ideas, conversation tools, design system) and production build passed; TSX unchanged.
 
 Comparison history: baseline → compact shared disclosure/grid styles → published v184 → dimensions/categorical content checks → focused full-panel screenshot → joint comparison. No additional actionable desktop P0/P1/P2 issue identified in checked states. Live Circle layout, actual 320px/390px rendering, touch and screen-reader verification remain pending. Supported viewport resizing/local preview remains unavailable; desktop verification is not mobile acceptance.
+
+## Photo-sharing status compaction — v185 (2026-10-17 Chicago)
+
+Final result: blocked for phone/all consent-state visual acceptance; scoped desktop waiting-state checks passed. CSS-only source `app/design-system.css`. Published source `fab3898982137a5d5d46c2ff4a0e05c975026fdb`. Keeps existing explicit consent and photo-sharing logic unchanged.
+
+Evidence: `/workspace/scratch/real-love-sharing-before.jpg`, `/workspace/scratch/real-love-sharing-after.jpg` (both 1348 × 926), `/workspace/scratch/real-love-sharing-comparison.jpg`. Comparison crops only the sharing region; baseline/final inspected together. State: two existing direct conversations both have the current user's ongoing consent and await the other member's agreement. Full captures contain private chat content and remain local. No consent checkbox or sharing action activated.
+
+Five fidelity surfaces:
+- Typography: 14px explanation and actions, 1.5 body line-height retained.
+- Spacing: when no consent checkbox is present, explanation paragraphs stack in the first grid column and the existing action sits adjacent in the second. Panel reduces from 128.39px to 72px (43.9% shorter). Stop sharing remains 44px high. At narrow widths the panel returns to one column. Checkbox-containing states use block layout with 44px minimum label/action targets; no action overlap. Error copy spans the full grid width. No desktop document overflow.
+- Colors: existing neutral surface, border, indigo action and focus treatment retained.
+- Assets: unchanged.
+- Copy: all state explanations, future-photo consent label/warnings, request/agreement wording, add-photo route, Stop sharing and errors retained. No markup, checkbox state, action conditions, payloads, or server permission changes.
+
+Live checks: Manage sharing opens with Enter. Both waiting-state explanations are visible; Tab reaches Stop sharing directly without activating it. Manage sharing collapses the panel and hides it. Second existing conversation shows the same waiting/ongoing state and no overflow; no other consent states available without changing production records. Inspected console batch contained extension metadata errors only. Three test files passed (conversation view, backend app flow, design system), including explicit unchecked-consent disabling, mutual access and ongoing-photo replacement/revocation scenarios. Production build passed; TSX unchanged. Log: `/workspace/scratch/real-love-sharing-tests.log`.
+
+Comparison history: baseline → compact status/action styles → published v185 → measurements and keyboard/collapse checks → second existing state checked → joint comparison. No additional actionable desktop P0/P1/P2 issue identified in checked state. Actual 320px/390px rendering, checkbox/error/no-photo/shared visual states, touch and screen-reader QA remain pending; supported viewport resizing/local preview unavailable. Desktop review does not establish mobile or full consent-state visual acceptance.

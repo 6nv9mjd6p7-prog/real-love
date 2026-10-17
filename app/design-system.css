@@ -741,3 +741,18 @@ html[data-native-platform] .app-shell:has(.conversation-screen,.circle-conversat
 @media(max-width:600px){
  .app-shell .chat-help .prompt-options{grid-template-columns:minmax(0,1fr)}
 }
+
+/* Sharing status is a compact explanation with an adjacent explicit action. */
+.app-shell .direct-chat .photo-exchange-status:not([hidden]){display:block;padding:12px;margin:8px 0}
+.app-shell .direct-chat .photo-exchange-status>p{margin:0 0 6px;font-size:.875rem;line-height:1.5;overflow-wrap:anywhere}
+.app-shell .direct-chat .photo-exchange-status>.check-line{min-height:44px;margin:8px 0;font-size:.875rem;line-height:1.5}
+.app-shell .direct-chat .photo-exchange-status>button{min-height:44px;margin:4px 8px 0 0;padding:8px 12px;font-size:.875rem;line-height:1.4}
+.app-shell .direct-chat .photo-exchange-status:not([hidden]):not(:has(.check-line)){display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4px 16px}
+.app-shell .direct-chat .photo-exchange-status:not(:has(.check-line))>p{grid-column:1;margin:0}
+.app-shell .direct-chat .photo-exchange-status:not(:has(.check-line))>button{grid-column:2;grid-row:1/span 2;align-self:center;margin:0}
+.app-shell .direct-chat .photo-exchange-status:not(:has(.check-line))>.inline-error{grid-column:1/-1}
+@media(max-width:600px){
+ .app-shell .direct-chat .photo-exchange-status:not([hidden]):not(:has(.check-line)){display:block}
+ .app-shell .direct-chat .photo-exchange-status:not(:has(.check-line))>p{margin-bottom:6px}
+ .app-shell .direct-chat .photo-exchange-status:not(:has(.check-line))>button{margin-top:4px}
+}
