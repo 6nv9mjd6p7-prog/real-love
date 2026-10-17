@@ -15,6 +15,7 @@ const circle={id:'joined',title:'Garden friends',membership:'accepted',status:'o
 let opened,browsed=0;
 const props={circles:[circle,{...circle,id:'pending',status:'pending'},{...circle,id:'requested',membership:'requested'},{...circle,id:'blocked',restricted:true}],active:true,busy:false,loading:false,failed:false,onOpen:c=>opened=c,onBrowse:()=>browsed++};
 let tree=Entry(props),nodes=elements(tree);
+assert(nodes.some(n=>n.type==='h2'&&n.props.children==='Plans'),'entry uses the same plain-language Plans label as circle navigation');
 assert.deepEqual(nodes.filter(n=>n.type==='option').map(n=>n.props.value),['','joined']);
 assert(nodes.find(n=>n.type==='button').props.disabled,'requires explicit circle selection');
 nodes.find(n=>n.type==='select').props.onChange({target:{value:'joined'}});

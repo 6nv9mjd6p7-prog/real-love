@@ -25,8 +25,8 @@ assert(organizingApproval.includes('named recipients of current invitations'));
 assert(organizingApproval.includes('privately invite accepted connections'));
 assert(!organizingApproval.includes('Agreeing makes this title'),'unlisted founder consent does not promise discovery');
 
-assert(render({...base,membership:"accepted"}).includes(">Together</button>"));
-for(const c of [base,proposal,{...base,membership:"accepted",restricted:true}])assert(!render(c).includes(">Together</button>"));
+assert(render({...base,membership:"accepted"}).includes(">View plans</button>"));
+for(const c of [base,proposal,{...base,membership:"accepted",restricted:true}])assert(!render(c).includes(">View plans</button>"));
 const withArea={...base,area:{city:'Austin',region:'Texas',country:'United States'}};
 assert(render(withArea).includes('Circle area · Austin, Texas, United States'));
 assert(render({...proposal,area:withArea.area},true).includes('This appears in the listing once both founders agree'));

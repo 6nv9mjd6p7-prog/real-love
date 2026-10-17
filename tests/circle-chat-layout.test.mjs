@@ -48,7 +48,8 @@ assert.equal(panels.find(n=>n.props.id.includes('-People-')).props.hidden,true);
 assert.equal(panels.find(n=>n.props.id.includes('-Together-')).props.hidden,true);
 assert(nodes.some(n=>n.props?.className==='circle-activity-strip'),'next activity remains available from Chat');
 assert(source.includes("if(!chatVisible.current||!scope"),'hidden transcript cannot acknowledge incoming messages');
-assert(source.includes("setCircleView('Chat');setMoreOpen(false);nearBottom.current=false"),'opening search results reveals Chat');
+assert(source.includes("selectCircleView('Chat');nearBottom.current=false"),'opening search results reveals Chat');
+for(const initialView of ['Together','People']){index=0;const restored=elements(Circles({accountId:'member',active:true,connections:[],initialCircle:circle.id,initialView,onReport:()=>{}}));assert.equal(restored.find(n=>n.props?.id==='circle-panel-'+initialView+'-'+circle.id).props.hidden,false,'explicit section route seeds the visible panel on remount');}
 console.log('Circle workspace preserves tools, next activity, management and mounted chat while separating Together and People.');
 
 // Arrow navigation activates and focuses the matching tab; controls reference real panels.
@@ -57,6 +58,7 @@ const {default:Sections}=await import(compile(sectionSource));
 let selectedView='Chat',focused=-1,prevented=false;
 const tabs=React.Children.toArray(Sections({circleId:circle.id,value:selectedView,onChange:value=>selectedView=value}).props.children);
 assert.equal(tabs.filter(tab=>tab.props.tabIndex===0).length,1);
+assert.deepEqual(tabs.map(tab=>React.Children.toArray(tab.props.children).find(n=>n.type==='span').props.children),['Chat','Plans','Members'],'visible labels describe familiar circle destinations while internal IDs remain compatible');
 assert.equal(tabs[0].props['aria-controls'],'circle-panel-Chat-'+circle.id);
 tabs[0].props.onKeyDown({key:'ArrowLeft',preventDefault(){prevented=true;},currentTarget:{parentElement:{querySelectorAll:()=>tabs.map((_,i)=>({focus(){focused=i;}}))}}});
 assert.equal(selectedView,'People');assert.equal(focused,2);assert(prevented);
