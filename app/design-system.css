@@ -286,6 +286,24 @@ html[data-native-platform] .app-shell:has(.conversation-screen,.circle-conversat
 }
 
 /* Keep account entry available without repeating onboarding above each destination. */
+.email-auth-page{max-width:38rem;padding:24px 16px 32px;min-width:0}
+.email-auth-page>.text-button{min-height:44px;padding:8px 12px;font-size:.8125rem}
+.email-auth-page>.form-section{padding:20px;margin:12px 0 0;border:1px solid var(--border);border-radius:12px;background:var(--surface);box-shadow:none;min-width:0}
+.email-auth-page h1{margin:0 0 8px;font-family:Arial,Helvetica,sans-serif;font-size:1.5rem;line-height:1.3;font-weight:700;letter-spacing:0;overflow-wrap:anywhere}
+.email-auth-page .form-section>p{margin:8px 0;font-size:.875rem;line-height:1.55}
+.email-auth-card form{display:grid;gap:12px;margin:16px 0 0}
+.email-auth-card form>label{display:grid;gap:6px;margin:0;font-size:.875rem;line-height:1.5}
+.email-auth-card form input{min-width:0;min-height:48px;margin:0;font-size:1rem}
+.email-auth-card form>.primary{min-height:44px;padding:10px 12px;font-size:.875rem}
+.email-auth-card form>:is(.inline-error,[role=status],.field-help){margin:0;font-size:.875rem;line-height:1.5}
+.email-auth-card>.inline-actions{gap:8px;margin-top:12px}
+.email-auth-card>.inline-actions>button{min-height:44px;padding:8px 12px;font-size:.8125rem}
+.email-auth-card>.field-help:last-child{padding-top:12px;margin-top:12px;border-top:1px solid var(--border);font-size:.8125rem}
+@media(max-width:400px){
+ .email-auth-page{padding:16px 12px 24px}
+ .email-auth-page>.form-section{padding:16px}
+ .email-auth-card>.inline-actions>button{flex:1 1 auto}
+}
 .entry-sign-in{display:flex;align-items:center;justify-content:space-between;gap:8px 16px;flex-wrap:wrap;padding:4px 0 12px;margin-bottom:16px;border-bottom:1px solid var(--line);color:var(--muted);font-size:.875rem}
 .entry-sign-in .text-button{display:inline-flex;align-items:center;flex-shrink:0;color:var(--accent);font-weight:600}
 

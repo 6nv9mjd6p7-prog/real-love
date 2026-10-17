@@ -318,3 +318,22 @@ Live verification on v176: one campaign view at 03:36:41.934 UTC and still one a
 Comparison history: baseline → v175 compact styles → refresh duplication found → v176 sibling key fix → final screenshots/joint comparison and stability check. No further actionable desktop P0/P1/P2 issue identified in checked states. All 59 test files passed (log: `/workspace/scratch/real-love-v176-tests.log`), including campaign privacy, independent review, consent reset, draft preservation, notification view and key regression. TypeScript and production build passed. Inspected console batches contained extension metadata errors only; duplication occurred without an app-origin console error.
 
 Outstanding: actual 320px/390px rendering, touch/keyboard, screen-reader and populated detail/reviewer workspace visual QA remain pending. This session lacks supported viewport resize/local-preview browser capability. Desktop verification is not mobile acceptance.
+
+## Account entry compaction — v177 (2026-10-16 Chicago)
+
+Final result: blocked for phone/full onboarding acceptance; scoped desktop account-link entry review passed. CSS-only source: `app/design-system.css`; published commit `d90d8bc1fbd72bf85e696b8d65e5b098b4275984`. Extends the selected compact visual language to standalone email entry. Existing profile onboarding editor already uses the earlier compact profile treatment.
+
+Evidence: `/workspace/scratch/real-love-auth-before.jpg` (1348 × 926), `/workspace/scratch/real-love-auth-after.jpg` (1363 × 936), and `/workspace/scratch/real-love-auth-comparison.jpg`. Baseline and final inspected together in comparison board. State: existing ChatGPT account linking to email, initial form, existing email locked, no code requested. Screenshots contain the account email and remain local.
+
+Five fidelity surfaces:
+- Typography: 24px sans heading matches the app; 14px body/labels and secondary session explanation maintain hierarchy. Input stays 16px.
+- Spacing: 38rem page width, 20px card padding, 12px form gap and grouped label/field/action. Observed card 576 × 346.84 at y144 in 1363 × 936 viewport. Input is 50px high, action 44px. No horizontal overflow.
+- Colors: existing indigo action, neutral page/surface, border and focus colors retained.
+- Assets: no assets added or removed.
+- Copy: all new/returning account guidance, linking route, verification/approval distinction and session-duration explanation retained. No fields, required attributes, resend rules, consent controls or auth code changed.
+
+Interaction review on published v177: Tab from Back to Real Love reaches Send me a code, skipping the existing disabled email as expected. The button was focused only, never activated. Back to Real Love returns to the app. No code request, credential entry, linking, account creation, logout or change submitted. Inspected console batch contained extension metadata errors only.
+
+Five relevant test files passed: email auth (mock provider/session/linking/guards), approval status, onboarding next-action guidance, profile editor sections, and design system. Production build passed. TypeScript source unchanged. New-user, OTP, resend/expiry, error and pending-profile states were inspected in source/test coverage, not exercised through live account transitions.
+
+Comparison history: baseline → compact CSS → published screenshot and joint comparison. No actionable desktop P0/P1/P2 issue identified in the checked account-link state. Actual 320px/390px rendering, mobile keyboard, screen-reader and full signup/OTP browser testing remain pending; no supported viewport resizing/local-preview browser capability was available for this pass. No claim of full onboarding or mobile acceptance.
