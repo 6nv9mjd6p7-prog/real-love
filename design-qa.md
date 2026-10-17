@@ -536,4 +536,23 @@ Scoped desktop interest-picker result: passed. First-account creation, phone vie
 
 final result: blocked
 
+## v192 — Invitation empty states and search recovery (2026-10-17)
+
+Scope: make the Requests / Sent parts of the first-connection journey explain what happens next. Empty Requests explains reviewing an opening/profile and choosing whether to accept; eligible members have one Discover people action. Empty Sent explains that pending requests wait here and accepted invitations become Chats; members with accepted connections get View chats, with Discover secondary. An unmatched name search in either tab has Clear search, which clears only the shared name query and returns keyboard focus to it. Existing real invitation cards, send/accept/decline/withdraw/report actions, status labels and eligibility checks are unchanged. No new test file for this presentation/copy change.
+
+Published source: `cdd63918363f1f12f467464b0d75092d5ef465a9`; version 192; deployment `appgdep_6ad3f1cca6488191ad74bc3735052b55` succeeded. Public audience preserved.
+
+Visual source truth: `/workspace/scratch/real-love-invitation-empty-before.jpg` (v191 Requests, no incoming invitations). Implementation: `/workspace/scratch/real-love-invitation-empty-after.jpg` (v192, same state/account). Both 1363 × 936 pixels at the same 1363 × 936 CSS viewport, density 1. Full joint comparison `/workspace/scratch/real-love-invitation-empty-comparison.jpg`; same-size focused Requests region `/workspace/scratch/real-love-invitation-empty-detail.jpg`. Both boards inspected jointly; screenshots stay local. This is an intentional scoped content/action addition, not a claim of pixel-identical matching.
+
+Baseline finding: P2 empty-state dead end; Requests offered only a no-results sentence. Final adds two short sentences and one nearby primary action with a readable 36rem text limit, keeping navigation, tab hierarchy, search and closed-history disclosure intact. Five surfaces checked: existing Arial/type scale with a modest semibold empty title; compact 6–10px text/action spacing and 44px action height; existing indigo/surface tokens; unchanged logo/icon assets; plain invitation/acceptance copy without promises of responses or pressure. Added content intentionally moves the closed-history disclosure lower; no clipped controls or desktop overflow observed. No actionable desktop P0/P1/P2 in the compared Requests state.
+
+Live checks: an existing real pending Sent invitation remains visible with its prior status/content. An unmatched Sent search shows Clear search; clicking restores that invitation and focuses the search input. No invitation action was taken. Requests is empty; unmatched search also offers Clear search, and clearing restores the normal explanation/Discover action. Discover people opens Find your people. Inspected browser console batches contain extension metadata errors only. Desktop document scroll width equals viewport (1363px).
+
+Validation: existing invitations, navigation-workflow and main-navigation test files passed; TypeScript and production build passed; diff whitespace check passed. No new request, listener, effect, storage mechanism or dependency introduced. This scoped change does not alter discovery eligibility or backend permissions.
+
+Scoped Requests/Sent-search desktop result: passed. Default empty Sent was reviewed in source but cannot be visually tested with this account's pending invitation without changing production data. No such mutation was made. Sending and accepting a new invitation end to end, first-account onboarding, actual phone/touch viewport and screen-reader verification remain pending. Next design pass: Circle creation and joining clarity.
+
+final result: blocked
+
+
 
