@@ -635,3 +635,18 @@ Checklist: preserve actions and privacy conditions — done; separate primary fr
 
 Scoped Circle card result only:
 final result: passed
+
+## v197 — Useful next step from empty Discovery
+
+Scope: add Browse circles to the existing empty Discovery actions for admitted members, including filtered empty results. Saved and fictional-example views retain their existing actions. The existing navigation handler opens the Circles Browse route; no new data access, consent, storage, effects, state, listener, dependency or CSS was added. Reset filters and Try the demo remain available.
+
+Source visual: /workspace/scratch/real-love-empty-discovery-before.jpg. Implementation: /workspace/scratch/real-love-empty-discovery-after.jpg. Same signed-in empty Discovery state, 1363 × 936 pixels, same desktop viewport and density; no normalization. Full-view comparison: /workspace/scratch/real-love-empty-discovery-full-compare.jpg. Focused empty-state comparison: /workspace/scratch/real-love-empty-discovery-detail-compare.jpg (matching 975 × 200 crops). Intentional difference: existing primary button styling makes Browse circles the useful real-app next action beside Try the demo. No P0/P1/P2 visual mismatch found in this scoped desktop comparison.
+
+Fidelity surfaces: existing font family, weights, text sizes and wrapping retained; page/card geometry and spacing unchanged; existing primary indigo/white tokens and responsive empty-actions layout reused; logos and imagery unchanged; all existing copy retained, with only the Browse circles action added. No assets created or replaced.
+
+Live QA: Browse circles opens #circles with Browse selected. Back returns #discover and focuses main content. Entered a temporary search, verified filtered empty guidance and Reset Discover filters, opened Browse circles, then used Back and verified the exact search persisted. Cleared the temporary search to restore the original state. No message, membership, report, proposal or consent mutation submitted. Inspected warning/error log batch contained only browser-extension metadata errors. This was production desktop verification; authenticated local preview, physical phones, touch, screen readers and populated discovery states were not retested.
+
+Validation: existing discovery-views and navigation-workflow tests passed, TypeScript and production build passed, whitespace checks passed. No new tests for this reversible one-button presentation change. Source 1951a06caa0a2a21fbcb4e265a4fc7c8f2867981 published as v197. Checklist: useful real-app escape — done; filter recovery retained — done; existing navigation/access rules reused — done; matching full/detail screenshot comparison — done; original search restored — done. Full app and physical-device acceptance remain outside this scope.
+
+Scoped empty Discovery desktop result:
+final result: passed
