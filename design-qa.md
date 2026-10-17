@@ -240,3 +240,22 @@ Interactions: Joined retains host card and controls. Requests shows the correct 
 Seven relevant test files passed: Together entry, circle area controls, circle cards, chat layout, circle management, worker support and design system. TypeScript and production build passed. Final CSS adjustment passed design-system checks and fresh production build. New-user/no-joined, paused, loading/error cases remain covered by existing render tests; no account state was changed to simulate those in production.
 
 Outstanding: actual phone 320px/390px rendering, touch/keyboard and screen-reader checks remain pending because this session lacks supported viewport resizing/local-preview browser capability. Desktop results do not constitute mobile acceptance.
+
+## Direct-chat compaction — v170 (2026-10-16 Chicago)
+
+Final result: blocked for phone acceptance; scoped desktop checks passed. Source: `app/conversation.tsx`, `app/design-system.css`; deployed source `e86e95dcef4fe5cadf1aadb729e1a8fab573d7d5`. Existing option 2 compact hierarchy applied to direct-chat controls; no message, voice, sharing or authorization logic changed.
+
+Evidence: `/workspace/scratch/real-love-direct-before.jpg` (1348 × 926), `/workspace/scratch/real-love-direct-after.jpg` (1363 × 936), `/workspace/scratch/real-love-direct-comparison.jpg`. Both full states inspected together on comparison board. State: same existing accepted conversation, current message window loaded, latest visible photo, details/search/options collapsed. Screenshots include private content and remain local.
+
+Five fidelity surfaces:
+- Typography: 24px sans chat title matches compact screens; View profile is beside name rather than a separate row. Update status remains readable secondary text.
+- Spacing: compact scoped header and photo/detail/search rows. Measured header from 154px baseline to 93.80px. Message window begins at y357.80 versus y479 baseline, retains 486.72px height. Composer now spans y852.52–912.52 within the checked 936px desktop viewport. Main content width aligns with 960px compact screens. No horizontal overflow. No document/viewport lock introduced.
+- Colors: existing indigo, neutral surfaces, borders and message bubbles retained.
+- Assets: avatar and all existing controls/icons retained; no new images. Existing photo rendering/sharing unchanged.
+- Copy: no message text, privacy terms, sharing status or action label removed. Only View profile control placement changed.
+
+Interaction checks: Enter opens/closes Options with mute, start circle, report, block, end connection available. Manage sharing accurately shows existing waiting/ongoing-consent state and Stop sharing action; disclosure closed without changing consent. Space opens/closes Conversation details with communication and opening invitation disclosures. Enter opens/closes Search this chat, retaining search label/input and disabled empty Search button. Restored compact state and verified composer remains within viewport. No recording, upload, send, report, block, sharing or connection action submitted. Opening the existing chat can apply its normal read receipt behavior.
+
+Five relevant test files passed: chat experience, conversation view, conversation tools, circle chat layout and design system. Tests cover private/shared avatars, privacy copy, interaction cues, draft/scroll decisions and circle separation. TypeScript and production build passed. Inspected log batch contained extension metadata errors only. Comparison found no further actionable desktop P0/P1/P2 issue in this scoped pass.
+
+Outstanding: actual 320px/390px rendering, real touch/keyboard, screen-reader and long-name/mobile device checks remain pending; no supported viewport resize/local-preview browser skill available. CSS permits wrapping and keeps 44px controls, but desktop result is not a mobile acceptance claim. Audio capture/playback was unchanged and not tested in this design pass.
