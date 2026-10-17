@@ -722,3 +722,6 @@ html[data-native-platform] .app-shell:has(.conversation-screen,.circle-conversat
 .app-shell .profile-grid>.compact-person>.card-interests{margin-top:0}
 .app-shell .profile-grid>.compact-person>.connection-summary{margin-top:0}
 .app-shell .profile-grid>.compact-person>.about{margin-top:4px}
+
+/* Demo is an explicit mode with one exit, not an unselected member tab. */
+.app-shell .discovery-screen>.page-heading>.demo-exit{flex:0 0 auto;min-height:44px;margin:0;padding:8px 12px;font-size:.875rem}

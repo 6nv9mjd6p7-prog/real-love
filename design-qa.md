@@ -388,3 +388,20 @@ Five fidelity surfaces:
 Verification: opening a saved profile shows Back to Saved; that control restores the two-card Saved list. Neither Unsave action was activated. Two relevant test files (design system, discovery preferences) and production build passed for both CSS iterations. Inspected console batch contained extension metadata errors only.
 
 Comparison history: baseline → v180 aligned actions → 16px extra height caused by changed margin behavior detected → v181 explicit compact margins → final 399px cards and aligned actions → joint comparison inspected. No further actionable desktop P0/P1/P2 issue identified in checked Saved state. Actual 320px/390px rendering, touch, screen reader and expanded optional first-step disclosure remain unverified; supported viewport resizing/local preview remains unavailable. Desktop checks do not establish mobile acceptance.
+
+## Demo entry/navigation compaction — v182 (2026-10-17 Chicago)
+
+Final result: blocked for signed-out welcome/phone acceptance; scoped signed-in desktop demo checks passed. Sources: `app/love-app.tsx`, `app/design-system.css`. Published source `cf3f4d630d9d0e966f5ae90a2bdfccbbe60868d3`. Signed-out welcome inspected in source but cannot be visually evaluated in the current authenticated browser without changing account session; no welcome-page edits made. The accessible demo path received this scoped change.
+
+Evidence: `/workspace/scratch/real-love-demo-before.jpg`, `/workspace/scratch/real-love-demo-after.jpg` (both 1348 × 926 captured), `/workspace/scratch/real-love-demo-comparison.jpg`. DOM viewport 1363 × 936. Baseline/final inspected jointly. State: existing admitted account exploring four fictional profiles. No messages, invitations, account records or filters changed.
+
+Five fidelity surfaces:
+- Typography: established compact heading and body retained; exit action uses 14px text.
+- Spacing: Leave demo moved beside the heading as a 44px secondary button. Member People/Saved tabs do not render within demo mode; these member tabs return after exiting. Removes an ambiguous, all-unselected row and duplicate Discover exit. First example card begins at y316.19 versus y381.19, a 65px improvement. No horizontal document overflow.
+- Colors: existing secondary action, indigo, neutral surfaces and focus colors retained.
+- Assets: unchanged.
+- Copy: all four fictional profiles, fictional labels, message restriction explanation, interests, comparisons, introductions and expandable activity/availability details retained. No auth, privacy, access checks, filters or send handlers changed. Member People/Saved destinations remain accessible through normal member discovery.
+
+Live checks: Enter opens Eli's A way to connect to show the full first-step suggestion and weekday availability. View profile opens the complete fictional profile; Back to Examples restores demo. Leave demo returns to `#discover`, confirmed with Discover heading and People selected/Saved available. Demo cannot receive messages; no profile-creation action activated. Inspected console batch contained extension metadata errors only. Three relevant test files (onboarding next steps, discovery toolbar, design system), TypeScript and production build passed. Generated incremental compiler metadata restored before source commit.
+
+Comparison history: baseline → explicit demo exit/removed member-tab row → published v182 → screenshot/joint comparison and navigation verification. No further actionable desktop P0/P1/P2 issue identified in checked demo state. Signed-out welcome, new-account transitions, actual 320px/390px layouts, touch and screen-reader testing remain pending. Supported viewport resizing/local preview remains unavailable; signed-in desktop checks do not establish full first-visit or mobile acceptance.
