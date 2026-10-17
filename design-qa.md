@@ -297,3 +297,24 @@ Interaction checks: Browse help resources moves focus to `worker-resources` and 
 Comparison history: baseline → v173 compact cards/disclosures → resource type/title running together identified → v174 title first, publisher/type on separate line → final screenshots and joint comparison. No further actionable desktop P0/P1/P2 issue identified in this scoped pass.
 
 Outstanding: real 320px/390px rendering, mobile touch/keyboard and screen-reader verification remain pending. Supported viewport resize/local-preview browser capability remains unavailable; desktop verification is not mobile acceptance. Disabled organizing/new-user states retain existing test coverage; no account status changed to simulate them live.
+
+## Collective Action compaction and refresh fix — v176 (2026-10-16 Chicago)
+
+Final result: blocked for phone acceptance; scoped desktop checks passed. Final source: `app/design-system.css`, `app/love-app.tsx`; published commit `5a3b6004d6d9434f6fb3ade274473bc94c942839`. Selected option 2 compact language applied to campaign navigation and proposal fields.
+
+Evidence: `/workspace/scratch/real-love-campaign-before.jpg`, `/workspace/scratch/real-love-campaign-after.jpg`, `/workspace/scratch/real-love-proposal-before.jpg`, `/workspace/scratch/real-love-proposal-after.jpg`, `/workspace/scratch/real-love-campaign-comparison.jpg`. Baseline overview/final are 1363 × 936, baseline proposal 1348 × 926 and final proposal 1363 × 936. Overview and focused Purpose form baseline/final pairs inspected together on comparison board. State: signed-in eligible reviewer, empty Explore list; blank proposal step 1, no submission.
+
+Five fidelity surfaces:
+- Typography: existing compact 24px heading retained, labels and step controls use readable secondary sizes.
+- Spacing: underlined, equally allocated navigation columns and 44px toolbar action replace oversized toolbar controls. Compact field margins; Campaign title and Company share a desktop row, long answers retain full width. First two labels align at y575.19. Proposal form remains normally scrollable (bottom y978.19 in checked view); no attempt to fit lengthy content by clipping. No horizontal overflow at 1363 × 936.
+- Colors: existing indigo, neutral surfaces and focus treatment retained.
+- Assets: no new/removed assets.
+- Copy: evidence, uncertainty, voluntary/private participation, review and privacy explanations remain. Source/legal content and action payloads unchanged.
+
+Functional finding and correction: browser QA on v175 revealed 2 then 3 campaign views appended after background refresh. `CollectiveAction` and always-mounted `NotificationCenter` were direct siblings using the identical account ID as their React key. v176 gives them distinct component-prefixed account keys, preserving account-switch resets while preventing sibling identity collisions. New `tests/account-view-keys.test.mjs` checks distinct simultaneous keys, stable rerender identity and reset across accounts. No DOM deduplication or hiding workaround used.
+
+Live verification on v176: one campaign view at 03:36:41.934 UTC and still one at 03:37:56.546 UTC, spanning more than two 30-second parent-refresh intervals. Close proposal is unambiguous and returns to list without submitting. My activity and Review tabs show appropriate empty headings; Explore restored. Enter opens/closes participation/privacy guidance with existing disclosures. Draft fields untouched, no proposal/participation/feedback/review submitted. Empty Purpose step navigation restrictions remain; later-step behavior covered by tests rather than synthetic production data. Populated campaign details not available for interactive review.
+
+Comparison history: baseline → v175 compact styles → refresh duplication found → v176 sibling key fix → final screenshots/joint comparison and stability check. No further actionable desktop P0/P1/P2 issue identified in checked states. All 59 test files passed (log: `/workspace/scratch/real-love-v176-tests.log`), including campaign privacy, independent review, consent reset, draft preservation, notification view and key regression. TypeScript and production build passed. Inspected console batches contained extension metadata errors only; duplication occurred without an app-origin console error.
+
+Outstanding: actual 320px/390px rendering, touch/keyboard, screen-reader and populated detail/reviewer workspace visual QA remain pending. This session lacks supported viewport resize/local-preview browser capability. Desktop verification is not mobile acceptance.

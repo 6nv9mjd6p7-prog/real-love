@@ -254,6 +254,29 @@ html[data-native-platform] .app-shell:has(.conversation-screen,.circle-conversat
 .app-shell .campaign-card h2{font-size:1.0625rem}
 .app-shell .campaign-card>p{margin-top:6px;line-height:1.5}
 .app-shell .campaign-toolbar{gap:8px;margin-block:12px}
+.app-shell .collective-action>.workflow-back{min-height:44px;padding:8px 12px;margin:0 0 12px;font-size:.8125rem}
+.app-shell .collective-action>.page-heading{margin-bottom:8px}
+.app-shell .collective-action>.policy-disclosure{margin:8px 0}
+.app-shell .collective-action>.field-help{margin:8px 0;font-size:.8125rem;line-height:1.5}
+.app-shell .collective-action .campaign-toolbar{align-items:center;gap:8px 16px;margin:12px 0}
+.app-shell .collective-action .campaign-toolbar>.section-tabs{display:grid;grid-auto-columns:minmax(0,1fr);grid-auto-flow:column;flex:1 1 300px;gap:0;margin:0;padding:0;border:0;border-bottom:1px solid var(--border);border-radius:0;background:transparent}
+.app-shell .collective-action .campaign-toolbar>.section-tabs>button{min-width:0;min-height:44px;padding:8px;border:0;border-bottom:2px solid transparent;border-radius:0;background:transparent;box-shadow:none;color:var(--muted);font-size:.875rem;line-height:1.4}
+.app-shell .collective-action .campaign-toolbar>.section-tabs>button.active{border-bottom-color:var(--indigo);color:var(--indigo);font-weight:700}
+.app-shell .collective-action .campaign-toolbar>button{align-self:center;min-height:44px;padding:8px 12px;font-size:.8125rem}
+.app-shell .collective-action .campaign-form{gap:12px}
+.app-shell .collective-action .campaign-form label{margin:0;gap:6px;font-size:.875rem}
+.app-shell .collective-action .campaign-form .setup-progress{gap:4px}
+.app-shell .collective-action .campaign-form .setup-progress>button{min-width:0;min-height:44px;padding:8px;font-size:.8125rem;line-height:1.4;white-space:normal}
+.app-shell .collective-action .campaign-grid{gap:12px}
+.app-shell .collective-action .campaign-card{gap:8px}
+.app-shell .collective-action .campaign-card>p{margin:0}
+.app-shell .collective-action .campaign-detail>section,.app-shell .collective-action .campaign-detail>form,.app-shell .collective-action .campaign-detail>details{margin-top:16px}
+.app-shell .collective-action .campaign-detail h2{margin:8px 0;font-size:1.25rem}
+@media(min-width:760px){
+ .app-shell .collective-action>.campaign-form{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .collective-action>.campaign-form>*{grid-column:1/-1}
+ .collective-action>.campaign-form>label:has(>input:not([type])){grid-column:auto}
+}
 @media(max-width:720px){
  .app-shell .compact-person{padding:14px}
  .app-shell .profile-sections{gap:8px}
