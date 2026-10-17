@@ -77,3 +77,15 @@ elements(pendingForm()).find(n=>n.props.onPendingChange).props.onPendingChange(t
 await pendingForm().props.onSubmit({preventDefault(){}});assert.equal(saves,0);assert(elements(pendingForm()).some(n=>String(n.props.children).includes('Choose the matching location suggestion before saving')));
 elements(pendingForm()).find(n=>n.props.onPendingChange).props.onPendingChange(false);await pendingForm().props.onSubmit({preventDefault(){}});assert.equal(saves,1);
 delete globalThis.__pendingLocation;
+
+// Moving a suggested interest into the selected list must not drop keyboard focus.
+globalThis.__profileStep=2;
+let interestForm={...form,interests:['A custom interest']},pickerFocus=0;
+function picker(){const tree=ProgressEditor({...props,form:interestForm,setForm:value=>{interestForm=typeof value==='function'?value(interestForm):value;}});tree.props.ref.current={querySelector:()=>({focus(){pickerFocus++;}})};return tree;}
+let pickerTree=picker();
+elements(pickerTree).find(n=>n.type==='button'&&React.Children.toArray(n.props.children).join('')==='History').props.onClick();
+assert.deepEqual(interestForm.interests,['A custom interest','History']);assert.equal(pickerFocus,1);
+pickerTree=picker();
+assert(elements(pickerTree).some(n=>n.props['aria-label']==='Remove A custom interest'),'custom and existing selections remain available');
+elements(pickerTree).find(n=>n.props['aria-label']==='Remove History').props.onClick();
+assert.deepEqual(interestForm.interests,['A custom interest']);assert.equal(pickerFocus,2,'chip removal returns focus to the interest picker');

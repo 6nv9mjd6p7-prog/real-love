@@ -657,6 +657,11 @@ html[data-native-platform] .app-shell:has(.conversation-screen,.circle-conversat
 .profile-screen:has(.profile-overview) .profile-preview-action{display:none}
 .app-shell .profile-screen .profile-form{max-width:none;gap:12px}
 .profile-screen .profile-form>.draft-status{margin:0;padding:0;background:transparent;font-size:.8125rem}
+.profile-interest-selection{margin:12px 0}
+.profile-interest-selection>.field-help{margin:0 0 6px}
+.profile-interest-selection .selected-topics{margin:0}
+.profile-screen .setup-progress{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:4px;margin:0}
+.profile-screen .setup-progress>button{min-width:0;min-height:44px;padding:8px 6px;font-size:.875rem;line-height:1.4;white-space:normal}
 .app-shell .profile-screen .profile-section-controls{margin:0 0 12px;gap:12px;align-items:center}
 .app-shell .profile-screen .profile-section-controls>label{margin:0;display:flex;align-items:center;gap:8px;font-size:.875rem}
 .profile-screen .profile-section-controls select{min-width:0;flex:1}

@@ -516,3 +516,24 @@ Desktop scoped result: passed. Phone/touch, actual narrow viewport, screen-reade
 
 final result: blocked
 
+## v191 — Profile setup clarity and compact interest picker (2026-10-17)
+
+Scope: continue compact product hierarchy in the existing three-step setup and shared profile editor. The initial interest suggestions shrink from 20 to at most eight. Current interests appear first in a named region with the selection count, including existing and custom topics. Selected topics are omitted from the default suggestions; full catalogue search and grouped browsing remain. Search explicitly invites any topic or a custom answer. Signup progress reads Basics / Interests / Finish, with full Introduction & privacy accessible label, a specific required task for each step, and a shorter Continue to introduction action. Optional identity, communication and photo disclosures, required validation, review, privacy and agreement content are retained.
+
+Published source: `64abd99683312dd3b8c636d20f3efc914c1dbb0b`; saved version 191; successful deployment `appgdep_6ad3f0866c148191b5e991f9354736a8`. Existing public audience unchanged.
+
+Source visual truth: `/workspace/scratch/real-love-profile-interests-before.jpg` (v190). Browser implementation: `/workspace/scratch/real-love-profile-interests-after.jpg` (v191). Both are 1363 × 936 pixels at 1363 × 936 CSS viewport, density 1; same account, seven saved interests, no edits, empty search, collapsed catalogue. Joint full-view evidence: `/workspace/scratch/real-love-profile-interests-comparison.jpg`. Focused same-size interest-card crops: `/workspace/scratch/real-love-profile-interests-detail.jpg`. Full and focused boards inspected jointly; no source-density mismatch.
+
+Findings/iterations: baseline P2 choice overload and duplicated selections in initial suggestions. Reordered chosen interests, shortened suggestions and preserved complete search/catalogue. A code review found focus could disappear when a chosen suggestion moved out of its row; added explicit focus return to the search input for top-level add/remove/custom-add actions, plus a behavior regression. Grouped catalogue toggles stay in place and retain their own focus. Final card measures 467.19px high; baseline screenshot card is about 543px (about 14% shorter). All persistent desktop navigation remains visible and document scroll width equals viewport. No actionable P0/P1/P2 found in the checked desktop interest state after changes.
+
+Five fidelity surfaces: existing font family, type scale, heading weight and line height retained; chosen interests remain readable and wrap. Card padding, border, radii and page rhythm retained with shorter suggestion content. Existing indigo/surface/border tokens and selected styles retained. Existing brand/icon assets unchanged; no new assets or placeholders. Copy now describes the immediate task and supports arbitrary interests; full profile and safety details remain reachable.
+
+Live checks: profile overview opens Interests; all seven original topics remain in the selected region and saved status remains unchanged. Search for a previously suggested topic outside the shorter list returns its existing selected match. Clearing the search restores suggestions. Browse all interests opens all nine existing categories and closes normally. No profile field, consent, photo or server record was changed/saved during QA. Inspected console batch showed browser-extension metadata errors only. First-user component rendering and validation are covered by existing tests; add/remove focus is covered by the regression. Blank-profile browser rendering and submitting a new production account remain unverified.
+
+Validation: five existing profile test files passed (draft validation, editor sections/signup progression, filters, date/calendar inputs and profile rendering). After focus correction, editor regression and TypeScript passed; production build passed; diff whitespace check passed. Focus regression simulates adding a suggested topic, retaining a custom topic, and removing the moved topic, verifying search receives focus. No new listener, effect, request, storage state or dependency introduced.
+
+Scoped desktop interest-picker result: passed. First-account creation, phone viewport/touch, and screen-reader acceptance remain pending. Browser has no supported viewport resizing; do not treat desktop screenshots or static first-user render tests as phone or complete onboarding acceptance. Next review should cover the complete first-connection journey once onboarding is exercised with a real new user.
+
+final result: blocked
+
+
