@@ -259,3 +259,22 @@ Interaction checks: Enter opens/closes Options with mute, start circle, report, 
 Five relevant test files passed: chat experience, conversation view, conversation tools, circle chat layout and design system. Tests cover private/shared avatars, privacy copy, interaction cues, draft/scroll decisions and circle separation. TypeScript and production build passed. Inspected log batch contained extension metadata errors only. Comparison found no further actionable desktop P0/P1/P2 issue in this scoped pass.
 
 Outstanding: actual 320px/390px rendering, real touch/keyboard, screen-reader and long-name/mobile device checks remain pending; no supported viewport resize/local-preview browser skill available. CSS permits wrapping and keeps 44px controls, but desktop result is not a mobile acceptance claim. Audio capture/playback was unchanged and not tested in this design pass.
+
+## Safety review compaction — v172 (2026-10-16 Chicago)
+
+Final result: blocked for phone acceptance; scoped desktop checks passed. Source: `app/moderation.tsx`, `app/design-system.css`; final published source `c9f7cc93d3b4ccf583d5783a65c0f6f7dd73c400`. Compact hierarchy extends selected option 2 design language to restricted review. No decision payloads, reason validation, conflict handling or authorization rules changed.
+
+Evidence: `/workspace/scratch/real-love-review-before.jpg` (1348 × 926), `/workspace/scratch/real-love-review-after.jpg` (1363 × 936), `/workspace/scratch/real-love-review-comparison.jpg`. Both layouts inspected together in comparison board. State: owner, zero pending admissions/reports, one existing reviewer, disclosures collapsed. No roles or decisions changed. Screenshots kept local.
+
+Five fidelity surfaces:
+- Typography: 24px sans heading, consistent 16px disclosure headings and readable secondary role explanation.
+- Spacing: Refresh is alongside title; empty queues/reference text/reviewer management are native disclosures. Pending admissions/cases default open. All five section summaries fit in desktop view; last section bottom y680.69. Main section widths 960px, no horizontal overflow at 1363 × 936.
+- Colors: existing indigo, neutral surfaces, cards and borders retained.
+- Assets: no assets added/removed.
+- Copy: full adult-eligibility instructions, photo-sharing explanation, approval limitations, report evidence, decision reasons and role-scope guidance remain. Queue counts and current reviewer count appear in summaries.
+
+Interaction checks: Enter opens/closes reviewer management, retaining member select, its specific reason and disabled Assign reviewer. Space opens admission guidance with independent eligibility/rules orientation and no identity-document retention instructions preserved. No field filled or action submitted. Restored compact overview. Reason-isolation and approval prerequisites verified through existing render tests; populated pending queues verified as open by new assertions. No synthetic live case or admission created. Reviewer/non-owner rendering was not exercised interactively in the owner session.
+
+Comparison history: baseline → v171 grouped sections → inherited double-border P2 identified → v172 summary border override and final recapture. Final section and summary bounds checked within container. No further actionable desktop P0/P1/P2 issue identified in this scoped pass. Moderation view and design-system test files passed; TypeScript and production build passed. Final CSS correction passed design-system and fresh production build. Inspected console batch contained browser-extension metadata errors only.
+
+Outstanding: actual 320px/390px rendering, touch/keyboard, screen-reader and populated live-case behavior remain pending. This session lacks supported viewport resizing/local-preview browser capability. Desktop verification is not mobile acceptance.

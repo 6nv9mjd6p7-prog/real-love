@@ -34,5 +34,9 @@ assert(isolated.match(/<button[^>]*>Remove reviewer role<\/button>/)[0].includes
 const assignmentReady=render(false,'',{data:caseData,target:'candidate',assignmentReason:'Trusted admitted member'});
 assert(!assignmentReady.match(/<button[^>]*>Assign reviewer<\/button>/)[0].includes('disabled'));
 assert([...assignmentReady.matchAll(/<button[^>]*>Warn<\/button>/g)].every(m=>m[0].includes('disabled')),'assignment reason cannot enable report actions');
+const emptyQueues=render(false,'',{data:{...data,admissions:[],cases:[]}});
+assert.equal((emptyQueues.match(/class="form-section review-queue" open=""/g)||[]).length,0,'empty queues begin compact');
+assert.equal((isolated.match(/class="form-section review-queue" open=""/g)||[]).length,2,'pending admissions and cases are immediately visible');
+assert(emptyQueues.includes('<details class="form-section reviewer-management"><summary>'),'reviewer management remains available in a native disclosure');
 delete globalThis.reviewStates;delete globalThis.reviewIndex;
 console.log('Admission controls explain requirements and enable only after confirmation plus a valid applicant-specific reason');

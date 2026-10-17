@@ -399,6 +399,22 @@ html[data-native-platform] .app-shell:has(.conversation-screen,.circle-conversat
 .app-shell .circle-card>details[open]{padding-bottom:10px}
 
 /* Review and proposal forms group each decision without nesting another card. */
+.app-shell .moderation-screen{max-width:960px;min-width:0}
+.app-shell .moderation-screen>.text-button{min-height:44px;margin-bottom:8px;font-size:.8125rem}
+.app-shell .moderation-screen>.page-heading{margin-bottom:12px}
+.moderation-screen>.page-heading>div{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:6px 16px;align-items:start;width:100%}
+.moderation-screen>.page-heading .eyebrow{grid-column:1;margin:0}
+.app-shell .moderation-screen h1{grid-column:1;margin:0;font-family:Arial,Helvetica,sans-serif;font-size:1.5rem;font-weight:700;line-height:1.3;letter-spacing:0}
+.moderation-screen>.page-heading p{grid-column:1/-1;margin:0;font-size:.875rem;line-height:1.5}
+.moderation-screen>.page-heading button{grid-column:2;grid-row:1/3;min-height:44px;padding:8px 12px;font-size:.8125rem}
+.app-shell .moderation-screen>details.form-section{padding:0 14px}
+.app-shell .moderation-screen>details.form-section>summary{min-height:56px;padding:14px 0;cursor:pointer;line-height:1.5;border:0;border-radius:0;background:transparent;box-shadow:none;width:100%}
+.app-shell .moderation-screen>details.form-section>summary h2{display:inline;margin:0;font-size:1rem;line-height:1.5}
+.app-shell .moderation-screen>details.form-section[open]{padding-bottom:14px}
+@media(max-width:400px){
+ .moderation-screen>.page-heading>div{grid-template-columns:minmax(0,1fr)}
+ .moderation-screen>.page-heading button{grid-column:1;grid-row:auto;justify-self:start}
+}
 .app-shell .moderation-screen>.form-section{padding:14px;margin-bottom:12px}
 .app-shell .moderation-screen .form-section>h2{margin-bottom:8px}
 .app-shell .moderation-screen .form-section>p{margin:8px 0;line-height:1.5}
