@@ -35,9 +35,9 @@ const assignmentReady=render(false,'',{data:caseData,target:'candidate',assignme
 assert(!assignmentReady.match(/<button[^>]*>Invite reviewer<\/button>/)[0].includes('disabled'));
 assert([...assignmentReady.matchAll(/<button[^>]*>Warn<\/button>/g)].every(m=>m[0].includes('disabled')),'assignment reason cannot enable report actions');
 const emptyQueues=render(false,'',{data:{...data,admissions:[],cases:[]}});
-assert.equal((emptyQueues.match(/class="form-section review-queue" open=""/g)||[]).length,0,'empty queues begin compact');
-assert.equal((isolated.match(/class="form-section review-queue" open=""/g)||[]).length,2,'pending admissions and cases are immediately visible');
-assert(emptyQueues.includes('<details class="form-section reviewer-management"><summary>'),'reviewer management remains available in a native disclosure');
+assert.equal((emptyQueues.match(/class="form-section review-queue" id="review-[a-z]+" open=""/g)||[]).length,0,'empty queues begin compact');
+assert.equal((isolated.match(/class="form-section review-queue" id="review-[a-z]+" open=""/g)||[]).length,2,'pending admissions and cases are immediately visible');
+assert(emptyQueues.includes('<details class="form-section reviewer-management" id="review-reviewers"><summary>'),'reviewer management remains available in a native disclosure');
 const invitedData={...caseData,reviewerInvitations:[{id:'invite-a',member:'candidate',name:'Candidate',status:'pending',expires:'2099-01-01T00:00:00Z'},{id:'invite-b',member:'declined',name:'Declined member',status:'declined',expires:'2099-01-01T00:00:00Z'}]};
 const invited=render(false,'',{data:invitedData});
 assert(invited.includes('Awaiting response')&&invited.includes('Declined'));
@@ -45,5 +45,9 @@ assert(!invited.includes('<option value="candidate">'),'pending invitees are not
 assert(invited.match(/<button[^>]*>Cancel reviewer invitation<\/button>/)[0].includes('disabled'),'cancellation needs its own reason');
 const cancelReady=render(false,'',{data:invitedData,decisionReasons:{'invitation:invite-a':'Member requested cancellation'}});
 assert(!cancelReady.match(/<button[^>]*>Cancel reviewer invitation<\/button>/)[0].includes('disabled'));
+const reviewerView=render(false,'',{data:{...data,owner:false}});
+assert(reviewerView.includes('aria-controls="review-admissions"')&&reviewerView.includes('aria-controls="review-cases"'));
+assert(!reviewerView.includes('aria-controls="review-reviewers"'),'reviewers are not offered owner role-management navigation');
+assert(emptyQueues.includes('Reviewer responsibilities &amp; access')&&emptyQueues.includes('not unrestricted private chats'),'full access guidance remains available');
 delete globalThis.reviewStates;delete globalThis.reviewIndex;
 console.log('Admission controls explain requirements and enable only after confirmation plus a valid applicant-specific reason');
