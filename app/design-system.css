@@ -968,3 +968,24 @@ html .app-shell>.sidebar nav .nav-item .nav-icon>.count{position:absolute;top:-9
 .app-shell .discovery-screen>.empty-state .discovery-search-recovery{width:100%;max-width:40rem;margin:12px 0;gap:8px}
 .app-shell .discovery-screen>.empty-state .discovery-search-recovery>.field-help{width:100%;max-width:none;margin:0;text-align:left}
 .app-shell .discovery-screen>.empty-state .empty-actions{display:flex;justify-content:flex-start;flex-wrap:wrap;gap:8px;margin-top:12px}
+
+/* Circle conversations use the same bubble language and composer as direct chats. */
+.app-shell .circle-workspace .circle-message-row .message{background:#eef0f6;color:var(--ink);border-radius:20px 20px 20px 6px;font-size:1rem;line-height:1.45}
+.app-shell .circle-workspace .circle-message-row .message.mine{background:var(--indigo);color:white;border-radius:20px 20px 6px 20px}
+.app-shell .circle-workspace .circle-compose-dock .composer-send{width:44px;min-width:44px;height:44px;min-height:44px;border-radius:50%}
+@media(max-width:720px){
+ .app-shell:has(.circle-workspace){padding-bottom:0}
+ .app-shell .circle-workspace .circle-section-tabs{position:static;inset:auto;height:auto;display:flex;margin:0;padding:0;border:0;border-bottom:1px solid var(--border);gap:4px}
+ .app-shell .circle-workspace .circle-section-tabs>button{flex:1;flex-direction:row;justify-content:center;min-height:44px;padding:6px 4px;font-size:.8125rem;gap:6px}
+ .app-shell .circle-workspace .circle-section-tabs>button>svg{width:18px;height:18px;fill:none}
+ .app-shell .circle-workspace .circle-section-tabs>button>span{padding:4px 0;min-width:0}
+ .app-shell .circle-workspace .conversation-messages{height:clamp(12rem,calc(var(--app-viewport,100dvh) - 240px - env(safe-area-inset-bottom)),52rem);gap:12px}
+ .app-shell .circle-workspace .circle-compose-dock{bottom:0;padding:0 0 env(safe-area-inset-bottom);left:12px;right:12px}
+ .app-shell .circle-workspace .circle-compose-dock .chat-composer{padding:4px;margin:0;border:1px solid var(--border-strong);border-radius:16px;background:#f6f7fb}
+ .app-shell .circle-workspace .circle-compose-dock .composer-controls{gap:4px;background:transparent}
+ .app-shell .circle-workspace .circle-compose-dock :is(.composer-icon,.voice-inline .voice-record-button){border:0;background:transparent}
+ :root body .app-shell .circle-workspace .circle-compose-dock .chat-composer .composer-controls>textarea,
+ :root body .app-shell .circle-workspace .circle-compose-dock .chat-composer .composer-controls>textarea:focus{border:0!important;background:transparent!important;min-height:48px;padding:10px 8px}
+ .app-shell .circle-workspace .circle-compose-dock .suggestion-panel>summary{position:static;transform:none;border:0;border-radius:0;background:transparent;min-height:44px;width:fit-content;margin:0 0 0 auto;padding:10px 8px}
+ .app-shell .circle-workspace .circle-compose-dock .suggestion-panel[open]{max-height:45dvh}
+}
