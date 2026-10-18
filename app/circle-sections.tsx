@@ -1,6 +1,6 @@
 'use client';
-import {MessageCircle,Users,UserRound} from 'lucide-react';
-const sections=[['Chat',MessageCircle],['Together',Users],['People',UserRound]] as const;
+import {MessageCircle,Users,CalendarDays} from 'lucide-react';
+const sections=[['Chat',MessageCircle],['Together',CalendarDays],['People',Users]] as const;
 export type CircleView=typeof sections[number][0];
 const sectionLabels:Record<CircleView,string>={Chat:'Chat',Together:'Plans',People:'Members'};
 export default function CircleSections({circleId,value,onChange,disabled=false}:{disabled?:boolean;circleId:string;value:CircleView;onChange:(value:CircleView)=>void}){

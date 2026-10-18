@@ -50,3 +50,8 @@ const tombstone=renderToStaticMarkup(React.createElement(Bubble,{message:{...mes
 tree.props.onPointerDown({clientX:10,clientY:10,pointerId:1,target,currentTarget:{setPointerCapture(){}}});tree.props.onPointerUp({clientX:80,clientY:15,pointerId:1,target,pointerType:'touch'});assert.equal(replyCount,2,'horizontal swipe replies');
 tree.props.onPointerDown({clientX:10,clientY:10,pointerId:1,target,currentTarget:{setPointerCapture(){}}});tree.props.onPointerUp({clientX:80,clientY:60,pointerId:1,target,pointerType:'touch'});assert.equal(replyCount,2,'vertical scrolling does not reply');
 console.log('Swipe direction, expiry boundaries, owner edit/delete controls and tombstones passed.');
+
+const compact=renderToStaticMarkup(React.createElement(Bubble,{message,name:'Friend',compactActions:React.createElement('span',null,'Actions'),externalMeta:true,onReply(){},onReact(){},onReport(){}}));
+assert(compact.includes('message-action-menu')&&compact.includes('Message actions for Friend'),'compact messages expose a named disclosure');
+assert(compact.includes('Reply to message from Friend')&&compact.includes('React to message from Friend')&&compact.includes('Report'),'compaction retains reply, reactions and reporting');
+assert(!compact.includes('class="message-sender"')&&!compact.includes('<time'),'the circle wrapper owns sender and timestamp exactly once');

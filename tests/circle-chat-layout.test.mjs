@@ -53,7 +53,7 @@ for(const initialView of ['Together','People']){index=0;const restored=elements(
 console.log('Circle workspace preserves tools, next activity, management and mounted chat while separating Together and People.');
 
 // Arrow navigation activates and focuses the matching tab; controls reference real panels.
-let sectionSource=readFileSync('app/circle-sections.tsx','utf8').replace(/^import .* from 'lucide-react';$/m,'const MessageCircle=()=>null,Users=()=>null,UserRound=()=>null;');
+let sectionSource=readFileSync('app/circle-sections.tsx','utf8').replace(/^import .* from 'lucide-react';$/m,'const MessageCircle=()=>null,Users=()=>null,CalendarDays=()=>null;');
 const {default:Sections}=await import(compile(sectionSource));
 let selectedView='Chat',focused=-1,prevented=false;
 const tabs=React.Children.toArray(Sections({circleId:circle.id,value:selectedView,onChange:value=>selectedView=value}).props.children);
