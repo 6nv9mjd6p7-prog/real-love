@@ -16,6 +16,7 @@ import {invitationContexts,invitationStatus,type InvitationContext} from './invi
 import {useState,useEffect,useCallback,useRef} from 'react';
 import {Heart,Compass,MessageCircle,Bell,UserRound,Shield,Bookmark,X,EyeOff,Search} from 'lucide-react';
 import LoadingSpace from './loading-space';
+import PublicLanding from './public-landing';
 import Circles from './circles';
 import CircleEntry from './circle-entry';
 import CollectiveAction from './collective-action';
@@ -140,6 +141,11 @@ export default function LoveApp({signedIn,accountId,emailSignIn=false,legacySign
  const incoming=connections.filter(c=>c.incoming&&c.status==='pending');const unread=connections.reduce((sum,c)=>sum+(c.unread||0),0);
 
  const nextStep=onboardingNext({me,account:accountStatus,canConnect,incoming:incoming.length,sent:connections.filter(c=>!c.incoming&&c.status==='pending').length,rulesVersion:RULES_VERSION});
+ if(!signedIn&&route==='discover'){
+  const authHref=emailSignIn?'/auth':'/signin-with-chatgpt?return_to=/';
+  const authLabel=emailSignIn?'Join or sign in with email':'Sign in with ChatGPT';
+  return <PublicLanding authHref={authHref} authLabel={authLabel} onDemo={()=>nav('Examples')}/>;
+ }
  return <div className="app-shell"><a className="skip-link" href="#main-content" onClick={e=>{e.preventDefault();document.getElementById('main-content')?.focus();}}>Skip to content</a><aside className="sidebar"><a className="brand" href="#discover"><span className="brand-icon"><Heart size={23}/></span><span>real love<span className="brand-dot">.</span></span></a><MainNavigation current={main} onNavigate={nav} circleRequests={circleAlerts.proposals+circleAlerts.joinRequests} requests={incoming.filter(c=>c.available!==false).length} unread={unread}/><div className="sidebar-bottom"><p>Begin as friends.<br/>Find your own pace.</p></div></aside><main><header className="topbar"><a className="brand mobile-brand" href="#discover" aria-label="Real Love home"><span className="brand-icon"><Heart size={20} aria-hidden="true"/></span><span>real love<span className="brand-dot">.</span></span></a><span className="app-tagline">SHARED INTERESTS. REAL CONNECTION.</span><div className="topbar-actions">{isModerator&&<button className="text-button" aria-current={route==='review'?'page':undefined} onClick={()=>nav('Safety review')}>Safety review{reviewAlerts>0&&<span className="count" aria-label={reviewAlerts+' items awaiting safety review'}>{reviewAlerts}</span>}</button>}{signedIn&&<button className="text-button notification-bell" aria-current={route==='notifications'?'page':undefined} aria-label={'Notifications'+(notificationCount?' · '+notificationCount+' unread':'')} onClick={()=>nav('notifications')}><Bell size={20}/><span>Notifications</span>{notificationCount>0&&<span className="count">{notificationCount}</span>}</button>}</div></header>
  {notice&&<div className="notice" role="status">{notice}<button aria-label="Dismiss notification" onClick={()=>setNotice('')}><X size={18}/></button></div>}
  <div className="content" id="main-content" tabIndex={-1}>{!loaded?<LoadingSpace/>:!initialized?<div className="empty-state" role="alert"><h1>Your space could not load.</h1><p>{loadError}</p><button className="primary" onClick={()=>{setLoaded(false);load();}}>Try again</button></div>:<>
