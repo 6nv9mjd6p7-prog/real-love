@@ -19,7 +19,7 @@ const {default:ConnectionContext}=await import(contextUrl);
 const html=renderToStaticMarkup(React.createElement(View,{person:examples[1],onInterest:()=>{}}));
 assert(html.includes('Explore people interested in Systems thinking'),'interest actions expose descriptive names');
 assert(html.includes('Ideas &amp; curiosity')&&html.includes('Growth &amp; how I relate'),'answers are separated by recognizable groups');
-assert(html.indexOf('A way to connect')<html.indexOf('Ideas &amp; curiosity'),'practical connection details precede deeper answers');
+assert(html.indexOf('Ideas &amp; curiosity')<html.indexOf('A way to connect'),'ideas and curiosity precede optional practical connection details');
 const preview=renderToStaticMarkup(React.createElement(View,{person:examples[1]}));
 assert(!preview.includes('<button'),'own profile preview labels do not pretend to be actions');
 assert(profileHasInterest({...examples[1],interests:['  Custom topic  '],topics:[]},'custom TOPIC'),'custom interest action filters normalize case and spacing');
