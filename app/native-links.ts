@@ -14,7 +14,7 @@ const staticRoutes = new Set([
 const nestedRoute = /^(person|chat|circles)\/[A-Za-z0-9_-]+$/;
 const workerRoute = /^circles\/work\/(?:browse|joined|requests|[A-Za-z0-9_-]+)$/;
 const inboxRoute = /^conversations\/(chats|requests|sent)$/;
-const circleViewRoute = /^circles\/(?:work\/)?[A-Za-z0-9_-]+\/(?:together|people)$/;
+const circleViewRoute = /^circles\/(?:work\/)?[A-Za-z0-9_-]+\/(?:plan|together|people)$/;
 
 export type NativeDestination =
   | { kind: 'hash'; value: string }
@@ -28,7 +28,8 @@ export function allowedAppRoute(value: string) {
   } catch {
     return null;
   }
-  return staticRoutes.has(route) || nestedRoute.test(route) || workerRoute.test(route) || inboxRoute.test(route) || (circleViewRoute.test(route)&&!!circleRouteInfo(route).id) ? route : null;
+  if(circleViewRoute.test(route)&&!!circleRouteInfo(route).id)return route.endsWith('/together')?route.replace(/\/together$/,'/plan'):route;
+  return staticRoutes.has(route) || nestedRoute.test(route) || workerRoute.test(route) || inboxRoute.test(route) ? route : null;
 }
 
 export function nativeDestination(value: string): NativeDestination {
@@ -57,10 +58,10 @@ export function circleRouteInfo(route:string){
  const id=target&&!reserved.includes(target)?decodeURIComponent(target):'';
  const section=target==='joined'?'Joined':target==='requests'?'Requests':id?'':'Discover';
  const suffix=id?parts[worker?3:2]:'';
- const view:'Chat'|'Together'|'People'=suffix==='together'?'Together':suffix==='people'?'People':'Chat';
+ const view:'Chat'|'Plan'|'People'=suffix==='plan'||suffix==='together'?'Plan':suffix==='people'?'People':'Chat';
  return {worker,id,section,view,browse:worker&&!!target,organizing:parts[1]==='organize',compose:target==='new'||parts[1]==='organize'};
 }
-export function circleDetailRoute(worker:boolean,id:string,view:string='Chat'){return (worker?'circles/work/':'circles/')+encodeURIComponent(id)+(view==='Together'?'/together':view==='People'?'/people':'');}
+export function circleDetailRoute(worker:boolean,id:string,view:string='Chat'){return (worker?'circles/work/':'circles/')+encodeURIComponent(id)+(view==='Plan'?'/plan':view==='People'?'/people':'');}
 export function circleListRoute(worker:boolean,section:string){return worker?'circles/work/'+(section==='Joined'?'joined':section==='Requests'?'requests':'browse'):section==='Joined'?'circles/joined':section==='Requests'?'circles/requests':'circles';}
 // Mark only app-owned history entries. Browser traversal preserves the original parent.
 export function recordAppNavigation(previous:string|null,route:string,account:string){

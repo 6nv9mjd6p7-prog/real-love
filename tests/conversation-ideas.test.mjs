@@ -38,7 +38,8 @@ added=null;nodes=render({disabled:true});assert(allActions('Add to draft').every
 nodes=render({draft:'x'.repeat(1500)});assert(allActions('Add to draft').every(n=>n.props.disabled));allActions('Add to draft')[0].props.onClick();assert.equal(added,null,'long drafts are never truncated or replaced');
 nodes=render();for(let i=0;i<4&&cards().length;i++){action('Show other ideas').props.onClick();nodes=render();}
 assert.equal(cards().length,0,'the finite library has a clear end');assert(nodes.some(n=>n.props.role==='status'));
-action('Reset suggestions').props.onClick();nodes=render({circle:true});assert(nodes.some(n=>n.type==='label'&&n.props.children[0]==='Circle topic'));
+action('Reset suggestions').props.onClick();nodes=render({allowDoTogether:false});assert(!action('Do together'),'direct chats hide shared-activity prompts before mutual participation');
+nodes=render({circle:true});assert(nodes.some(n=>n.type==='label'&&n.props.children[0]==='Circle topic'));
 action('Do together').props.onClick();nodes=render({circle:true});assert(cards().some(card=>card.props.children[1].props.children.includes('together')));
 assert.equal(network,0,'choosing, skipping and adding suggestions never calls a server');
 globalThis.fetch=originalFetch;
