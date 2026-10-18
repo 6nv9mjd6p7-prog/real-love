@@ -28,7 +28,7 @@ const moved={...legacy,interests:[],topics:['history']};
 assert(discoveryScore(basic,moved)>discoveryScore(basic,legacy),'exact topics outrank broad overlap across old and new storage');
 assert.equal(discoveryScore({...basic,topics:['History']},moved),discoveryScore(basic,moved),'duplicate interest/topic entries do not inflate matching');
 
-const {compareDiscovery,matchesDiscovery}=await import('data:text/javascript;base64,'+Buffer.from(source).toString('base64'));
+const {compareDiscovery,matchesDiscovery,discoverySearchRelevance,discoverySearchSuggestions}=await import('data:text/javascript;base64,'+Buffer.from(source).toString('base64'));
 const f={interestMode:'mine',location:'any',radiusMiles:25,minAge:18,maxAge:99,activity:'',availability:''};
 const unrelated={...b,id:'unrelated',interests:['Cooking'],topics:[],activities:['Conversation','Reading together'],availability:'Weekends'};
 const exact={...moved,id:'exact',city:'Houston',areaLat:29.7604,areaLon:-95.3698};
@@ -50,6 +50,12 @@ assert(!matchesDiscovery(basic,{...exact,remote:false},{...f,location:'online'})
 assert(!matchesDiscovery(basic,exact,{...f,maxAge:20}),'age filter narrows discovery');
 assert(!matchesDiscovery(basic,exact,{...f,activity:'Volunteering'}),'activity filter is explicit');
 assert(!matchesDiscovery(basic,exact,{...f,availability:'Occasional'}),'availability filter is explicit');
+const topicHit={...unrelated,id:'topic-hit',interests:['Imperialism'],question:'Something else entirely'};
+const answerHit={...unrelated,id:'answer-hit',question:'What does imperialism change about ordinary life?'};
+const introHit={...unrelated,id:'intro-hit',about:'I read about imperialism sometimes.'};
+assert(discoverySearchRelevance(topicHit,'imperialism')>discoverySearchRelevance(answerHit,'imperialism'),'exact interest matches outrank answer-text matches for a search');
+assert(discoverySearchRelevance(answerHit,'imperialism')>discoverySearchRelevance(introHit,'imperialism'),'meaningful profile answers outrank general introduction text');
+assert.deepEqual(discoverySearchSuggestions('Bronze Age collapse'),['History','Ancient Civilizations','Collapse & Systems'],'unusual searches receive concrete related paths');
 console.log('Interest-first ordering and explicit discovery filters passed');
 
 const {connectionContext,orderedProfileInterests}=await import('data:text/javascript;base64,'+Buffer.from(source).toString('base64'));
