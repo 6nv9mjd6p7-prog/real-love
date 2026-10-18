@@ -18,6 +18,9 @@ let added,network=0;const originalFetch=globalThis.fetch;globalThis.fetch=async(
 function render(extra={}){index=0;return elements(Ideas({accountId:'test',draft:'My draft',onAdd:text=>added=text,topics:['Music','History'],starters:[],...extra}));}
 let nodes=render();
 const cards=()=>nodes.filter(n=>n.props.className==='suggestion-card');
+assert(!nodes.some(n=>n.type==='button'&&n.props.children==='Do together'),'direct chats do not surface activity prompts before mutual participation');
+nodes=render({allowDoTogether:true});assert(nodes.some(n=>n.type==='button'&&n.props.children==='Do together'),'activity prompts become available after mutual participation');
+nodes=render();
 const action=label=>nodes.find(n=>n.type==='button'&&n.props.children===label);
 const allActions=label=>nodes.filter(n=>n.type==='button'&&n.props.children===label);
 assert.equal(cards().length,3,'only three ideas are displayed');
