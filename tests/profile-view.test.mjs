@@ -43,3 +43,7 @@ assert(compactNodes.some(n=>n.type==='button'&&n.props.children==='Ask about thi
 const comparison=ConnectionContext({me:{...examples[1],id:'me'},person:examples[1]});assert.equal(comparison.type,'details');assert(!comparison.props.open);assert(renderToStaticMarkup(comparison).includes('Exact shared interests'));
 const sparseTree=View({person:{...examples[1],firstStep:'Read together.',participation:[],startRole:'',availability:'',availabilityChoices:[],activities:[]}});
 assert(!elements(sparseTree).some(n=>n.props?.className==='profile-inline-details'),'sparse profiles do not create empty detail controls');
+
+const discoveryContext=ConnectionContext({compact:true,me:{...examples[1],id:'me'},person:examples[1]});
+assert.equal(discoveryContext.type,'details');assert(!discoveryContext.props.open,'supporting discovery context starts collapsed');
+assert(renderToStaticMarkup(discoveryContext).includes('<summary><strong>'),'the shared-interest reason stays visible in the disclosure summary');

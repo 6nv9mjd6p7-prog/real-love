@@ -928,3 +928,12 @@ html .app-shell>.sidebar nav .nav-item .nav-icon>.count{position:absolute;top:-9
  .inbox-filter>select{font-size:.8125rem;padding-left:8px}
  .app-shell .inbox-toolbar>.search>input{padding-left:8px}
 }
+
+/* Discovery shows the connection reason once; supporting detail expands in place. */
+.app-shell .compact-person>.connection-summary-compact{padding:0;margin:4px 0;border:0;border-top:1px solid var(--border);border-radius:0;background:transparent}
+.app-shell .compact-person>.connection-summary-compact>summary{min-height:44px;padding:10px 0;font-size:.8125rem;line-height:1.5;cursor:pointer;color:var(--accent);border:0;border-radius:0;background:transparent}
+.connection-summary-compact>summary>strong{font-weight:600}
+.app-shell .compact-person .connection-summary-detail{padding:0 0 10px;font-size:.875rem;line-height:1.5}
+.app-shell .compact-person .connection-summary-detail p{margin:0 0 4px}
+.app-shell .compact-person .connection-summary-detail p:last-child{margin-bottom:0}
+.app-shell .compact-person .about{font-size:1rem;line-height:1.5;margin:8px 0 12px}
