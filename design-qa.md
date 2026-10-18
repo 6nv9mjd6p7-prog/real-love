@@ -667,3 +667,18 @@ Implementation checklist: independent simulator ownership — done; keyboard-onl
 
 Scoped simulated keyboard-layout result:
 final result: passed
+
+## v199 — Step 1: two saved birth-date corrections
+
+Only the first requested item is implemented in this pass. The server derives calendar age as before and owns a private birthDateChanges field in profile JSON. Initial entry, identical dates, ordinary answer edits and automatic birthday age changes do not consume a correction. Two successful saved date changes are allowed; the third is rejected with 409. Incoming counters are stripped by the profile schema. The owner-only profile response exposes the normalized count; publicProfile continues to omit both date and counter. Existing profiles start with two corrections available; earlier changes are not backfilled. This is bookkeeping for the saved profile, removed with profile deletion, not a lifetime account-history registry.
+
+The profile upsert now compares the exact previous stored JSON before replacing it. Concurrent profile/media changes cause a 409 rather than overwriting a newer date, counter or private photo field; a rejected save does not consume a correction. The UI displays remaining corrections, warns that saving a new date uses one, and disables only the birth-date fieldset after two. A stale restored birth-date draft is reset to the saved date at the limit so ordinary profile edits remain possible. No other roadmap items were changed.
+
+Validation: app-flow integration tests use an in-memory SQLite database and cover free initial setup, first and second corrections, unchanged date, forged numeric age and forged counters, rejection of the third correction, ordinary answer edits after exhaustion, public omission of correction history, and a simulated concurrent write before the guarded upsert. Existing profile-inputs tests additionally cover remaining-count copy, disabled birth controls, callback protection and malformed stored counters failing closed; existing calendar/birthday boundaries and profile section tests remain passing. TypeScript, production build and whitespace checks passed. No database schema migration or new dependency.
+
+Browser verification on the published desktop site: opened My profile → Basics and observed “2 birth-date corrections remaining. Only a saved change counts; birthdays update your age automatically.” No real date was changed or saved, and no correction was consumed. Baseline guide capture: /workspace/scratch/real-love-birth-guidance-before.jpg (454 × 101). Accepted updated guidance: /workspace/scratch/real-love-birth-guidance-after.jpg (495 × 168), cropped from the 1348 × 926 viewport to exclude all actual date controls. Capture regions differ in size because the new guidance is taller; this is not a pixel-identical full-screen comparison. An initial after crop clipped leading characters and was rejected; the accepted crop includes the complete new guidance. Clip capture timed out through one browser API; the supported screenshot fallback/full capture succeeded. The full updated capture containing private controls was removed after producing the accepted guide-only crop.
+
+Appearance: existing typography, colors, layout, imagery and controls retained; one guidance paragraph and conditional saved-change warning were added. Locked and exhausted production states were not exercised by consuming real corrections; those states passed render/integration tests. Physical phones, screen readers and account deletion/recreation flows remain outside this pass. Source 109e2d8ef314eb5721403681542cb8fdd9927842 published as v199. Next item: moderator notifications.
+
+Scoped server behavior and desktop guidance result:
+final result: passed

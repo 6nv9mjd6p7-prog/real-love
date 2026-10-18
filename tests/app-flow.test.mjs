@@ -1009,3 +1009,27 @@ sql.prepare('INSERT INTO notifications (id,member,actor,kind,scope,title,url,cre
 as('notice-b');let privateNotice=(await (await notificationsApi.GET()).json()).notifications.find(n=>n.id==='notification-private-alert');assert.equal(privateNotice.detail,'Unlisted worker discussion');assert.equal(privateNotice.url,'#circles/work/requests');
 sql.prepare("UPDATE circle_invites SET status='declined' WHERE id='notification-private-invite'").run();as('notice-b');privateNotice=(await (await notificationsApi.GET()).json()).notifications.find(n=>n.id==='notification-private-alert');assert.equal(privateNotice.available,false);assert(!privateNotice.detail.includes('Unlisted worker discussion'));
 console.log('Person-specific notification details, exact chat/request routes, message-text omission and revoked private-circle metadata passed.');
+
+// A private, server-owned counter counts only successful date corrections.
+const birthDraft={...draft('birth-limit'),birthDate:'1996-01-01',birthDateChanges:0};
+assert.equal((await post('birth-limit',{action:'profile',profile:birthDraft})).status,200);
+assert.equal((await get('birth-limit')).data.me.birthDateChanges,0,'first setup is free');
+assert.equal((await post('birth-limit',{action:'profile',profile:{...birthDraft,birthDate:'1995-01-01',birthDateChanges:99}})).status,200);
+assert.equal((await get('birth-limit')).data.me.birthDateChanges,1,'forged incoming counters are ignored');
+assert.equal((await post('birth-limit',{action:'profile',profile:{...birthDraft,birthDate:'1995-01-01',age:99}})).status,200);
+assert.equal((await get('birth-limit')).data.me.birthDateChanges,1,'unchanged dates and numeric ages do not consume corrections');
+assert.equal((await post('birth-limit',{action:'profile',profile:{...birthDraft,birthDate:'1994-01-01'}})).status,200);
+assert.equal((await get('birth-limit')).data.me.birthDateChanges,2);
+assert.equal((await post('birth-limit',{action:'profile',profile:{...birthDraft,birthDate:'1993-01-01',birthDateChanges:0}})).status,409,'third correction is rejected');
+assert.equal((await post('birth-limit',{action:'profile',profile:{...birthDraft,birthDate:'1994-01-01',about:'A different introduction'}})).status,200,'other edits remain available at the limit');
+assert.equal((await get('birth-limit')).data.me.about,'A different introduction');
+assert.equal((await get('birth-limit')).data.me.birthDateChanges,2);
+assert(!('birthDateChanges' in policy.publicProfile((await get('birth-limit')).data.me)),'correction history is private');
+const raceDraft={...draft('birth-race'),birthDate:'1996-01-01'};
+assert.equal((await post('birth-race',{action:'profile',profile:raceDraft})).status,200);
+assert.equal((await post('birth-race',{action:'profile',profile:{...raceDraft,birthDate:'1995-01-01'}})).status,200);
+globalThis.__beforeRun=(query,values)=>{if(query.startsWith('INSERT INTO profiles')&&values[0]==='birth-race'){globalThis.__beforeRun=undefined;sql.prepare("UPDATE profiles SET data=json_set(data,'$.birthDate','1994-01-01','$.birthDateChanges',2) WHERE id='birth-race'").run();}};
+try{assert.equal((await post('birth-race',{action:'profile',profile:{...raceDraft,birthDate:'1993-01-01'}})).status,409,'stale save cannot overwrite a concurrent correction');}finally{globalThis.__beforeRun=undefined;}
+assert.equal((await get('birth-race')).data.me.birthDate,'1994-01-01');
+assert.equal((await get('birth-race')).data.me.birthDateChanges,2,'the rejected stale save does not consume or reset a correction');
+console.log('Birth-date correction setup, two-save limit, private server counters, ordinary edits and concurrent-save protection passed.');

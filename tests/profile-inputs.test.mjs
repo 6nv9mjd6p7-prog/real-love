@@ -53,3 +53,17 @@ assert.equal(profileResumeStep({}),1);
 assert.equal(profileResumeStep(basics),2);
 assert.equal(profileResumeStep({...basics,interests:['Music']}),3);
 assert.equal(profileResumeStep({...basics,birthDate:'2000-02-31',interests:['Music']}),1);
+
+const correction=model.birthDateCorrectionState;
+assert.equal(correction(null,'1996-01-01').nextUsed,0);
+assert.equal(correction({birthDate:'1996-01-01'},'1996-01-01').remaining,2);
+assert.equal(correction({birthDate:'1996-01-01',birthDateChanges:2},'1996-01-01').allowed,true);
+assert.equal(correction({birthDate:'1996-01-01',birthDateChanges:2},'1995-01-01').allowed,false);
+for(const value of [-1,NaN,'0'])assert.equal(correction({birthDate:'1996-01-01',birthDateChanges:value},'1995-01-01').allowed,false,'malformed stored counters fail closed');
+form={...form,birthDate:'1996-01-01'};me={...me,birthDate:'1996-01-01',birthDateChanges:1};
+assert(renderToStaticMarkup(render(1)).includes('1 birth-date correction remaining'));
+me={...me,birthDateChanges:2};tree=render(1);
+assert(nodes(tree).find(n=>n.type==='fieldset'&&n.props.className==='birth-date-field').props.disabled);
+const unchanged=form.birthDate;birthControl('bday-year').props.onChange({target:{value:'1995'}});assert.equal(form.birthDate,unchanged,'locked control callbacks cannot change the draft');
+assert(renderToStaticMarkup(tree).includes('You can still edit the rest of your profile'));
+console.log('Correction remaining counts, locked inputs and fail-closed counters passed.');
