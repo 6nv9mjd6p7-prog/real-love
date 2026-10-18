@@ -365,6 +365,7 @@ const visibilityReport=await post('visible-b',{action:'report',target:'visible-c
 
 // New invitation context is canonical public content, retained only for participants.
 for(const actor of ['invite-a','invite-b','invite-c']){assert.equal((await post(actor,{action:'profile',profile:draft(actor)})).status,200);assert.equal((await review({action:'admit',target:actor,reason:'Reviewed adult pilot eligibility',adultReviewed:true})).status,200);}
+const requestUi=readFileSync('app/love-app.tsx','utf8');assert(requestUi.includes('Why they reached out')&&requestUi.includes('Their opening'),'incoming requests separate context from the sender opening');assert(requestUi.includes('Accepting opens a private conversation only. It does not define the relationship.'),'acceptance describes the actual boundary');assert(requestUi.includes('Accept & open chat')&&requestUi.includes('View full profile'),'recipient actions say what they do');
 assert.equal((await get('invite-a')).data.invitationLimit.remaining,5);
 assert(readFileSync('app/api/app/route.ts','utf8').includes("Write an opening of 5–400 characters."),'invitation validation uses conversation-first wording without consuming a quota attempt');
 assert.equal((await post('invite-a',{action:'invite',target:'invite-b',proposal:'Let us discuss this.',contextKey:'connectionBoundary',contextText:'Friendship only'})).status,409,'private fields cannot become quoted context');
