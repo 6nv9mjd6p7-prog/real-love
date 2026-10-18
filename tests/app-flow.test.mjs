@@ -21,7 +21,8 @@ const webPushUrl=compile('app/web-push.ts');globalThis.__pushTasks=[];const noti
 const voiceAccessUrl=compile('app/voice-access.ts',s=>s.replace("import {env} from 'cloudflare:workers';",'const env=globalThis.__rlEnv;').replace("from './safety'",`from '${safetyUrl}'`));
 const revisionUrl=compile('app/message-revision.ts');
 const historyUrl=compile('app/history-tools.ts',s=>s.replace("from './safety'",`from '${safetyUrl}'`));const analyticsUrl=compile('app/product-analytics.ts');
-function replacements(s){return s.replace("import {searchBroadLocations} from '../../location-search';",'const searchBroadLocations=async()=>globalThis.__circleAreaSuggestions??[];').replace("from '../../message-revision'",`from '${revisionUrl}'`).replace("from '../../history-tools'",`from '${historyUrl}'`).replace("from '../../product-analytics'",`from '${analyticsUrl}'`).replace("from '../../voice-access'",`from '${voiceAccessUrl}'`).replace("from '../../notifications-server'",`from '${notificationServerUrl}'`).replace("from '../../web-push'",`from '${webPushUrl}'`).replace("from '../../chat-server'",`from '${chatServerUrl}'`).replace("import { env } from 'cloudflare:workers';","const env=globalThis.__rlEnv;").replace("import {env} from 'cloudflare:workers';","const env=globalThis.__rlEnv;").replace("import {getChatGPTUser} from '../../chatgpt-auth';","const getChatGPTUser=async()=>globalThis.__rlUser;").replace("from '../../circle-policy'",`from '${circlePolicyUrl}'`).replace("from '../../invitations'",`from '${invitationUrl}'`).replace("from '../../location'",`from '${locationUrl}'`).replace("from '../../model'",`from '${modelUrl}'`).replace("from '../../photo-policy'",`from '${policyUrl}'`).replace("from '../../safety'",`from '${safetyUrl}'`).replace("from '../../moderation-policy'",`from '${modPolicyUrl}'`).replace("from 'zod'",`from '${pathToFileURL(require.resolve('zod')).href}'`);}
+const reviewerInvitationsUrl=compile('app/reviewer-invitations.ts',s=>s.replace("import {env} from 'cloudflare:workers';",'const env=globalThis.__rlEnv;').replace("from './safety'",`from '${safetyUrl}'`));
+function replacements(s){return s.replace("from '../../reviewer-invitations'",`from '${reviewerInvitationsUrl}'`).replace("import {searchBroadLocations} from '../../location-search';",'const searchBroadLocations=async()=>globalThis.__circleAreaSuggestions??[];').replace("from '../../message-revision'",`from '${revisionUrl}'`).replace("from '../../history-tools'",`from '${historyUrl}'`).replace("from '../../product-analytics'",`from '${analyticsUrl}'`).replace("from '../../voice-access'",`from '${voiceAccessUrl}'`).replace("from '../../notifications-server'",`from '${notificationServerUrl}'`).replace("from '../../web-push'",`from '${webPushUrl}'`).replace("from '../../chat-server'",`from '${chatServerUrl}'`).replace("import { env } from 'cloudflare:workers';","const env=globalThis.__rlEnv;").replace("import {env} from 'cloudflare:workers';","const env=globalThis.__rlEnv;").replace("import {getChatGPTUser} from '../../chatgpt-auth';","const getChatGPTUser=async()=>globalThis.__rlUser;").replace("from '../../circle-policy'",`from '${circlePolicyUrl}'`).replace("from '../../invitations'",`from '${invitationUrl}'`).replace("from '../../location'",`from '${locationUrl}'`).replace("from '../../model'",`from '${modelUrl}'`).replace("from '../../photo-policy'",`from '${policyUrl}'`).replace("from '../../safety'",`from '${safetyUrl}'`).replace("from '../../moderation-policy'",`from '${modPolicyUrl}'`).replace("from 'zod'",`from '${pathToFileURL(require.resolve('zod')).href}'`);}
 const voice=await import(compile('app/api/voice/route.ts',replacements));
 const chatImage=await import(compile('app/api/chat-image/route.ts',replacements));
 const notificationsApi=await import(compile('app/api/notifications/route.ts',replacements));const reports=await import(compile('app/api/reports/route.ts',replacements)),moderation=await import(compile('app/api/moderation/route.ts',replacements));const app=await import(compile('app/api/app/route.ts',replacements));const photo=await import(compile('app/api/photo/route.ts',replacements));const circles=await import(compile('app/api/circles/route.ts',replacements));
@@ -298,6 +299,7 @@ const incident=(await post('bob',{action:'messages',connection:id})).data.messag
 const reported=await post('bob',{action:'report',target:'alice',type:'message',objectId:incident.id,reason:'Harassment',details:'Please review this test incident.'});assert.equal(reported.status,200);
 as('charlie');assert.equal((await moderation.GET()).status,403,'ordinary members cannot see review queue');
 assert.equal((await review({action:'grant_moderator',target:'bob',reason:'Appoint independent reviewer for testing'})).status,200);
+assert.equal((await notificationPost('bob',{action:'respond_reviewer_invitation',invitation:sql.prepare("SELECT id FROM reviewer_invitations WHERE member='bob'").get().id,accept:true})).status,200);
 assert.equal((await review({action:'suspend',report:reported.data.receipt,target:'alice',reason:'Test reporter conflict rejection'},'bob')).status,403,'reporter cannot judge their own case');
 assert.equal((await review({action:'remove_message',report:reported.data.receipt,target:'alice',reason:'Confirmed reported content violates guidelines'})).status,200);
 assert.equal((await post('bob',{action:'messages',connection:id})).data.messages.length,0);
@@ -397,6 +399,7 @@ assert.equal((await circlePost('guard-c',{action:'request',circle:guardCircle}))
 assert.equal((await circlePost('guard-a',{action:'message',circle:guardCircle,text:'During the permitted membership'})).status,200);const withinJoin=(await circlePost('guard-a',{action:'conversation',circle:guardCircle})).data.messages.at(-1).id;const permittedSearch=await circlePost('guard-c',{action:'search_messages',circle:guardCircle,query:'permitted membership'});assert.equal(permittedSearch.status,200);assert.equal(permittedSearch.data.messages.length,1);assert.equal(permittedSearch.data.messages[0].body,'During the permitted membership');assert(Number.isInteger(permittedSearch.data.messages[0].rowid),'search results include a cursor for opening the original message');assert.equal((await circlePost('guard-c',{action:'search_messages',circle:guardCircle,query:'x'})).status,400,'circle search validates minimum length');assert.equal((await circlePost('guard-c',{action:'leave',circle:guardCircle})).status,200);assert.equal((await circlePost('guard-c',{action:'search_messages',circle:guardCircle,query:'permitted'})).status,403,'former members cannot search after leaving');assert.equal((await circlePost('guard-a',{action:'message',circle:guardCircle,text:'After this person left'})).status,200);const afterLeave=(await circlePost('guard-a',{action:'conversation',circle:guardCircle})).data.messages.at(-1).id;assert.equal((await post('guard-c',groupReport(withinJoin))).status,200,'former members can report previously permitted messages');assert.equal((await post('guard-c',groupReport(afterLeave))).status,403,'former members cannot attach future messages');assert.equal((await post('guard-d',groupReport(withinJoin))).status,403,'nonmembers cannot attach group messages');
 assert.equal((await post('guard-b',{action:'discovery_visibility',discoverable:false})).status,200);assert.equal((await post('guard-e',{action:'report',target:'guard-b',reason:'Other',details:'An arbitrary hidden identifier.'})).status,403,'knowing a hidden ID does not authorize profile evidence');assert.equal((await post('guard-c',{action:'report',target:'guard-b',reason:'Other',details:'A concern about past group interaction.'})).status,200);const pastGroup=sql.prepare("SELECT evidence FROM reports WHERE actor='guard-c' AND target='guard-b' ORDER BY rowid DESC LIMIT 1").get();assert.deepEqual(JSON.parse(pastGroup.evidence),{},'group reports do not copy a hidden full profile');
 assert.equal((await post('guard-c',{action:'report',expectedAccount:'guard-a',target:'guard-b',reason:'Other',details:'Stale account submission.'})).status,409);assert.equal((await post('guard-c',{action:'report',target:'guard-b',type:'appeal',reason:'Other',details:'Appeal somebody else.'})).status,403);assert.equal((await review({action:'grant_moderator',target:'guard-d',reason:'Assign an independent reviewer for test'})).status,200);
+assert.equal((await notificationPost('guard-d',{action:'respond_reviewer_invitation',invitation:sql.prepare("SELECT id FROM reviewer_invitations WHERE member='guard-d'").get().id,accept:true})).status,200);
 assert.equal((await post('guard-d',{action:'invite',target:'guard-c',proposal:'Talk about an interest.'})).status,200);const reporterCase=await post('guard-c',{action:'report',target:'guard-a',reason:'Other',details:'Reviewer is connected to reporter.'});assert.equal(reporterCase.status,200);as('guard-d');const conflictQueue=await (await moderation.GET()).json();assert.equal(conflictQueue.cases.find(c=>c.id===reporterCase.data.receipt).conflict,true);assert(!('details' in conflictQueue.cases.find(c=>c.id===reporterCase.data.receipt)));assert.equal((await review({action:'dismiss',report:reporterCase.data.receipt,target:'guard-a',reason:'Connected reviewer must not decide'},'guard-d')).status,403);
 assert.equal((await post('pending-applicant',{action:'profile',profile:draft('pending-applicant')})).status,200);sql.prepare("INSERT INTO connections (id,sender,recipient,status,kind,created) VALUES ('reviewer-applicant-conflict','guard-d','pending-applicant','accepted','Connect',?)").run(new Date().toISOString());as('guard-d');const conflictedAdmissionQueue=await (await moderation.GET()).json();assert.equal(conflictedAdmissionQueue.admissions.some(a=>a.id==='pending-applicant'),false,'a conflicted reviewer cannot see applicant identity details');as('referee');const ownerAdmissionQueue=await (await moderation.GET()).json();assert.equal(ownerAdmissionQueue.admissions.some(a=>a.id==='pending-applicant'),true,'the owner retains access to admission applicants');
 as('guard-b');assert.equal((await photo.POST(new Request('https://rl.test/api/photo',{method:'POST',headers:{Origin:'https://rl.test','Content-Type':'image/png','x-reveal-consent':'yes','x-expected-account':'guard-a'},body:image}))).status,409);as('guard-b');assert.equal((await photo.POST(new Request('https://rl.test/api/photo',{method:'POST',headers:{Origin:'https://rl.test','Content-Type':'image/png','x-reveal-consent':'yes'},body:image}))).status,200);assert.equal((await get('guard-b')).data.me.discoverable,false,'photo upload preserves discovery privacy');assert.equal((await get('guard-b')).data.me.photoPending,false,'uploaded photo can be shared without review');assert.equal((await post('guard-a',{action:'photo_consent',connection:guardConnection,share:true})).status,200);assert.equal((await post('guard-b',{action:'photo_consent',connection:guardConnection,share:true})).status,200);
@@ -1070,3 +1073,72 @@ sql.prepare("DELETE FROM moderators WHERE id='alert-reviewer'").run();
 as('alert-reviewer');reviewFeed=(await (await notificationsApi.GET()).json()).notifications;assert(!reviewFeed.some(n=>['review','review_report','review_appeal'].includes(n.kind)),'revoked reviewers cannot read old safety alerts');
 assert.equal((await get('alert-reviewer')).data.reviewAlerts,0);
 console.log('Reviewer profile/report/appeal alerts, no-device catch-up, generic content, counts, conflicts, mute, resolution and revocation passed.');
+
+// Role invitations do not confer any privileges until the named member accepts.
+sql.prepare("DELETE FROM safety_events WHERE actor='referee' AND kind='moderation_write'").run();
+for(const member of ['role-accept','role-decline','role-cancel','role-expire','role-restrict','role-race','role-config','role-delete']){
+ assert.equal((await post(member,{action:'profile',profile:draft(member)})).status,200);
+ sql.prepare("UPDATE safety_accounts SET status='admitted' WHERE id=?").run(member);
+}
+const inviteRole=member=>review({action:'grant_moderator',target:member,reason:'Invite a trusted member after discussing reviewer responsibilities'});
+const roleResponse=(member,invitation,accept)=>notificationPost(member,{action:'respond_reviewer_invitation',invitation,accept});
+const roleRequest=await inviteRole('role-accept');assert.equal(roleRequest.status,200);
+assert(!sql.prepare("SELECT id FROM moderators WHERE id='role-accept'").get(),'sending does not grant reviewer powers');
+as('role-accept');assert.equal((await moderation.GET()).status,403,'invited members cannot load the safety queue');
+as('role-accept');let roleInbox=await (await notificationsApi.GET()).json();
+assert.equal(roleInbox.reviewerInvitations[0].id,roleRequest.data.invitation);
+assert(roleInbox.notifications.some(n=>n.kind==='reviewer_invitation'&&n.url==='#notifications'));
+assert(!JSON.stringify(roleInbox).includes('Invite a trusted member after discussing'),'internal appointment reasons are not sent to the invitee');
+assert.equal((await inviteRole('role-accept')).status,409,'duplicates preserve the original invitation');
+assert.equal((await roleResponse('role-decline',roleRequest.data.invitation,true)).status,409,'another person cannot accept');
+as('role-accept');assert.equal((await notificationsApi.POST(request({action:'respond_reviewer_invitation',expectedAccount:'role-decline',invitation:roleRequest.data.invitation,accept:true}))).status,409,'account mismatch prevents acceptance');
+assert.equal((await roleResponse('role-accept',roleRequest.data.invitation,true)).status,200);
+assert(sql.prepare("SELECT id FROM moderators WHERE id='role-accept'").get());
+as('role-accept');assert.equal((await moderation.GET()).status,200,'acceptance enables the existing reviewer role');
+assert.equal((await review({action:'grant_moderator',target:'role-decline',reason:'Reviewers cannot appoint other reviewers'},'role-accept')).status,403);
+assert.equal((await review({action:'revoke_moderator',target:'role-accept',reason:'Remove the reviewer role after an agreed change'})).status,200);
+assert.equal((await roleResponse('role-accept',roleRequest.data.invitation,true)).status,409,'replaying old acceptance cannot restore revoked privileges');
+assert(!sql.prepare("SELECT id FROM moderators WHERE id='role-accept'").get());
+let invitation=(await inviteRole('role-decline')).data.invitation;
+assert.equal((await roleResponse('role-decline',invitation,false)).status,200);
+assert(!sql.prepare("SELECT id FROM moderators WHERE id='role-decline'").get());
+assert.equal((await get('role-decline')).data.account.status,'admitted','declining leaves membership unchanged');
+assert.equal((await roleResponse('role-decline',invitation,true)).status,409,'a declined invitation cannot later be accepted');
+invitation=(await inviteRole('role-cancel')).data.invitation;
+assert.equal((await review({action:'cancel_moderator_invitation',target:'role-cancel',invitation,reason:'Cancel the invitation after a change of plan'})).status,200);
+assert.equal((await roleResponse('role-cancel',invitation,true)).status,409);
+invitation=(await inviteRole('role-expire')).data.invitation;
+sql.prepare("UPDATE reviewer_invitations SET expires='2000-01-01T00:00:00.000Z' WHERE member='role-expire'").run();
+as('role-expire');assert.equal((await (await notificationsApi.GET()).json()).reviewerInvitations.length,0);
+assert.equal((await roleResponse('role-expire',invitation,true)).status,409);
+const replacement=(await inviteRole('role-expire')).data.invitation;assert(replacement&&replacement!==invitation);
+assert.equal((await roleResponse('role-expire',invitation,true)).status,409,'a superseded invitation cannot grant access');
+invitation=(await inviteRole('role-restrict')).data.invitation;
+sql.prepare("UPDATE safety_accounts SET status='suspended' WHERE id='role-restrict'").run();
+assert.equal((await roleResponse('role-restrict',invitation,true)).status,409,'restricted members cannot accept');
+invitation=(await inviteRole('role-config')).data.invitation;
+globalThis.__rlEnv.PILOT_OWNER_EMAIL='new-owner@test.invalid';
+try{assert.equal((await roleResponse('role-config',invitation,true)).status,409,'invitations from an old owner configuration are invalid');}finally{globalThis.__rlEnv.PILOT_OWNER_EMAIL='referee@test.invalid';}
+invitation=(await inviteRole('role-race')).data.invitation;
+globalThis.__beforeRun=(query,values)=>{if(query.startsWith('UPDATE reviewer_invitations SET status=')&&values.includes('role-race')){globalThis.__beforeRun=undefined;sql.prepare("UPDATE reviewer_invitations SET status='cancelled' WHERE member='role-race'").run();}};
+try{assert.equal((await roleResponse('role-race',invitation,true)).status,409,'a cancellation before the acceptance write blocks the grant');}finally{globalThis.__beforeRun=undefined;}
+assert(!sql.prepare("SELECT id FROM moderators WHERE id='role-race'").get());
+invitation=(await inviteRole('role-race')).data.invitation;
+globalThis.__beforeRun=(query,values)=>{if(query.startsWith('INSERT INTO moderation_audit')&&values.includes('role-race')){globalThis.__beforeRun=undefined;throw Error('Simulated audit failure');}};
+try{assert.equal((await roleResponse('role-race',invitation,true)).status,503);}finally{globalThis.__beforeRun=undefined;}
+assert.equal(sql.prepare("SELECT status FROM reviewer_invitations WHERE member='role-race'").get().status,'pending','failed audit rolls back the acceptance');
+assert(!sql.prepare("SELECT id FROM moderators WHERE id='role-race'").get(),'role grant and audit commit together');
+assert.equal((await roleResponse('role-race',invitation,true)).status,200,'a rolled-back attempt can be retried');
+assert.equal((await post('role-race',{action:'delete'})).status,200);
+assert(!sql.prepare("SELECT id FROM moderators WHERE id='role-race'").get(),'account deletion removes accepted reviewer access');
+invitation=(await inviteRole('role-delete')).data.invitation;
+assert.equal((await post('role-delete',{action:'delete'})).status,200);
+assert(!sql.prepare("SELECT id FROM reviewer_invitations WHERE member='role-delete'").get(),'account deletion removes pending role invitations');
+assert.equal((await roleResponse('role-delete',invitation,true)).status,409);
+as('referee');const ownerRoles=await (await moderation.GET()).json();
+assert.equal(ownerRoles.reviewerInvitations.find(i=>i.member==='role-decline').status,'declined');
+assert.equal(ownerRoles.reviewerInvitations.find(i=>i.member==='role-cancel').status,'cancelled');
+assert(!JSON.stringify(ownerRoles.reviewerInvitations).includes('authority'),'owner configuration fingerprints remain server-only');
+assert(sql.prepare("SELECT id FROM moderation_audit WHERE action='accept_reviewer_invitation' AND actor='role-accept'").get());
+assert(sql.prepare("SELECT id FROM moderation_audit WHERE action='decline_reviewer_invitation' AND actor='role-decline'").get());
+console.log('Reviewer invitation consent, membership privacy, expiry, cancellation, owner change, account mismatch, replay, race guards and deletion passed.');

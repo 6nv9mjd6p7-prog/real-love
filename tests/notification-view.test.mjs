@@ -12,3 +12,15 @@ const source=readFileSync('app/notification-center.tsx','utf8').replace("from '.
 const {default:Center}=await import(compile(source));
 for(const native of [false,true]){globalThis.__native=native;const html=renderToStaticMarkup(React.createElement(Center,{accountId:'test',open:true,onUnread:()=>{},onNavigate:()=>{}}));assert(html.indexOf('Recent activity')<html.indexOf('notification-preferences'),'activity precedes setup on both platforms');assert(!html.includes('<details open'),'setup begins collapsed');assert.match(html,/Activity alert preferences/);assert.equal((html.match(/Recent activity/g)||[]).length,1);if(native)assert.match(html,/Phone alerts · not yet available/);else assert.match(html,/Phone &amp; browser alerts/);}
 console.log('Web and native activity-first notification layouts and collapsed preference controls passed (render tests).');
+
+// Render the actual pending-invitation controls without a network or role change.
+const invitationSource=source.replace("import {useEffect,useRef,useState} from 'react';", "import {useRef} from 'react';const useEffect=()=>{};const useState=initial=>[Array.isArray(initial)&&++globalThis.__arrayState===2?[{id:'pending-role',expires:'2099-01-01T00:00:00Z'}]:initial,()=>{}];");
+const {default:InvitedCenter}=await import(compile(invitationSource));
+globalThis.__arrayState=0;globalThis.__native=false;
+const invited=renderToStaticMarkup(React.createElement(InvitedCenter,{accountId:'test',open:true,onUnread:()=>{},onNavigate:()=>{}}));
+assert(invited.includes('Accept reviewer role')&&invited.includes('Decline'));
+assert(invited.includes('Declining does not affect your membership'));
+assert(invited.indexOf('Reviewer invitation')<invited.indexOf('Recent activity'),'an actionable role request is immediately visible');
+assert(invited.includes('cannot browse unrestricted private chats or manage reviewer roles'),'scope of the role is explained before consent');
+delete globalThis.__arrayState;
+console.log('Pending reviewer invitation displays acceptance, decline, expiry and responsibility copy.');

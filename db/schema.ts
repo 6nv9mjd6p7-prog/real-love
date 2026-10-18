@@ -1,5 +1,5 @@
 // Photo consent integers: 0 = none, 1 = current photo only, 2 = explicit current and future photos.
-import { sqliteTable, text, integer, primaryKey, index } from 'drizzle-orm/sqlite-core';
+import { sqliteTable, text, integer, primaryKey, index, uniqueIndex } from 'drizzle-orm/sqlite-core';
 export const profiles = sqliteTable('profiles', { id:text('id').primaryKey(), data:text('data').notNull(), active:integer('active').notNull().default(1), updated:text('updated').notNull() });
 export const connections = sqliteTable('connections', { id:text('id').primaryKey(), sender:text('sender').notNull(), recipient:text('recipient').notNull(), status:text('status').notNull(), kind:text('kind').notNull(), proposal:text('proposal').notNull().default(''),context:text('invitation_context').notNull().default(''),closureKind:text('closure_kind').notNull().default(''),closedBy:text('closed_by'),reconnect:text('reconnect').notNull().default(''),photoState:text('photo_state').notNull().default('private'),senderPhoto:integer('sender_photo').notNull().default(0),recipientPhoto:integer('recipient_photo').notNull().default(0), created:text('created').notNull() }, t=>[index('idx_connections_sender').on(t.sender),index('idx_connections_recipient').on(t.recipient)]);
 export const messages = sqliteTable('messages', { id:text('id').primaryKey(), connection:text('connection').notNull(), sender:text('sender').notNull(), body:text('body').notNull(), replyTo:text('reply_to').notNull().default(''),audioKey:text('audio_key').notNull().default(''),audioType:text('audio_type').notNull().default(''),audioDuration:integer('audio_duration').notNull().default(0),attachmentKey:text('attachment_key').notNull().default(''),attachmentType:text('attachment_type').notNull().default(''),editedAt:text('edited_at').notNull().default(''),deletedAt:text('deleted_at').notNull().default(''),editCount:integer('edit_count').notNull().default(0),editHistory:text('edit_history').notNull().default('[]'),created:text('created').notNull() },t=>[index('idx_messages_connection').on(t.connection)]);
@@ -34,3 +34,10 @@ export const campaignUpdates=sqliteTable('campaign_updates',{id:text('id').prima
 export const campaignFeedback=sqliteTable('campaign_feedback',{id:text('id').primaryKey(),campaign:text('campaign').notNull(),actor:text('actor').notNull(),kind:text('kind').notNull(),body:text('body').notNull(),status:text('status').notNull(),created:text('created').notNull()});
 
 export const circleActivityParticipants=sqliteTable('circle_activity_participants',{message:text('message').notNull(),member:text('member').notNull(),created:text('created').notNull()},t=>[primaryKey({columns:[t.message,t.member]}),index('idx_activity_participant_member').on(t.member)]);
+
+// One current invitation per member; decisions remain in the moderation audit log.
+export const reviewerInvitations=sqliteTable('reviewer_invitations',{
+ member:text('member').primaryKey(),id:text('id').notNull(),issuer:text('issuer').notNull(),authority:text('authority').notNull(),
+ status:text('status').notNull().default('pending'),created:text('created').notNull(),expires:text('expires').notNull(),
+ decisionId:text('decision_id').notNull().default(''),decided:text('decided').notNull().default('')
+},t=>[uniqueIndex('idx_reviewer_invitation_id').on(t.id)]);
