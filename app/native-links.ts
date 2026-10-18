@@ -28,7 +28,8 @@ export function allowedAppRoute(value: string) {
   } catch {
     return null;
   }
-  return staticRoutes.has(route) || nestedRoute.test(route) || workerRoute.test(route) || inboxRoute.test(route) || (circleViewRoute.test(route)&&!!circleRouteInfo(route).id) ? route : null;
+  if(circleViewRoute.test(route)&&!!circleRouteInfo(route).id)return route.endsWith('/together')?route.replace(/\/together$/,'/plan'):route;
+  return staticRoutes.has(route) || nestedRoute.test(route) || workerRoute.test(route) || inboxRoute.test(route) ? route : null;
 }
 
 export function nativeDestination(value: string): NativeDestination {
