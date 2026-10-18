@@ -7,25 +7,39 @@ import React from 'react';
 const require=createRequire(import.meta.url);
 let slots=[],index=0;
 globalThis.__ideaHooks={useState(initial){const i=index++;if(!(i in slots))slots[i]=initial;return [slots[i],v=>slots[i]=typeof v==='function'?v(slots[i]):v];}};
-const source=readFileSync('app/conversation-ideas.tsx','utf8').replace("import {useState} from 'react';","const {useState}=globalThis.__ideaHooks;");
-const js=ts.transpileModule(source,{compilerOptions:{module:ts.ModuleKind.ESNext,jsx:ts.JsxEmit.ReactJSX}}).outputText.replace(/from ["']react\/jsx-runtime["']/,`from '${pathToFileURL(require.resolve('react/jsx-runtime')).href}'`);
+const suggestionCode=ts.transpileModule(readFileSync('app/conversation-suggestions.ts','utf8'),{compilerOptions:{module:ts.ModuleKind.ESNext}}).outputText;
+const suggestionsUrl='data:text/javascript;base64,'+Buffer.from(suggestionCode).toString('base64');
+const source=readFileSync('app/conversation-ideas.tsx','utf8').replace("import {useState} from 'react';","const {useState}=globalThis.__ideaHooks;").replace("from './conversation-suggestions'",`from '${suggestionsUrl}'`);
+const js=ts.transpileModule(source,{compilerOptions:{module:ts.ModuleKind.ESNext,target:ts.ScriptTarget.ES2022,jsx:ts.JsxEmit.ReactJSX}}).outputText.replace(/from ["']react\/jsx-runtime["']/,`from '${pathToFileURL(require.resolve('react/jsx-runtime')).href}'`);
 const {default:Ideas}=await import('data:text/javascript;base64,'+Buffer.from(js).toString('base64'));
 function elements(node){if(!node||typeof node!=='object')return [];return [node,...React.Children.toArray(node.props?.children).flatMap(elements)];}
-let added;
-function render(extra={}){index=0;return elements(Ideas({accountId:'test',draft:'My draft',onAdd:text=>added=text,starters:['What drew you to Music?'],...extra}));}
+let focused=0;const focusEvent={currentTarget:{closest:()=>({querySelector:()=>({focus(){focused++;}})})}};
+let added,network=0;const originalFetch=globalThis.fetch;globalThis.fetch=async()=>{network++;throw Error('Suggestions should not send network requests');};
+function render(extra={}){index=0;return elements(Ideas({accountId:'test',draft:'My draft',onAdd:text=>added=text,topics:['Music','History'],starters:[],...extra}));}
 let nodes=render();
-const choices=()=>nodes.filter(n=>n.props.className==='prompt-choice');
-assert.equal(choices().length,6,'everyday prompts are the default');
-assert(choices().some(n=>n.props.children[0].props.children==='Music'));
-choices()[0].props.onClick();assert.equal(added,'What song have you had on repeat lately?','only adds selected wording through the draft callback');
-for(const [category,count] of [['Starting points',1],['Go deeper',3],['Communicate',6]]){
- nodes.find(n=>n.type==='button'&&n.props.children===category).props.onClick();nodes=render();
- assert.equal(choices().length,count);assert(nodes.some(n=>n.props['aria-pressed']===true&&n.props.children===category));
- if(category==='Communicate')assert(choices().some(n=>n.props.children[0].props.children==='Set a boundary'),'boundary tools remain available in Communicate');
-}
-nodes=render({disabled:true});assert(choices().every(n=>n.props.disabled),'offline or busy state prevents adding prompts');
-nodes=render({draft:'x'.repeat(1500)});assert(choices().every(n=>n.props.disabled),'message limit is respected');
-nodes.find(n=>n.type==='button'&&n.props.children==='Starting points').props.onClick();nodes=render({starters:[]});
-assert.equal(choices().length,6,'removed personalized starters fall back to everyday ideas');
-assert(choices().every(n=>n.props.type==='button'),'prompt actions never submit a surrounding form');
-console.log('Everyday defaults, category selection, draft-only actions, message limits and unavailable-state guards passed.');
+const cards=()=>nodes.filter(n=>n.props.className==='suggestion-card');
+const action=label=>nodes.find(n=>n.type==='button'&&n.props.children===label);
+const allActions=label=>nodes.filter(n=>n.type==='button'&&n.props.children===label);
+assert.equal(cards().length,3,'only three ideas are displayed');
+assert(nodes.some(n=>n.type==='details'&&n.props.className.includes('suggestion-panel')&&!n.props.open),'suggestions begin collapsed');
+allActions('Add to draft')[0].props.onClick();assert.equal(added,'What song have you had on repeat lately?');
+const first=cards()[0].props.children[1].props.children;
+allActions('More like this')[0].props.onClick(focusEvent);assert.equal(focused,1,'focus returns to the stable disclosure before the card is removed');nodes=render();
+assert(!cards().some(card=>card.props.children[1].props.children===first),'a chosen idea rotates out');
+assert(cards()[0].props.children[1].props.children.includes('free afternoon'),'similar-theme ideas rank first');
+assert(cards()[0].props.children[0].props.children.includes('More like an idea you chose'));
+const skipped=cards()[0].props.children[1].props.children;
+allActions('Skip')[0].props.onClick(focusEvent);assert.equal(focused,2);nodes=render();assert(!cards().some(card=>card.props.children[1].props.children===skipped));
+action('Go deeper').props.onClick();nodes=render();assert(nodes.some(n=>n.props['aria-pressed']===true&&n.props.children==='Go deeper'));
+nodes.find(n=>n.type==='select').props.onChange({target:{value:'History'}});nodes=render();assert(cards()[0].props.children[1].props.children.includes('History'));
+action('Reset suggestions').props.onClick();nodes=render();assert.equal(nodes.find(n=>n.type==='select').props.value,'');
+assert(nodes.some(n=>n.props['aria-pressed']===true&&n.props.children==='Everyday'));
+added=null;nodes=render({disabled:true});assert(allActions('Add to draft').every(n=>n.props.disabled));allActions('Add to draft')[0].props.onClick();assert.equal(added,null,'busy or recording guards prevent draft changes');
+nodes=render({draft:'x'.repeat(1500)});assert(allActions('Add to draft').every(n=>n.props.disabled));allActions('Add to draft')[0].props.onClick();assert.equal(added,null,'long drafts are never truncated or replaced');
+nodes=render();for(let i=0;i<4&&cards().length;i++){action('Show other ideas').props.onClick();nodes=render();}
+assert.equal(cards().length,0,'the finite library has a clear end');assert(nodes.some(n=>n.props.role==='status'));
+action('Reset suggestions').props.onClick();nodes=render({circle:true});assert(nodes.some(n=>n.type==='label'&&n.props.children[0]==='Circle topic'));
+action('Do together').props.onClick();nodes=render({circle:true});assert(cards().some(card=>card.props.children[1].props.children.includes('together')));
+assert.equal(network,0,'choosing, skipping and adding suggestions never calls a server');
+globalThis.fetch=originalFetch;
+console.log('Three-card suggestions, goal/topic selection, session ranking, skip/reset/exhaustion, draft guards and local-only choices passed.');

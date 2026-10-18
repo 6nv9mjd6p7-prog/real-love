@@ -68,3 +68,6 @@ console.log('Circle sections support pointer activation, arrow-key wrapping, foc
 const lockedTabs=React.Children.toArray(Sections({circleId:circle.id,value:'Chat',onChange:()=>{throw Error('Recording navigation must stay in Chat');},disabled:true}).props.children);
 assert(lockedTabs.every(tab=>tab.props.disabled),'active media cannot be hidden by local tab navigation');
 lockedTabs[0].props.onKeyDown({key:'ArrowRight'});
+
+assert(nodes.some(node=>node.props?.circle===true&&node.props?.topics===circle.tags),'circle chat supplies only its own listed topics to shared suggestions');
+assert(!elements(context).some(node=>node.props?.circle===true),'suggestions are in the Chat panel rather than buried in More');

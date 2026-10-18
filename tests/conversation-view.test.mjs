@@ -6,8 +6,9 @@ import assert from 'node:assert/strict';
 import React from 'react';
 import {renderToStaticMarkup} from 'react-dom/server';
 const require=createRequire(import.meta.url);
-function compile(s){const js=ts.transpileModule(s,{compilerOptions:{module:ts.ModuleKind.ESNext,jsx:ts.JsxEmit.ReactJSX}}).outputText.replace(/from ["']react\/jsx-runtime["']/,`from '${pathToFileURL(require.resolve('react/jsx-runtime')).href}'`).replace(/from ["']lucide-react["']/,`from '${pathToFileURL(require.resolve('lucide-react')).href}'`).replace(/from ["']react-dom["']/,`from '${pathToFileURL(require.resolve('react-dom')).href}'`).replace(/from ["']react["']/,`from '${pathToFileURL(require.resolve('react')).href}'`);return 'data:text/javascript;base64,'+Buffer.from(js).toString('base64');}
-const ideasUrl=compile(readFileSync('app/conversation-ideas.tsx','utf8'));
+function compile(s){const js=ts.transpileModule(s,{compilerOptions:{module:ts.ModuleKind.ESNext,target:ts.ScriptTarget.ES2022,jsx:ts.JsxEmit.ReactJSX}}).outputText.replace(/from ["']react\/jsx-runtime["']/,`from '${pathToFileURL(require.resolve('react/jsx-runtime')).href}'`).replace(/from ["']lucide-react["']/,`from '${pathToFileURL(require.resolve('lucide-react')).href}'`).replace(/from ["']react-dom["']/,`from '${pathToFileURL(require.resolve('react-dom')).href}'`).replace(/from ["']react["']/,`from '${pathToFileURL(require.resolve('react')).href}'`);return 'data:text/javascript;base64,'+Buffer.from(js).toString('base64');}
+const suggestionsUrl=compile(readFileSync('app/conversation-suggestions.ts','utf8'));
+const ideasUrl=compile(readFileSync('app/conversation-ideas.tsx','utf8').replace("from './conversation-suggestions'",`from '${suggestionsUrl}'`));
 const modelUrl=compile(readFileSync('app/model.ts','utf8'));const {examples}=await import(modelUrl);
 const toolsUrl=compile(readFileSync('app/conversation-tools.ts','utf8').replace("from './model'",`from '${modelUrl}'`));
 const photoUrl=compile(readFileSync('app/interactive-photo.tsx','utf8'));const chatToolsUrl=compile(readFileSync('app/chat-tools.ts','utf8'));const bubbleUrl=compile(readFileSync('app/chat-bubble.tsx','utf8').replace("from './chat-tools'",`from '${chatToolsUrl}'`).replace("from './interactive-photo'",`from '${photoUrl}'`));
@@ -51,7 +52,7 @@ const app=readFileSync('app/love-app.tsx','utf8');
 assert(app.includes('<ProfilePreviewPhoto memberId={me?.id} uploaded={!!(me as any)?.photoUploaded} selected={signupPhotoPreview} version={photoVersion} description={form.photoDescription}/>'));
 console.log('Own photo previews retain private photo-description text without changing sharing consent');
 
-assert(html.includes('How ')&&html.includes('communicates'));assert(html.includes('Ask before giving advice.'));assert(html.includes('Please ask directly.'));assert(html.includes('Conversation ideas'));assert(html.includes('Everyday'));assert(html.includes('Communicate'));assert(html.includes('What song have you had on repeat lately?'));assert(html.includes('No conversation identifier or message text is collected'));
+assert(html.includes('How ')&&html.includes('communicates'));assert(html.includes('Ask before giving advice.'));assert(html.includes('Please ask directly.'));assert(html.includes('Conversation ideas'));assert(html.includes('Everyday'));assert(html.includes('Communicate'));assert(html.includes('A conversation starting point'));assert(html.includes('No conversation identifier or message text is collected'));
 
 assert(html.includes('class="conversation-details"'),'secondary conversation information has one home');
 assert(!html.includes('class="communication-card" open'),'communication preferences do not expand automatically');
@@ -86,3 +87,6 @@ assert.deepEqual(attempts,[[true,true],[true,true]],'retry keeps the same explic
 assert(!view().find(n=>n.type==='input'&&n.props.type==='checkbox').props.checked,'success clears the temporary checkbox');
 assert(view().find(n=>n.props.className==='photo-exchange-status').props.hidden,'success closes consent controls');
 delete globalThis.__photoHooks;
+
+assert(html.indexOf('Conversation ideas')<html.indexOf('<textarea'),'ideas are reachable alongside the composer');
+assert(html.indexOf('Conversation ideas')<html.indexOf('<details class="chat-help"'),'ideas are no longer nested in help');

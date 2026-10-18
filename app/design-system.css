@@ -819,3 +819,16 @@ html .app-shell>.sidebar nav .nav-item .nav-icon>.count{position:absolute;top:-9
  .app-shell .notification-heading-actions{gap:4px}
  .app-shell .notification-heading-actions>.text-button{padding-inline:8px}
 }
+
+/* Optional suggestions stay a single closed row beside the writing flow. */
+.app-shell .conversation-guidance{margin:4px 0;min-width:0}
+.app-shell .suggestion-panel{margin:0;padding:0 10px;border:1px solid var(--border);border-radius:10px;background:var(--surface)}
+.app-shell .suggestion-panel>summary{min-height:44px;padding:10px 0;font-size:.875rem;cursor:pointer;font-weight:600}
+.app-shell .suggestion-panel[open]{padding-bottom:10px}
+.suggestion-topic{display:grid;gap:4px;margin:10px 0;max-width:24rem;font-size:.875rem}
+.suggestion-topic select{min-width:0;width:100%;min-height:44px;font-size:16px}
+.suggestion-card{min-width:0;border-top:1px solid var(--border);padding:10px 0;overflow-wrap:anywhere}
+.suggestion-card>p{margin:0 0 8px}
+.app-shell .suggestion-card .inline-actions{gap:4px 8px}
+.app-shell .suggestion-card button{min-height:44px;font-size:.8125rem;padding:6px 8px}
+.app-shell .suggestion-panel .conversation-feedback{margin-top:12px;border-top:1px solid var(--border)}

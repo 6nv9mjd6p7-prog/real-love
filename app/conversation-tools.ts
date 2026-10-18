@@ -1,9 +1,12 @@
 import {profileInterests,type Profile} from './model';
 import type {MessageExtras,MessageReaction,ReplyPreview} from './chat-tools';
 export type ChatMessage=MessageExtras&{id:string;body:string;created:string;mine:boolean;reply?:ReplyPreview|null;replyUnavailable?:boolean;reactions?:MessageReaction[]};
-export function conversationPrompts(me:Profile|null|undefined,person:Profile):string[]{
+export function sharedConversationInterests(me:Profile|null|undefined,person:Profile):string[]{
  const mine=new Set(me?profileInterests(me).map(x=>x.toLowerCase()):[]);
- const shared=profileInterests(person).find(x=>mine.has(x.toLowerCase()));
+ return profileInterests(person).filter(x=>mine.has(x.toLowerCase()));
+}
+export function conversationPrompts(me:Profile|null|undefined,person:Profile):string[]{
+ const shared=sharedConversationInterests(me,person)[0];
  return [shared?`What drew you to ${shared}?`:'What has held your interest lately?',
  'What is something you enjoyed this week?',
  'If we explored that interest together, what would be a good first step?'];
