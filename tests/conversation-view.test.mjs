@@ -58,7 +58,7 @@ assert(html.includes('How ')&&html.includes('communicates'));assert(html.include
 
 assert(html.includes('class="conversation-details"'),'secondary conversation information has one home');
 assert(!html.includes('class="communication-card" open'),'communication preferences do not expand automatically');
-const exchangeHtml=renderToStaticMarkup(React.createElement(View,{accountId:'test',me:{...examples[1],photoUploaded:true},connection:{id:'test',person:examples[1],photoMine:false,photosShared:false},api:noop,onBack:noop,onProfile:noop,onReport:noop,onBlock:noop,onClose:noop,onPhoto:noop,onCircle:noop,onRead:noop}));
+const exchangeHtml=renderToStaticMarkup(React.createElement(View,{accountId:'test',me:{...examples[1],photoUploaded:true},connection:{id:'test',person:examples[1],photoMine:false,photosShared:false,photoState:'revoked'},api:noop,onBack:noop,onProfile:noop,onReport:noop,onBlock:noop,onClose:noop,onPhoto:noop,onCircle:noop,onRead:noop}));
 assert.equal((exchangeHtml.match(/>Request exchange<\/button>/g)||[]).length,1,'one photo exchange action');
 assert(!exchangeHtml.includes('>Request photo exchange</button>'),'duplicate photo actions removed');
 assert(exchangeHtml.includes('Share my current and future profile photos'));
@@ -76,7 +76,7 @@ globalThis.__photoHooks={state:[],index:0};
 const {default:InteractiveView}=await import(compile(source.replace(/import \{useEffect,useLayoutEffect,useRef,useState\} from '[^']+';/,fake)));
 function elements(n){return !n||typeof n!=='object'?[]:[n,...React.Children.toArray(n.props?.children).flatMap(elements)];}
 let success=false,attempts=[];
-const props={accountId:'test',me:{...examples[1],photoUploaded:true},connection:{id:'test',person:{...examples[1],hasPhoto:true},photoMine:false,photosShared:false},api:noop,onBack:noop,onProfile:noop,onReport:noop,onBlock:noop,onClose:noop,onPhoto:async(...args)=>{attempts.push(args);return success;},onCircle:noop,onRead:noop};
+const props={accountId:'test',me:{...examples[1],photoUploaded:true},connection:{id:'test',person:{...examples[1],hasPhoto:true},photoMine:false,photosShared:false,photoState:'revoked'},api:noop,onBack:noop,onProfile:noop,onReport:noop,onBlock:noop,onClose:noop,onPhoto:async(...args)=>{attempts.push(args);return success;},onCircle:noop,onRead:noop};
 function view(){globalThis.__photoHooks.index=0;return elements(InteractiveView(props));}
 const button=label=>view().find(n=>n.type==='button'&&n.props.children===label);
 button('Share photos').props.onClick();
@@ -94,5 +94,11 @@ assert(html.indexOf('Conversation ideas')<html.indexOf('<textarea'),'ideas are r
 assert(html.indexOf('Conversation ideas')<html.indexOf('<details class="chat-help"'),'ideas are no longer nested in help');
 assert(source.includes('const bothParticipated=messages.some(message=>message.mine)&&messages.some(message=>!message.mine);'),'shared-activity prompts require messages from both people');
 assert(source.includes('allowDoTogether={bothParticipated}'),'mutual participation controls the Do together goal');
+assert(source.includes("{bothParticipated&&<button onClick={onCircle}>Start a circle together</button>}"),'circle creation stays out of brand-new chats until both people participate');
+assert(source.includes("const hasPhotoState=!!(connection.photosShared||connection.photoMine||connection.photoOther||connection.photoState==='revoked');"),'legacy photo states remain manageable');
+assert(source.includes("{(bothParticipated||hasPhotoState)&&<>"),'photo exchange is secondary until mutual conversation or an existing photo state');
+assert(source.includes('Communication note:'),'new chats can surface one communication preference without opening secondary details');
+assert(source.includes('Start with what brought you here, or ask something new when you’re ready.'),'empty chat language points back to conversation context');
+
 assert(source.includes('accepted-invitation-starter'),'empty accepted chats surface what started the connection');
 assert(source.includes('Reply to this, ask something new, or take the conversation in another direction.'),'opening context does not force a reply path');
