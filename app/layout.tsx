@@ -7,7 +7,7 @@ import "./design-system.css";
 
 export const metadata: Metadata = {
   title: "Real Love — Begin together",
-  description: "Find someone to start something meaningful with. Shared interests, clear intentions, and a small first step.",
+  description: "Find people through shared interests, thoughtful conversation, and mutual care. Begin as friends and choose your own pace.",
   manifest: "/manifest.webmanifest",
   appleWebApp: { capable: true, title: "Real Love", statusBarStyle: "default" },
   icons: {
