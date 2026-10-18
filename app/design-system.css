@@ -916,3 +916,15 @@ html .app-shell>.sidebar nav .nav-item .nav-icon>.count{position:absolute;top:-9
 .reviewer-role-guidance>summary{min-height:44px;padding:10px 0;font-size:.875rem;font-weight:600;cursor:pointer}
 .reviewer-role-guidance>.field-help{margin:0 0 12px;line-height:1.5}
 @media(max-width:400px){.review-task-nav{gap:6px}.review-task-nav>button{flex:1 1 auto;padding:8px;font-size:.8125rem}}
+
+/* Search and filter share a compact, labelled toolbar without removing choices. */
+.inbox-filter{display:grid;grid-template-columns:auto minmax(0,1fr);align-items:center;gap:8px;min-width:0;margin:0;font-size:.8125rem;color:var(--muted)}
+.inbox-filter>select{width:100%;min-width:0;min-height:44px;margin:0;padding:8px 28px 8px 10px;font-size:.875rem;color:var(--ink);border:1px solid var(--border-strong);border-radius:var(--control-radius);background:var(--surface)}
+.inbox-toolbar:has(.inbox-filter){grid-template-columns:minmax(0,1fr) minmax(150px,210px);gap:12px}
+@media(max-width:600px){
+ .inbox-toolbar:has(.inbox-filter){grid-template-columns:minmax(0,1fr) minmax(130px,46%);gap:8px;align-items:end}
+ .inbox-filter{grid-template-columns:minmax(0,1fr);gap:4px}
+ .inbox-filter>span{font-size:.75rem}
+ .inbox-filter>select{font-size:.8125rem;padding-left:8px}
+ .app-shell .inbox-toolbar>.search>input{padding-left:8px}
+}
