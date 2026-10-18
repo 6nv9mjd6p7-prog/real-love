@@ -7,7 +7,7 @@ import React from 'react';
 import {renderToStaticMarkup} from 'react-dom/server';
 const require=createRequire(import.meta.url);
 let choice='';globalThis.__entryHooks={useId:()=> 'entry-test',useState:()=>[choice,value=>choice=value]};
-const source=readFileSync('app/together-entry.tsx','utf8').replace("import {useId,useState} from 'react';",'const {useId,useState}=globalThis.__entryHooks;');
+const source=readFileSync('app/plan-entry.tsx','utf8').replace("import {useId,useState} from 'react';",'const {useId,useState}=globalThis.__entryHooks;');
 const code=ts.transpileModule(source,{compilerOptions:{module:ts.ModuleKind.ESNext,jsx:ts.JsxEmit.ReactJSX}}).outputText.replace(/from ["']react\/jsx-runtime["']/,`from '${pathToFileURL(require.resolve('react/jsx-runtime')).href}'`);
 const {default:Entry}=await import('data:text/javascript;base64,'+Buffer.from(code).toString('base64'));
 function elements(node){if(!node||typeof node!=='object')return [];return [node,...React.Children.toArray(node.props?.children).flatMap(elements)];}
