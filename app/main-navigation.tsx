@@ -9,5 +9,10 @@ export function mainDestination(route:string){
 }
 export default function MainNavigation({current,onNavigate,circleRequests=0,reviewAlerts=0,requests=0,unread=0}:{current:string;onNavigate:(route:string)=>void;circleRequests?:number;reviewAlerts?:number;requests?:number;unread?:number}){
  const items=[{key:'discover',label:'Discover',Icon:Compass,count:0,description:''},{key:'conversations',label:'Chats',Icon:MessageCircle,count:unread,description:`${unread} unread messages`},{key:'circles',label:'Circles',Icon:Users,count:circleRequests,description:'Circle requests'},{key:'profile',label:'My profile',Icon:UserRound,count:0,description:''},{key:'settings',label:'Settings',Icon:Shield,count:0,description:'Privacy and settings'}];
- return <nav aria-label="Main navigation">{items.map(({key,label,Icon,count,description})=><button type="button" key={key} className={'nav-item '+(current===key?'active':'')} aria-current={current===key?'page':undefined} onClick={()=>onNavigate(key)}><Icon size={20} aria-hidden="true"/>{label}{count>0&&<span className="count" aria-label={description}>{key==='conversations'?count+' msg':count}</span>}{key==='conversations'&&requests>0&&<span className="count request-count" aria-label={requests+' connection requests'}>{requests} req</span>}</button>)}</nav>;
+ const badge=(count:number)=>count>99?'99+':String(count);
+ return <nav aria-label="Main navigation">{items.map(({key,label,Icon,count,description})=>{
+  const chat=key==='conversations',total=chat?unread+requests:count;
+  const activity=chat?[unread>0?`${unread} unread messages`:'',requests>0?`${requests} connection requests`:''].filter(Boolean).join(', '):total>0?`${total} ${description}`:'';
+  return <button type="button" key={key} className={'nav-item '+(current===key?'active':'')} aria-label={activity?label+', '+activity:label} aria-current={current===key?'page':undefined} onClick={()=>onNavigate(key)}><span className="nav-icon"><Icon size={20} aria-hidden="true"/>{total>0&&<span className="count" aria-hidden="true">{badge(total)}</span>}</span><span className="nav-item-label">{label}</span></button>;
+ })}</nav>;
 }

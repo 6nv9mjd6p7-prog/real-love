@@ -801,3 +801,21 @@ html[data-native-platform] .app-shell:has(.conversation-screen,.circle-conversat
 .app-shell .circle-workspace .together-post-heading{gap:8px;align-items:center;font-size:.875rem;line-height:1.5}
 .app-shell .circle-workspace .together-post>.together-body{margin:8px 0;font-size:.875rem;line-height:1.5}
 .app-shell .circle-workspace .together-post>.field-help{margin:6px 0;font-size:.8125rem;line-height:1.5}
+
+/* Stable navigation badges: keep full activity counts in the accessible name. */
+.nav-icon{position:relative;display:inline-flex;align-items:center;justify-content:center;flex:0 0 24px;width:24px;height:24px}
+html .app-shell>.sidebar nav .nav-item .nav-icon>.count{position:absolute;top:-9px;left:12px;right:auto;transform:none;margin:0;min-width:18px;max-width:none;padding:1px 4px;font-size:.625rem;line-height:16px;white-space:nowrap}
+.nav-item-label{min-width:0;overflow-wrap:anywhere}
+.reviewer-role-details{margin:8px 0}
+.reviewer-role-details>summary{min-height:44px;padding:10px 0;color:var(--indigo);font-size:.875rem;cursor:pointer}
+.reviewer-role-details p{margin:4px 0 10px}
+@media(max-width:720px){
+ .sidebar nav .nav-item .nav-icon{flex:0 0 24px}
+ html .app-shell>.sidebar nav .nav-item .nav-icon>.count{top:-5px;left:14px;right:auto;transform:none;font-size:.625rem}
+ .app-shell:has(.conversation-screen,.circle-conversation) .composer-icon,
+ .app-shell:has(.conversation-screen,.circle-conversation) .composer-send,
+ .app-shell:has(.conversation-screen) .action-menu>summary{min-width:44px;min-height:44px}
+ .app-shell .notification-center>.page-heading{align-items:flex-start}
+ .app-shell .notification-heading-actions{gap:4px}
+ .app-shell .notification-heading-actions>.text-button{padding-inline:8px}
+}

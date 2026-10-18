@@ -16,13 +16,13 @@ let destination;
 const tree=Navigation({current:'circles',onNavigate:r=>destination=r,circleRequests:3,requests:2,unread:1});
 const buttons=tree.props.children;
 assert.equal(buttons.length,5,'all layouts share five primary destinations');
-assert.deepEqual(buttons.map(b=>b.props.children[1]),['Discover','Chats','Circles','My profile','Settings']);
+assert.deepEqual(buttons.map(b=>b.props.children[1].props.children),['Discover','Chats','Circles','My profile','Settings']);
 assert.equal(buttons[2].props['aria-current'],'page');assert(buttons.filter(b=>b.props['aria-current']).length===1);
 buttons[2].props.onClick();assert.equal(destination,'circles');
-assert.equal(buttons[0].props.children[2],false,'Discover no longer carries circle requests');
-assert.equal(buttons[2].props.children[2].props['aria-label'],'Circle requests');
+assert.equal(buttons[0].props.children[0].props.children[1],false,'Discover no longer carries circle requests');
+assert.equal(buttons[2].props['aria-label'],'Circles, 3 Circle requests');
 const html=renderToStaticMarkup(React.createElement(Navigation,{current:'circles',onNavigate:()=>{},circleRequests:3}));
-assert(html.includes('aria-label="Main navigation"'));assert(html.includes('aria-label="Circle requests"'));
+assert(html.includes('aria-label="Main navigation"'));assert(html.includes('aria-label="Circles, 3 Circle requests"'));
 assert(html.includes('Settings'),'settings is available in the shared navigation');
 const app=readFileSync('app/love-app.tsx','utf8');
 assert(app.includes("nav('Privacy & settings')"),'settings remains reachable');
@@ -31,7 +31,11 @@ console.log('Five shared primary destinations, circle route highlighting, badge 
 
 assert.equal(mainDestination('notifications'),'notifications');assert.equal(mainDestination('review'),'review');
 const special=renderToStaticMarkup(React.createElement(Navigation,{current:'notifications',onNavigate:()=>{},requests:2,unread:3,reviewAlerts:8}));
-assert(special.includes('3 msg'));assert(special.includes('2 req'));
-assert(special.includes('aria-label="3 unread messages"'));assert(special.includes('aria-label="2 connection requests"'));
+assert(special.includes('>5</span>'),'one compact badge combines chat activity');
+assert(special.includes('aria-label="Chats, 3 unread messages, 2 connection requests"'),'full distinct counts remain available to assistive technology');
 assert(!special.includes('aria-current="page"'),'notifications does not highlight My profile');
 assert(!special.includes('Profiles awaiting approval'),'reviewer badges stay out of My profile');
+
+const busyNavigation=renderToStaticMarkup(React.createElement(Navigation,{current:'discover',onNavigate:()=>{},requests:123,unread:101}));
+assert(busyNavigation.includes('>99+</span>'),'large counts do not expand the navigation');
+assert(busyNavigation.includes('Chats, 101 unread messages, 123 connection requests'),'visual capping never truncates the accessible count');
