@@ -366,6 +366,7 @@ const visibilityReport=await post('visible-b',{action:'report',target:'visible-c
 // New invitation context is canonical public content, retained only for participants.
 for(const actor of ['invite-a','invite-b','invite-c']){assert.equal((await post(actor,{action:'profile',profile:draft(actor)})).status,200);assert.equal((await review({action:'admit',target:actor,reason:'Reviewed adult pilot eligibility',adultReviewed:true})).status,200);}
 assert.equal((await get('invite-a')).data.invitationLimit.remaining,5);
+assert(readFileSync('app/api/app/route.ts','utf8').includes("Write an opening of 5–400 characters."),'invitation validation uses conversation-first wording without consuming a quota attempt');
 assert.equal((await post('invite-a',{action:'invite',target:'invite-b',proposal:'Let us discuss this.',contextKey:'connectionBoundary',contextText:'Friendship only'})).status,409,'private fields cannot become quoted context');
 assert.equal((await post('invite-a',{action:'invite',target:'invite-b',proposal:'Let us discuss this.',contextKey:'about',contextText:'Fabricated answer'})).status,409,'invented or stale quotes are rejected');
 const inviteTarget=(await get('invite-a')).data.people.find(p=>p.id==='invite-b');

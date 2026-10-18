@@ -94,3 +94,5 @@ assert(html.indexOf('Conversation ideas')<html.indexOf('<textarea'),'ideas are r
 assert(html.indexOf('Conversation ideas')<html.indexOf('<details class="chat-help"'),'ideas are no longer nested in help');
 assert(source.includes('const bothParticipated=messages.some(message=>message.mine)&&messages.some(message=>!message.mine);'),'shared-activity prompts require messages from both people');
 assert(source.includes('allowDoTogether={bothParticipated}'),'mutual participation controls the Do together goal');
+assert(source.includes('accepted-invitation-starter'),'empty accepted chats surface what started the connection');
+assert(source.includes('Reply to this, ask something new, or take the conversation in another direction.'),'opening context does not force a reply path');
