@@ -1,0 +1,17 @@
+import ts from 'typescript';
+import {readFileSync} from 'node:fs';
+import {createRequire} from 'node:module';
+import {pathToFileURL} from 'node:url';
+import assert from 'node:assert/strict';
+const require=createRequire(import.meta.url);
+const compile=source=>'data:text/javascript;base64,'+Buffer.from(ts.transpileModule(source,{compilerOptions:{module:ts.ModuleKind.ESNext,target:ts.ScriptTarget.ES2022,jsx:ts.JsxEmit.ReactJSX}}).outputText.replace(/from ["']react\/jsx-runtime["']/,`from '${pathToFileURL(require.resolve('react/jsx-runtime')).href}'`)).toString('base64');
+const model=compile(readFileSync('app/model.ts','utf8'));
+const source=readFileSync('app/discovery-search-recovery.tsx','utf8').replace("from './model'",`from '${model}'`).replace(/from ["']react\/jsx-runtime["']/,`from '${pathToFileURL(require.resolve('react/jsx-runtime')).href}'`);
+const {default:Recovery,recoveryInterests}=await import(compile(source));
+assert.deepEqual(recoveryInterests('colonialism',[]),['Power & society']);
+assert.deepEqual(recoveryInterests('zzzzzz',['Reading','Reading','Music','History','Football']),['Reading','Music','History']);
+assert.deepEqual(recoveryInterests('zzzzzz',[]),[],'no invented related topics');
+let cleared=false,topic='';const node=Recovery({query:'colonialism',interests:[],onClear:()=>cleared=true,onInterest:value=>topic=value});
+node.props.children[0].props.onClick();assert(cleared);
+const related=node.props.children[2].props.children[1].props.children[0];related.props.onClick();assert.equal(topic,'Power & society');
+console.log('Search recovery uses real interest categories, bounds suggestions, and separates clear-search from interest selection.');

@@ -951,3 +951,6 @@ html .app-shell>.sidebar nav .nav-item .nav-icon>.count{position:absolute;top:-9
 .app-shell .compact-person .discovery-thought{margin:8px 0 12px;padding:12px;border:0;border-radius:8px;background:var(--surface-soft)}
 .app-shell .compact-person .discovery-thought>strong{font-size:.8125rem;line-height:1.5;color:var(--muted)}
 .app-shell .compact-person .discovery-thought>p{margin:6px 0 0;font-size:1rem;line-height:1.5;overflow-wrap:anywhere;display:-webkit-box;-webkit-line-clamp:4;-webkit-box-orient:vertical;overflow:hidden}
+.app-shell .discovery-thought>.text-button{margin-top:8px;min-height:44px;text-align:left}
+.discovery-search-recovery{margin:16px 0;text-align:left}
+.discovery-search-recovery>.field-help{margin:8px 0}

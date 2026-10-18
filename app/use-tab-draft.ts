@@ -7,5 +7,5 @@ export function useTabDraft(account:string,kind:string,id:string){
  useEffect(()=>{const raw=readDraft(tabStorage(),key,'');setState({key,value:typeof raw==='string'?raw:''});},[key]);
  const value=state.key===key?state.value:'';
  const setValue=useCallback((text:string)=>{if(text)writeDraft(tabStorage(),key,text);else removeDraft(tabStorage(),key);setState(current=>current.key===key||!current.key?{key,value:text}:current);},[key]);
- return [value,setValue] as const;
+ return [value,setValue,state.key===key] as const;
 }

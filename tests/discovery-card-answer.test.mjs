@@ -17,3 +17,9 @@ const sparse=render({about:'Introduction only'});assert(sparse.includes('Introdu
 assert(render({about:'a'.repeat(200)}).includes('…'),'introduction fallback remains bounded');
 assert.equal(person.about,'Long introduction','card selection does not remove profile data');
 console.log('Discovery cards show one meaningful answer with an introduction fallback and preserve the original profile.');
+let selectedKey='';
+const interactive=Answer({person,onAsk:key=>selectedKey=key});
+const ask=interactive.props.children.find(child=>child?.type==='button');
+assert.equal(ask.props.children,'Ask about this');ask.props.onClick();assert.equal(selectedKey,'question');
+const next=Answer({person:{...person,question:' '},onAsk:key=>selectedKey=key});next.props.children.find(child=>child?.type==='button').props.onClick();assert.equal(selectedKey,'perspective');
+assert(!renderToStaticMarkup(React.createElement(Answer,{person})).includes('Ask about this'),'no invitation action without eligibility callback');
