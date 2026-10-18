@@ -47,3 +47,6 @@ assert(!elements(sparseTree).some(n=>n.props?.className==='profile-inline-detail
 const discoveryContext=ConnectionContext({compact:true,me:{...examples[1],id:'me'},person:examples[1]});
 assert.equal(discoveryContext.type,'details');assert(!discoveryContext.props.open,'supporting discovery context starts collapsed');
 assert(renderToStaticMarkup(discoveryContext).includes('<summary><strong>'),'the shared-interest reason stays visible in the disclosure summary');
+const sharedPreview=ConnectionContext({compact:true,me:{...examples[1],id:'me',interests:['Systems thinking'],topics:[]},person:{...examples[1],interests:['Systems thinking'],topics:[]}});
+const visibleSummary=elements(sharedPreview).find(n=>n.type==='summary');
+assert(renderToStaticMarkup(visibleSummary).includes('You both like: Systems thinking'),'actual exact overlap remains visible without expanding');

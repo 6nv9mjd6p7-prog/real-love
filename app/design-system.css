@@ -945,3 +945,9 @@ html .app-shell>.sidebar nav .nav-item .nav-icon>.count{position:absolute;top:-9
 .notification-group-events>li>button.unread{background:var(--accent-soft)}
 .notification-message-group>summary:focus-visible,.notification-group-events>li>button:focus-visible{outline:2px solid var(--focus-ring);outline-offset:-3px}
 @media(max-width:400px){.app-shell .notification-group-events>li>button{flex-wrap:wrap;gap:4px}.notification-group-events>li>button>span:first-child{flex-basis:100%}}
+
+/* Compact discovery keeps the actual overlap and one thoughtful answer visible. */
+.connection-summary-compact>summary>.connection-visible-topics{display:block;margin:3px 0 0 16px;font-size:.875rem;font-weight:400;line-height:1.5;color:var(--ink);overflow-wrap:anywhere}
+.app-shell .compact-person .discovery-thought{margin:8px 0 12px;padding:12px;border:0;border-radius:8px;background:var(--surface-soft)}
+.app-shell .compact-person .discovery-thought>strong{font-size:.8125rem;line-height:1.5;color:var(--muted)}
+.app-shell .compact-person .discovery-thought>p{margin:6px 0 0;font-size:1rem;line-height:1.5;overflow-wrap:anywhere;display:-webkit-box;-webkit-line-clamp:4;-webkit-box-orient:vertical;overflow:hidden}
