@@ -940,3 +940,77 @@ html,body{max-width:100%;overflow-x:clip;overscroll-behavior-x:none}
  html[data-keyboard-open] .chat-composer,
  html[data-qa-keyboard] .qa-preview-app .chat-composer{position:sticky;bottom:max(0px,calc(100dvh - var(--app-viewport,100dvh) - var(--app-viewport-top,0px)));z-index:5}
 }
+
+
+/* Public website: introduce Real Love before the signed-in app. */
+.public-landing{min-height:100dvh;background:var(--bg);color:var(--ink)}
+.public-nav{position:sticky;top:0;z-index:12;display:flex;align-items:center;gap:28px;min-height:76px;padding:14px clamp(20px,4vw,58px);border-bottom:1px solid var(--line);background:#fffffff2;backdrop-filter:blur(14px)}
+.public-brand{display:inline-flex;align-items:center;gap:10px;margin-right:auto;font-size:1.35rem;font-weight:750;letter-spacing:-.04em}
+.public-brand-icon{display:grid;place-items:center;width:36px;height:36px;border-radius:11px;background:var(--indigo);color:var(--lime)}
+.public-nav nav,.public-nav-actions,.public-actions,.public-topic-row{display:flex;align-items:center;gap:10px}
+.public-nav nav{gap:22px;font-size:.875rem;font-weight:600}
+.public-nav nav a:hover{text-decoration:underline;text-underline-offset:4px}
+.public-nav-actions .primary,.public-nav-actions .secondary,.public-actions .primary,.public-actions .secondary{display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:10px 16px;border-radius:10px;font-size:.875rem;font-weight:700}
+.public-nav-actions .primary,.public-actions .primary{background:var(--indigo);color:white}
+.public-nav-actions .secondary,.public-actions .secondary{border:1px solid var(--line);background:white;color:var(--indigo)}
+.public-hero{display:grid;grid-template-columns:minmax(0,1.06fr) minmax(420px,.94fr);gap:clamp(36px,6vw,86px);align-items:center;max-width:1280px;margin:auto;padding:clamp(64px,8vw,110px) clamp(24px,6vw,80px)}
+.public-hero-copy{display:grid;gap:20px;align-content:center}
+.public-eyebrow,.public-kicker{font-size:.72rem;font-weight:800;letter-spacing:.13em;color:var(--indigo)}
+.public-kicker{color:var(--muted)}
+.public-hero h1{max-width:760px;font-size:clamp(3rem,6vw,5.5rem);line-height:1.02;letter-spacing:-.055em}
+.public-lede{max-width:700px;color:var(--muted);font-size:clamp(1rem,1.6vw,1.18rem);line-height:1.75}
+.public-fineprint{font-size:.8rem;color:var(--muted)}
+.public-conversation-card{display:grid;gap:16px;padding:28px;border:1px solid var(--line);border-radius:22px;background:white;box-shadow:0 24px 60px #25284412}
+.public-topic-row{flex-wrap:wrap}
+.public-topic-row span{padding:6px 10px;border-radius:7px;background:#f1f0fb;color:var(--indigo);font-size:.8rem;font-weight:700}
+.public-conversation-card blockquote{margin:0;font-family:Georgia,serif;font-size:clamp(1.55rem,2.5vw,2.2rem);line-height:1.35;color:var(--ink)}
+.public-message-preview{padding:16px;border-radius:12px;background:#f8f9fc}
+.public-message-preview p{font-size:.94rem;line-height:1.65}
+.public-message-preview span{display:block;margin-top:8px;color:var(--muted);font-size:.8rem}
+.public-promise{display:grid;grid-template-columns:minmax(0,.9fr) minmax(0,1.1fr);gap:56px;align-items:center;padding:clamp(46px,6vw,74px) clamp(24px,7vw,100px);background:var(--indigo);color:white}
+.public-promise h2{max-width:650px;margin-top:10px;font-family:Georgia,serif;font-size:clamp(2rem,4vw,3.35rem);font-weight:400;line-height:1.15}
+.public-promise .public-kicker{color:var(--lime)}
+.public-promise>p{max-width:760px;color:#d6d7e8;font-size:1.05rem;line-height:1.8}
+.public-section{max-width:1280px;margin:auto;padding:clamp(60px,8vw,100px) clamp(24px,6vw,80px)}
+.public-section-heading{display:grid;gap:11px;max-width:780px;margin-bottom:34px}
+.public-section-heading h2,.public-final-cta h2{font-family:Georgia,serif;font-size:clamp(2rem,4vw,3.2rem);font-weight:400;line-height:1.18}
+.public-section-heading>p:last-child,.public-final-cta p{color:var(--muted);line-height:1.7}
+.public-steps,.public-feature-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px}
+.public-steps article,.public-feature-grid article{min-width:0;padding:22px;border:1px solid var(--line);border-radius:15px;background:white}
+.public-steps article>span{display:grid;place-items:center;width:30px;height:30px;margin-bottom:18px;border-radius:50%;background:var(--indigo);color:white;font-size:.8rem;font-weight:800}
+.public-steps h3,.public-feature-grid h3{margin-bottom:8px;font-size:1rem}
+.public-steps p,.public-feature-grid p{color:var(--muted);font-size:.9rem;line-height:1.65}
+.public-difference{max-width:none;background:white}
+.public-difference>.public-section-heading,.public-difference>.public-feature-grid{max-width:1120px;margin-left:auto;margin-right:auto}
+.public-feature-grid svg{margin-bottom:14px;color:var(--indigo)}
+.public-final-cta{display:flex;align-items:center;justify-content:space-between;gap:30px;max-width:1120px;margin:40px auto 80px;padding:34px 38px;border:1px solid #cfd1e0;border-radius:18px;background:#fafaff}
+.public-final-cta>div:first-child{display:grid;gap:8px}
+.public-footer{max-width:1280px;margin:auto;padding:24px clamp(24px,6vw,80px);border-top:1px solid var(--line);display:flex;justify-content:space-between;gap:20px;color:var(--muted);font-size:.8rem}
+.public-footer strong{color:var(--ink);font-size:1rem}
+
+@media(max-width:900px){
+ .public-nav nav{display:none}
+ .public-hero{grid-template-columns:1fr;padding-top:58px}
+ .public-conversation-card{max-width:680px}
+ .public-steps,.public-feature-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .public-promise{grid-template-columns:1fr;gap:20px}
+}
+@media(max-width:620px){
+ .public-nav{min-height:64px;padding:10px 14px;gap:10px}
+ .public-brand{font-size:1.1rem}
+ .public-brand-icon{width:32px;height:32px;border-radius:9px}
+ .public-nav-actions .secondary{display:none}
+ .public-nav-actions .primary{min-height:40px;padding:8px 12px}
+ .public-hero{gap:28px;padding:40px 16px 46px}
+ .public-hero h1{font-size:clamp(2.55rem,13vw,3.7rem)}
+ .public-lede{font-size:1rem}
+ .public-actions{align-items:stretch;flex-direction:column}
+ .public-actions>*{width:100%}
+ .public-conversation-card{padding:18px;border-radius:16px}
+ .public-promise{padding:34px 18px}
+ .public-section{padding:52px 16px}
+ .public-steps,.public-feature-grid{grid-template-columns:1fr}
+ .public-steps article,.public-feature-grid article{padding:18px}
+ .public-final-cta{align-items:stretch;flex-direction:column;margin:16px 14px 46px;padding:24px 20px}
+ .public-footer{align-items:flex-start;flex-direction:column;padding:20px 16px}
+}
