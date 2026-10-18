@@ -24,3 +24,13 @@ assert(invited.indexOf('Reviewer invitation')<invited.indexOf('Recent activity')
 assert(invited.includes('cannot browse unrestricted private chats or manage reviewer roles'),'scope of the role is explained before consent');
 delete globalThis.__arrayState;
 console.log('Pending reviewer invitation displays acceptance, decline, expiry and responsibility copy.');
+
+const groupedSource=source.replace("import {useEffect,useRef,useState} from 'react';", "import {useRef} from 'react';const useEffect=()=>{};const useState=initial=>{const i=globalThis.__groupState++;return [i===0?globalThis.__groupItems:i===8?false:initial,()=>{}];};");
+const {default:GroupedCenter}=await import(compile(groupedSource));
+globalThis.__groupState=0;globalThis.__groupItems=[{id:'new',kind:'message',url:'#chat/a',title:'Maya sent you a message',created:'2026-10-18T12:00:00Z',read:0,detail:'Private conversation with Maya'},{id:'old',kind:'message',url:'#chat/a',title:'Maya sent you a voice note',created:'2026-10-17T12:00:00Z',read:1,detail:'Private conversation with Maya'}];
+const groupedHtml=renderToStaticMarkup(React.createElement(GroupedCenter,{accountId:'test',open:true,onUnread:()=>{},onNavigate:()=>{}}));
+assert(groupedHtml.includes('2 message alerts')&&groupedHtml.includes('1 unread'));
+assert(groupedHtml.includes('Maya sent you a voice note')&&groupedHtml.includes('Latest: Maya sent you a message'),'individual events and latest context remain available');
+assert(groupedHtml.includes('<details class="notification-message-group">'),'message groups begin collapsed with native keyboard disclosure');
+assert.equal((groupedHtml.match(/class="notification-open"/g)||[]).length,2,'each event retains its original open action');
+delete globalThis.__groupState;delete globalThis.__groupItems;

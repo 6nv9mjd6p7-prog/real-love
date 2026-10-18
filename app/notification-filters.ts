@@ -22,3 +22,16 @@ export function filterNotifications<T extends {kind:string}>(items:T[],filter:No
 export function unreadNotificationCount<T extends {kind:string;read:number}>(items:T[],filter:NotificationFilter):number{
  return filterNotifications(items,filter).filter(item=>!item.read).length;
 }
+
+// Compact message activity only; preserve each event and keep consent/safety alerts separate.
+export function groupMessageNotifications<T extends {id:string;kind:string;url:string;available?:boolean}>(items:T[]):{key:string;items:T[]}[]{
+ const groups:{key:string;items:T[]}[]=[],byConversation=new Map<string,{key:string;items:T[]}>();
+ for(const item of items){
+  const message=item.available!==false&&((item.kind==='message'&&item.url.startsWith('#chat/'))||(item.kind==='circle_message'&&item.url.startsWith('#circles/')&&!item.url.endsWith('/requests')));
+  const key=message?item.kind+':'+item.url:'event:'+item.id;
+  let group=message?byConversation.get(key):undefined;
+  if(!group){group={key,items:[]};groups.push(group);if(message)byConversation.set(key,group);}
+  group.items.push(item);
+ }
+ return groups;
+}
