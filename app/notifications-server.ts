@@ -1,3 +1,4 @@
+import {pendingReviewWork,reviewWorkItem} from './moderation-policy';
 import {env,waitUntil} from 'cloudflare:workers';
 import {activeMember} from './safety';
 import {validPushEndpoint,vapidAuthorization} from './web-push';
@@ -29,14 +30,26 @@ export async function pushTo(member:string,onlyEndpoint?:string){
   }catch(e){failed++;reason=stage==='sign'?'authorization':e instanceof Error&&(e.name==='TimeoutError'||e.name==='AbortError')?'timeout':'network';console.error('Push delivery failed',JSON.stringify({provider,stage,reason}));}
  }));return {accepted,failed,reason};
 }
-export async function notify(member:string,actor:string,kind:string,scope:string,title:string,url:string,eventKey:string,accountEvent=false){
+export async function notify(member:string,actor:string,kind:string,scope:string,title:string,url:string,eventKey:string,accountEvent=false,sendPush=true,createdAt?:string){
  try{if(!env.DB||member===actor)return;if(!accountEvent&&!await activeMember(member))return;if(actor&&await env.DB.prepare('SELECT actor FROM blocks WHERE (actor=? AND target=?) OR (actor=? AND target=?)').bind(member,actor,actor,member).first())return;
- const result=await env.DB.prepare('INSERT OR IGNORE INTO notifications (id,member,actor,kind,scope,title,url,created) VALUES (?,?,?,?,?,?,?,?)').bind(JSON.stringify([member,kind,eventKey]),member,actor,kind,scope,title,url,new Date().toISOString()).run();const channel=kind.startsWith('circle_')?'circle':'direct';const preferenceScope=channel+':'+scope;const muted=await env.DB.prepare("SELECT id FROM notification_preferences WHERE member=? AND muted=1 AND (scope=? OR scope=? OR (scope='reactions' AND ? IN ('reaction','circle_reaction')))").bind(member,preferenceScope,channel+':*',kind).first();if(result.meta.changes&&!muted)waitUntil(pushTo(member).catch(()=>({accepted:0,failed:1})));
+ const result=await env.DB.prepare('INSERT OR IGNORE INTO notifications (id,member,actor,kind,scope,title,url,created) VALUES (?,?,?,?,?,?,?,?)').bind(JSON.stringify([member,kind,eventKey]),member,actor,kind,scope,title,url,createdAt||new Date().toISOString()).run();const channel=kind==='review'||kind.startsWith('review_')?'review':kind.startsWith('circle_')?'circle':'direct';const preferenceScope=channel+':'+scope;const muted=await env.DB.prepare("SELECT id FROM notification_preferences WHERE member=? AND muted=1 AND (scope=? OR scope=? OR (scope='reactions' AND ? IN ('reaction','circle_reaction')))").bind(member,preferenceScope,channel+':*',kind).first();if(sendPush&&result.meta.changes&&!muted)waitUntil(pushTo(member).catch(()=>({accepted:0,failed:1})));
  }catch{console.warn('Notification could not be queued.');}
 }
 export async function notifyCircle(circle:string,actor:string,messageId:string){
  try{const rows=await env.DB!.prepare("SELECT member FROM circle_members WHERE circle=? AND status='accepted' AND member<>?").bind(circle,actor).all();await Promise.all(rows.results.map((x:any)=>notify(x.member,actor,'circle_message',circle,'New circle message','#circles/'+encodeURIComponent(circle),messageId)));}catch{console.warn('Circle notifications could not be queued.');}
 }
-export async function notifyReviewers(applicant:string,eventKey:string){
- try{const rows=await env.DB!.prepare('SELECT DISTINCT member FROM push_subscriptions WHERE reviewer=2 OR (reviewer=1 AND member IN (SELECT id FROM moderators))').all();await Promise.all(rows.results.map((x:any)=>notify(x.member,applicant,'review',applicant,'A profile is waiting for review','#review',eventKey)));}catch{console.warn('Review notification could not be queued.');}
+// Catch-up is in-app only: opening the app must not burst old phone alerts.
+export async function syncReviewNotifications(member:string,owner:boolean){
+ const work=await pendingReviewWork(member,owner);
+ for(const item of work)await notify(member,'',item.kind,item.scope,item.title,'#review',item.kind+':'+item.scope,true,false,item.created);
+ return work;
+}
+export async function notifyReviewers(subject:string,_eventKey:string,kind:'review'|'review_report'|'review_appeal'='review'){
+ try{
+  const rows=await env.DB!.prepare("SELECT member,MAX(is_owner) AS is_owner FROM (SELECT m.id AS member,0 AS is_owner FROM moderators m JOIN safety_accounts a ON a.id=m.id WHERE a.status='admitted' UNION ALL SELECT DISTINCT s.member,1 AS is_owner FROM push_subscriptions s JOIN safety_accounts a ON a.id=s.member WHERE s.reviewer=2 AND a.status='admitted') GROUP BY member").all();
+  await Promise.all(rows.results.map(async(raw:any)=>{
+   const item=await reviewWorkItem(raw.member,!!raw.is_owner,kind,subject);
+   if(item)await notify(raw.member,'',item.kind,item.scope,item.title,'#review',item.kind+':'+item.scope,true);
+  }));
+ }catch{console.warn('Review notification could not be queued.');}
 }

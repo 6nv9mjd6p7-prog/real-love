@@ -10,6 +10,7 @@ const publicKey=Buffer.from(await crypto.subtle.exportKey('raw',keys.publicKey))
 const endpoint='https://fcm.googleapis.com/runtime-test';
 const source=readFileSync('app/web-push.ts','utf8')+'\n'+readFileSync('app/notifications-server.ts','utf8')
  .replace("import {env,waitUntil} from 'cloudflare:workers';",`const env={WEB_PUSH_PRIVATE_JWK:${JSON.stringify(privateJwk)},WEB_PUSH_PUBLIC_KEY:${JSON.stringify(publicKey)},DB:{prepare(){return {bind(){return this;},async all(){return {results:[{endpoint:${JSON.stringify(endpoint)}}]};}}}}};const waitUntil=()=>{};`)
+ .replace("import {pendingReviewWork,reviewWorkItem} from './moderation-policy';",'const pendingReviewWork=async()=>[];const reviewWorkItem=async()=>null;')
  .replace("import {activeMember} from './safety';",'const activeMember=async()=>true;')
  .replace("import {validPushEndpoint,vapidAuthorization} from './web-push';",'')
  +'\nexport default {async fetch(){return Response.json(await pushTo("test-member"));}};';

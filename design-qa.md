@@ -682,3 +682,9 @@ Appearance: existing typography, colors, layout, imagery and controls retained; 
 
 Scoped server behavior and desktop guidance result:
 final result: passed
+
+## Step 2 — Moderator notifications
+
+Pending profiles, open reports and account appeals now create generic in-app review alerts for eligible reviewers without requiring a device subscription. Existing owner sessions catch up from the authorized queue. Catch-up retains original event timestamps and never sends a burst of historical phone alerts. Producer alerts retain the existing generic, empty-payload Web Push transport. A separate safety-review preference mutes phone alerts without hiding in-app work. The safety badge counts eligible pending profiles and reports/appeals, with the same 100-per-queue bounds as the review screen. Review access, conflicts, resolution and expiry are checked again before returning notifications. No reporter names, report details or evidence are included in review alerts. No schema or dependency change.
+
+Validation: app-flow, campaign privacy, notification filters, notification view rendering, notification delivery, Workers push runtime and UX recovery suites passed. Integration fixtures cover no-device reviewers, pending profiles, reports, appeals, conflict exclusion before and after creation, owner catch-up, deduplication, correct badge increments, resolution, role revocation and review preference authorization. Push tests cover review mute, retained in-app activity, original catch-up timestamps and no historical push. TypeScript, production build and whitespace checks passed. React review found no new hooks, dependencies or UI state; the added reviewer preference uses the existing control and access gate. Browser/device testing was not performed in this pass; real phone delivery and mobile rendering are not claimed. No real moderation reports or role changes were created for QA. Next item remains consent-based role invitations.

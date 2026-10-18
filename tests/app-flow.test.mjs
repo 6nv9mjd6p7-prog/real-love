@@ -17,7 +17,7 @@ globalThis.__rlEnv={DB,PILOT_OWNER_EMAIL:'referee@test.invalid',BUCKET:{async pu
 const rulesUrl=compile('app/rules.ts');const safetyUrl=compile('app/safety.ts',s=>s.replace("import {env} from 'cloudflare:workers';",'const env=globalThis.__rlEnv;').replaceAll("from './rules'",`from '${rulesUrl}'`));const modPolicyUrl=compile('app/moderation-policy.ts',s=>s.replace("from './safety'",`from '${safetyUrl}'`));
 const circlePolicyUrl=compile('app/circle-policy.ts',s=>s.replace("import {env} from 'cloudflare:workers';",'const env=globalThis.__rlEnv;').replace("from './safety'",`from '${safetyUrl}'`));
 const chatToolsUrl=compile('app/chat-tools.ts');const chatServerUrl=compile('app/chat-server.ts',s=>s.replace("import {env} from 'cloudflare:workers';",'const env=globalThis.__rlEnv;').replace("from './chat-tools'",`from '${chatToolsUrl}'`).replace("from './safety'",`from '${safetyUrl}'`));
-const webPushUrl=compile('app/web-push.ts');globalThis.__pushTasks=[];const notificationServerUrl=compile('app/notifications-server.ts',s=>s.replace("import {env,waitUntil} from 'cloudflare:workers';",'const env=globalThis.__rlEnv;const waitUntil=p=>globalThis.__pushTasks.push(p);').replace("from './web-push'",`from '${webPushUrl}'`).replace("from './safety'",`from '${safetyUrl}'`));
+const webPushUrl=compile('app/web-push.ts');globalThis.__pushTasks=[];const notificationServerUrl=compile('app/notifications-server.ts',s=>s.replace("import {env,waitUntil} from 'cloudflare:workers';",'const env=globalThis.__rlEnv;const waitUntil=p=>globalThis.__pushTasks.push(p);').replace("from './web-push'",`from '${webPushUrl}'`).replace("from './safety'",`from '${safetyUrl}'`).replace("from './moderation-policy'",`from '${modPolicyUrl}'`));
 const voiceAccessUrl=compile('app/voice-access.ts',s=>s.replace("import {env} from 'cloudflare:workers';",'const env=globalThis.__rlEnv;').replace("from './safety'",`from '${safetyUrl}'`));
 const revisionUrl=compile('app/message-revision.ts');
 const historyUrl=compile('app/history-tools.ts',s=>s.replace("from './safety'",`from '${safetyUrl}'`));const analyticsUrl=compile('app/product-analytics.ts');
@@ -1033,3 +1033,40 @@ try{assert.equal((await post('birth-race',{action:'profile',profile:{...raceDraf
 assert.equal((await get('birth-race')).data.me.birthDate,'1994-01-01');
 assert.equal((await get('birth-race')).data.me.birthDateChanges,2,'the rejected stale save does not consume or reset a correction');
 console.log('Birth-date correction setup, two-save limit, private server counters, ordinary edits and concurrent-save protection passed.');
+
+// Review alerts work without device subscriptions and follow current queue access.
+for(const who of ['alert-reviewer','alert-conflict','alert-reporter','alert-target']){
+ assert.equal((await post(who,{action:'profile',profile:draft(who)})).status,200);
+ sql.prepare("UPDATE safety_accounts SET status='admitted' WHERE id=?").run(who);
+}
+for(const who of ['alert-reviewer','alert-conflict'])sql.prepare('INSERT OR IGNORE INTO moderators (id) VALUES (?)').run(who);
+const addAlertLink=(id,a,b)=>sql.prepare("INSERT INTO connections (id,sender,recipient,status,kind,created) VALUES (?,?,?,'accepted','Connect',?)").run(id,a,b,new Date().toISOString());
+addAlertLink('alert-report-link','alert-reporter','alert-target');
+addAlertLink('alert-conflict-link','alert-conflict','alert-reporter');
+assert.equal(sql.prepare("SELECT COUNT(*) AS n FROM push_subscriptions WHERE member='alert-reviewer'").get().n,0);
+const alertBaseline=(await get('alert-reviewer')).data.reviewAlerts;
+assert.equal((await post('alert-applicant',{action:'profile',profile:draft('alert-applicant')})).status,200);
+assert.equal(sql.prepare("SELECT COUNT(*) AS n FROM notifications WHERE member='alert-reviewer' AND kind='review' AND scope='alert-applicant'").get().n,1,'reviewer receives an in-app profile alert without registering a phone');
+const safetyReport=await post('alert-reporter',{action:'report',target:'alert-target',reason:'Other',details:'Private test evidence should not appear in notifications.'});assert.equal(safetyReport.status,200);
+const appealReport=await post('alert-target',{action:'report',type:'appeal',target:'alert-target',reason:'Other',details:'Private test appeal should stay in the review queue.'});assert.equal(appealReport.status,200);
+assert.equal(sql.prepare("SELECT COUNT(*) AS n FROM notifications WHERE member='alert-reviewer' AND kind='review_report' AND scope=?").get(safetyReport.data.receipt).n,1);
+assert.equal(sql.prepare("SELECT COUNT(*) AS n FROM notifications WHERE member='alert-reviewer' AND kind='review_appeal' AND scope=?").get(appealReport.data.receipt).n,1);
+assert.equal(sql.prepare("SELECT COUNT(*) AS n FROM notifications WHERE member='alert-conflict' AND scope=?").get(safetyReport.data.receipt).n,0,'a connected reviewer is not notified about a conflicting report');
+assert.equal((await get('alert-reviewer')).data.reviewAlerts,alertBaseline+3,'queue badge includes pending profiles, reports and appeals');
+as('alert-reviewer');let reviewFeed=(await (await notificationsApi.GET()).json()).notifications;
+const reportAlert=reviewFeed.find(n=>n.scope===safetyReport.data.receipt);assert(reportAlert);assert.equal(reportAlert.title,'A report is waiting for review');assert.equal(reportAlert.actionLabel,'Review queue');assert.equal(reportAlert.url,'#review');
+assert(!JSON.stringify(reviewFeed).includes('Private test evidence'));assert(!JSON.stringify(reviewFeed).includes('Private test appeal'));
+assert.equal(sql.prepare("SELECT actor FROM notifications WHERE member='alert-reviewer' AND scope=?").get(safetyReport.data.receipt).actor,'','safety notifications do not reveal or depend on a reporter actor');
+await get('alert-reviewer');assert.equal(sql.prepare("SELECT COUNT(*) AS n FROM notifications WHERE member='alert-reviewer' AND scope=?").get(safetyReport.data.receipt).n,1,'catch-up does not duplicate or reset notifications');
+await get('referee');assert.equal(sql.prepare("SELECT COUNT(*) AS n FROM notifications WHERE member='referee' AND scope=?").get(safetyReport.data.receipt).n,1,'owner catches up in-app without a push subscription');
+const muteReview=async(who,muted)=>{as(who);const response=await notificationsApi.POST(request({action:'mute',expectedAccount:who,channel:'review',scope:'all',muted}));return response.status;};
+assert.equal(await muteReview('alert-reviewer',true),200);assert.equal(await muteReview('alert-reporter',true),403,'ordinary members cannot change reviewer-only preferences');
+as('alert-reviewer');reviewFeed=(await (await notificationsApi.GET()).json()).notifications;assert(reviewFeed.some(n=>n.scope===safetyReport.data.receipt),'muting phone alerts leaves in-app review activity available');
+addAlertLink('alert-later-conflict','alert-reviewer','alert-reporter');
+as('alert-reviewer');reviewFeed=(await (await notificationsApi.GET()).json()).notifications;assert(!reviewFeed.some(n=>n.scope===safetyReport.data.receipt),'a newly conflicting case disappears from old alerts');
+sql.prepare("UPDATE reports SET status='resolved' WHERE id=?").run(appealReport.data.receipt);
+as('alert-reviewer');reviewFeed=(await (await notificationsApi.GET()).json()).notifications;assert(!reviewFeed.some(n=>n.scope===appealReport.data.receipt),'resolved cases do not remain actionable alerts');
+sql.prepare("DELETE FROM moderators WHERE id='alert-reviewer'").run();
+as('alert-reviewer');reviewFeed=(await (await notificationsApi.GET()).json()).notifications;assert(!reviewFeed.some(n=>['review','review_report','review_appeal'].includes(n.kind)),'revoked reviewers cannot read old safety alerts');
+assert.equal((await get('alert-reviewer')).data.reviewAlerts,0);
+console.log('Reviewer profile/report/appeal alerts, no-device catch-up, generic content, counts, conflicts, mute, resolution and revocation passed.');
