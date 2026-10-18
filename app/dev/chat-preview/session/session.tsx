@@ -37,7 +37,7 @@ export default function ChatPreviewSession(){
    return {revision:known,cursor:list.length||null,hasMore:false,messages:list};
   }
   if(input.action==='message'){
-   const message:ChatMessage={id:'qa-message-'+crypto.randomUUID(),body:input.text||'',created:new Date().toISOString(),mine:true,reactions:[]};
+   const message:ChatMessage={id:'qa-message-'+(revision.current+4),body:input.text||'',created:new Date().toISOString(),mine:true,reactions:[]};
    messagesRef.current=[...messagesRef.current,message];revision.current++;return {ok:true};
   }
   return {ok:true};
