@@ -48,8 +48,8 @@ html[data-native-platform] .site-utility{display:none!important}
 html[data-native-platform] .app-shell:has(.conversation-screen,.circle-conversation){height:auto}
 
 /* Shared sizing and spacing scale for repeated controls and content surfaces. */
+.section-tabs button{min-height:var(--control-size);border-radius:var(--control-radius)}
 .app-shell .primary,.app-shell .secondary,.app-shell .danger{min-height:var(--control-size);border-radius:var(--control-radius)}
-.section-tabs button,.settings-shortcuts button{min-height:var(--control-size);border-radius:var(--control-radius)}
 .person-card,.form-section,.care-card,.empty-state,.admission-card,.entry-card,.circle-card,.campaign-card,.worker-intro,.discovery-preferences,.connection-summary{border-radius:var(--card-radius)}
 .form-section,.care-card,.circle-card,.campaign-card,.worker-intro,.discovery-preferences,.connection-summary{border-color:var(--border)}
 .chips>span,.choice-chips button,.active-filter-chips button{border-radius:8px}
@@ -136,8 +136,6 @@ html[data-native-platform] .app-shell:has(.conversation-screen,.circle-conversat
 .app-shell .circle-card h2{font-size:1.0625rem}
 .app-shell .circle-card .first-step{padding:10px 12px;margin:12px 0}
 .app-shell .circle-card .circle-card-meta{font-size:.8125rem;margin-block:10px}
-.app-shell .settings-shortcuts{gap:6px;margin-block:12px}
-.app-shell .settings-shortcuts button{padding:8px 12px;font-size:.8125rem}
 .app-shell .settings-group{box-shadow:none}
 .app-shell .settings-group>h2{font-size:1.0625rem}
 .app-shell .worker-resources .care-card{padding:14px;box-shadow:none}
@@ -201,9 +199,6 @@ html[data-native-platform] .app-shell:has(.conversation-screen,.circle-conversat
 .app-shell .settings-groups .visibility-choice{padding:12px 0;margin:0;border:0;border-top:1px solid var(--border);border-radius:0;background:transparent}
 .app-shell .settings-groups .visibility-choice:first-of-type{border-top:0;padding-top:0}
 .app-shell .settings-groups .settings-delete>summary{color:#9e3434}
-.app-shell .settings-shortcuts{gap:4px 12px;margin-bottom:12px}
-.app-shell .settings-shortcuts button{padding:6px 0;border:0;border-radius:0;background:transparent;font-size:.875rem;text-decoration:underline;text-underline-offset:4px}
-.app-shell .settings-shortcuts button:hover{background:transparent;color:var(--ink)}
 
 /* Keep text entry readable and avoid automatic zoom when a phone field receives focus. */
 .app-shell input:not([type=checkbox]):not([type=radio]),.app-shell select,.app-shell textarea{font-size:1rem}
@@ -651,15 +646,10 @@ html[data-native-platform] .app-shell:has(.conversation-screen,.circle-conversat
 .app-shell .settings-screen>.page-heading{margin-bottom:12px}
 .app-shell .settings-screen h1{font-family:Arial,Helvetica,sans-serif;font-size:1.5rem;font-weight:700;line-height:1.3;letter-spacing:0}
 .settings-screen>.page-heading p{margin-top:6px;font-size:.875rem}
-.app-shell .settings-screen .settings-shortcuts{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:4px 12px;margin:0 0 12px}
-.app-shell .settings-screen .settings-shortcuts button{min-height:44px;padding:8px 0;text-align:left;line-height:1.4}
 .app-shell .settings-screen .settings-groups{max-width:none}
 .app-shell .settings-screen .settings-group>summary{padding:12px 0;min-height:64px}
 .settings-summary{display:block;margin:4px 0 0 16px;color:var(--muted);font-size:.8125rem;font-weight:400;line-height:1.45;overflow-wrap:anywhere}
 .settings-screen .settings-group[open]>summary{border-bottom:1px solid var(--border)}
-@media(max-width:600px){
- .app-shell .settings-screen .settings-shortcuts{grid-template-columns:repeat(2,minmax(0,1fr));gap:0 12px}
-}
 .profile-screen-heading{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px 16px;margin-bottom:12px}
 .app-shell .profile-screen-heading>.page-heading{min-width:0;margin:0}
 .app-shell .profile-screen-heading h1{font-family:Arial,Helvetica,sans-serif;font-size:1.5rem;font-weight:700;line-height:1.3;letter-spacing:0}

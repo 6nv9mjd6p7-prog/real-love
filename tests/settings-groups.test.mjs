@@ -38,17 +38,11 @@ button('Pause all interaction').props.onClick();assert.deepEqual(action,{action:
 button('Unblock').props.onClick();assert.deepEqual(action,{action:'unblock',target:'blocked'});
 button('Report').props.onClick();assert.equal(reported.id,'blocked');
 button('Delete my profile').props.onClick();assert.equal(confirm,true);
-let focused,scrolled;
-globalThis.document={getElementById:id=>({focus:()=>focused=id,scrollIntoView:()=>scrolled=id})};
-button('Safety & reports').props.onClick();assert.equal(focused,'settings-safety');assert.equal(scrolled,'settings-safety');
 nodes.find(n=>n.type==='details'&&n.props.className==='form-section settings-delete').props.onToggle({currentTarget:{open:false}});assert.equal(confirm,false);
-console.log('Settings grouping, shortcut focus, safety controls, account links, and separate deletion confirmation passed (render/action checks).');
+console.log('Settings grouping, native disclosures, safety controls, account links, and separate deletion confirmation passed (render/action checks).');
 
 for(const group of ['visibility','safety','account','privacy']){
  const disclosure=nodes.find(n=>n.type==='details'&&n.props.id==='settings-'+group);assert(disclosure,'complete settings group remains accessible');
  assert(elements(disclosure).some(n=>n.type==='summary'),'each group has a native keyboard-operated control');
  assert.equal(!!disclosure.props.open,false,'settings overview begins compact with every group available');
 }
-let opened=false;globalThis.document={getElementById:id=>({tagName:'DETAILS',set open(value){opened=value;},focus:()=>focused=id,scrollIntoView:()=>scrolled=id})};
-button('Safety & reports').props.onClick();assert(opened,'settings shortcut opens its group before scrolling and focus');
-delete globalThis.document;
