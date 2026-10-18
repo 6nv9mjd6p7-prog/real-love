@@ -954,3 +954,17 @@ html .app-shell>.sidebar nav .nav-item .nav-icon>.count{position:absolute;top:-9
 .app-shell .discovery-thought>.text-button{margin-top:8px;min-height:44px;text-align:left}
 .discovery-search-recovery{width:min(100%,540px);margin:16px auto;display:flex;flex-direction:column;align-items:flex-start;gap:8px;text-align:left}
 .empty-state .discovery-search-recovery>.field-help{margin:0;max-width:none;text-align:left}
+
+/* Discovery polish: content leads; secondary controls keep clear, quiet affordances. */
+.app-shell .discovery-screen .profile-grid{gap:12px;align-items:start}
+.app-shell .discovery-screen .compact-person .person-title h2{font-size:1.125rem}
+.app-shell .discovery-screen .compact-person .card-interests .interest-action{background:var(--surface-soft);border-color:var(--border);font-weight:500}
+.app-shell .discovery-screen .compact-person .card-interests .interest-action:hover{background:var(--accent-soft);border-color:var(--accent)}
+.app-shell .discovery-screen .compact-person>.connection-summary-compact{border-top:0;margin:0}
+.app-shell .discovery-screen .compact-person .discovery-thought{background:transparent;padding:0;margin:8px 0 12px}
+.app-shell .discovery-screen>.empty-state{padding:20px;text-align:left;border-style:solid;background:var(--surface)}
+.app-shell .discovery-screen>.empty-state>h2{font-weight:600}
+.app-shell .discovery-screen>.empty-state>p{max-width:40rem;margin:8px 0 12px}
+.app-shell .discovery-screen>.empty-state .discovery-search-recovery{width:100%;max-width:40rem;margin:12px 0;gap:8px}
+.app-shell .discovery-screen>.empty-state .discovery-search-recovery>.field-help{width:100%;max-width:none;margin:0;text-align:left}
+.app-shell .discovery-screen>.empty-state .empty-actions{display:flex;justify-content:flex-start;flex-wrap:wrap;gap:8px;margin-top:12px}
