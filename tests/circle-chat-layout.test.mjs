@@ -46,11 +46,13 @@ assert.equal(panels.length,3);
 assert.equal(panels.find(n=>n.props.id.includes('-Chat-')).props.hidden,false);
 assert.equal(panels.find(n=>n.props.id.includes('-People-')).props.hidden,true);
 assert.equal(panels.find(n=>n.props.id.includes('-Together-')).props.hidden,true);
-assert(nodes.some(n=>n.props?.className==='circle-activity-strip'),'next activity remains available from Chat');
+const chatPanel=panels.find(n=>n.props.id.includes('-Chat-')),plansPanel=panels.find(n=>n.props.id.includes('-Together-'));
+assert(!elements(chatPanel).some(n=>n.props?.className==='circle-activity-strip'),'activity planning no longer leads the Chat view');
+assert(elements(plansPanel).some(n=>n.props?.className==='circle-activity-strip'),'optional activity idea remains available inside Plans');
 assert(source.includes("if(!chatVisible.current||!scope"),'hidden transcript cannot acknowledge incoming messages');
 assert(source.includes("selectCircleView('Chat');nearBottom.current=false"),'opening search results reveals Chat');
 for(const initialView of ['Together','People']){index=0;const restored=elements(Circles({accountId:'member',active:true,connections:[],initialCircle:circle.id,initialView,onReport:()=>{}}));assert.equal(restored.find(n=>n.props?.id==='circle-panel-'+initialView+'-'+circle.id).props.hidden,false,'explicit section route seeds the visible panel on remount');}
-console.log('Circle workspace preserves tools, next activity, management and mounted chat while separating Together and People.');
+console.log('Circle workspace keeps Chat conversation-first while preserving optional activity planning in Plans.');
 
 // Arrow navigation activates and focuses the matching tab; controls reference real panels.
 let sectionSource=readFileSync('app/circle-sections.tsx','utf8').replace(/^import .* from 'lucide-react';$/m,'const MessageCircle=()=>null,Users=()=>null,CalendarDays=()=>null;');
