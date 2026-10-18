@@ -21,14 +21,13 @@ export default function ChatPreviewSession(){
  const revision=useRef(1);
  useEffect(()=>{
   const receive=(event:MessageEvent)=>{
-   if(event.origin!==window.location.origin||event.data?.type!=='real-love-qa-keyboard')return;
+   if(event.origin!==window.location.origin||event.source!==window.parent||event.data?.type!=='real-love-qa-keyboard')return;
    const root=document.documentElement;
-   root.toggleAttribute('data-keyboard-open',!!event.data.open);
-   if(event.data.open){root.style.setProperty('--app-viewport',`${Math.round(window.innerHeight*.62)}px`);root.style.setProperty('--app-viewport-top','0px');}
-   else{root.style.removeProperty('--app-viewport');root.style.removeProperty('--app-viewport-top');}
+   // The production composer owns data-keyboard-open. Keep the simulator independent.
+   root.toggleAttribute('data-qa-keyboard',!!event.data.open);
   };
   window.addEventListener('message',receive);
-  return()=>{window.removeEventListener('message',receive);document.documentElement.removeAttribute('data-keyboard-open');document.documentElement.style.removeProperty('--app-viewport');document.documentElement.style.removeProperty('--app-viewport-top');};
+  return()=>{window.removeEventListener('message',receive);document.documentElement.removeAttribute('data-qa-keyboard');};
  },[]);
  const api=useCallback(async(input:{action:string;knownRevision?:string;text?:string})=>{
   if(input.action==='messages'){
