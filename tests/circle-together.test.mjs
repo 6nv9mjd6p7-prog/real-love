@@ -24,7 +24,7 @@ const props={accountId:'member',circleId:'circle',disabled:false,refreshKey:[],o
 function render(){index=0;tree=Plan(props);nodes=elements(tree);for(const node of nodes){if(node.type==='button'&&node.props.ref)node.props.ref.current={focus(){if(!node.props.disabled)focused=String(node.props.children);}};if(node.type==='h2'&&node.props.ref)node.props.ref.current={focus(){focused=String(node.props.children);}};}focusEffect?.();return renderToStaticMarkup(tree);}
 function button(label){return nodes.find(node=>node.type==='button'&&node.props.children===label);}
 const tick=()=>new Promise(resolve=>setImmediate(resolve));
-let html=render();assert(html.includes('Talk · Help · Do · Build'));assert(!nodes.some(node=>node.type==='form'),'form is not forced into the initial chat');
+let html=render();assert(html.includes('Plan')&&html.includes('Talk · Help · Do · Build'));assert(!nodes.some(node=>node.type==='form'),'form is not forced into the initial chat');
 tree.props.onToggle({currentTarget:{open:true}});render();button('Create a plan').props.onClick();render();
 assert.equal(focused,'Share with your circle','opening focuses the form heading after commit');button('Keep draft & close').props.onClick();render();assert.equal(focused,'Create a plan','closing restores focus after the add button is enabled');assert(!nodes.some(node=>node.type==='form'));button('Create a plan').props.onClick();render();
 const kind=nodes.find(node=>node.type==='select');assert.deepEqual(elements(kind).filter(node=>node.type==='option').map(node=>node.props.value),['offer','request','activity','project']);
