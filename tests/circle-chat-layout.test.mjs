@@ -46,7 +46,8 @@ assert.equal(panels.length,3);
 assert.equal(panels.find(n=>n.props.id.includes('-Chat-')).props.hidden,false);
 assert.equal(panels.find(n=>n.props.id.includes('-People-')).props.hidden,true);
 assert.equal(panels.find(n=>n.props.id.includes('-Together-')).props.hidden,true);
-assert(nodes.some(n=>n.props?.className==='circle-activity-strip'),'next activity remains available from Chat');
+assert(nodes.some(n=>n.props?.className==='circle-activity-strip'),'optional activity remains available from Chat without becoming the primary circle purpose');
+assert(source.includes('Search topics or purpose'),'circle browsing copy leads with ideas and purpose rather than activity');
 assert(source.includes("if(!chatVisible.current||!scope"),'hidden transcript cannot acknowledge incoming messages');
 assert(source.includes("selectCircleView('Chat');nearBottom.current=false"),'opening search results reveals Chat');
 for(const initialView of ['Together','People']){index=0;const restored=elements(Circles({accountId:'member',active:true,connections:[],initialCircle:circle.id,initialView,onReport:()=>{}}));assert.equal(restored.find(n=>n.props?.id==='circle-panel-'+initialView+'-'+circle.id).props.hidden,false,'explicit section route seeds the visible panel on remount');}
