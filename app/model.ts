@@ -128,6 +128,27 @@ export function matchesProfileFilters(p:Profile,f:ExtraProfileFilters){
  return !f.answers?.some(rule=>{const text=sharedProfileAnswer(p,rule.field);return rule.mode==='shared'?!text:rule.mode==='not-shared'?!!text:!text||!searchFold(text).includes(searchFold(rule.value));});
 }
 export function profileSearchText(p:Profile){return searchFold([...profileTextFields.map(([field])=>sharedProfileAnswer(p,field)),p.region??'',p.country??'',profileGender(p),p.orientation==='Prefer not to label'?'':p.orientation,p.expectation==='Unsure'?'':p.expectation,...profileAvailability(p),...profileParticipation(p),p.orientationDescription??'',p.introPrompt??'',...profileInterests(p),...p.activities??[],...p.communication??[]].join(' '));}
+export function discoverySearchRelevance(p:Profile,query:string){
+ const q=searchFold(query);if(!q)return 0;
+ const exactInterests=profileInterests(p).map(searchFold);
+ if(exactInterests.some(value=>value===q))return 40;
+ if(exactInterests.some(value=>value.includes(q)))return 30;
+ const intellectual=[p.question,p.perspective,p.care,p.startIdea].map(value=>searchFold(value||''));
+ if(intellectual.some(value=>value.includes(q)))return 20;
+ if(searchFold(p.about||'').includes(q))return 12;
+ return profileSearchText(p).includes(q)?5:0;
+}
+export function discoverySearchSuggestions(query:string){
+ const q=searchFold(query);if(!q)return [];
+ const suggestions:string[]=[];
+ const add=(value:string)=>{if(value&&!suggestions.includes(value))suggestions.push(value);};
+ if(/bronze|ancient|collapse/.test(q)){add('History');add('Ancient Civilizations');add('Collapse & Systems');}
+ for(const group of interestGroups){
+  const values=[group.name,...group.topics];
+  if(values.some(value=>q.includes(searchFold(value))||searchFold(value).includes(q))){add(group.name);for(const topic of group.topics)if(suggestions.length<3)add(topic);}
+ }
+ return suggestions.slice(0,3);
+}
 export function profileFilterLabels(f:ExtraProfileFilters){return [
  ...(['gender','orientation','expectation','startRole','introPrompt','photo'] as const).flatMap(key=>f[key]?[{key,label:({gender:'Gender',orientation:'Attraction',expectation:'Sexual expectations',startRole:'Participation',introPrompt:'Introduction prompt',photo:'Photo availability'}[key])+': '+(key==='photo'?(f.photo==='available'?'Uploaded':'Not uploaded'):f[key])}]:[]),
  ...(f.communication??[]).map(value=>({key:'communication:'+value,label:'Communication: '+value})),...(f.activities??[]).map(value=>({key:'activities:'+value,label:'Activity: '+value})),
