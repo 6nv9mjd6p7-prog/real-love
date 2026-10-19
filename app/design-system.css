@@ -1032,3 +1032,47 @@ html .app-shell>.sidebar nav .nav-item .nav-icon>.count{position:absolute;top:-9
 .private-plan-card>header{display:flex;flex-wrap:wrap;justify-content:space-between;gap:8px}
 .private-plan-card>p,.private-plan-card>time{display:block;margin:6px 0;white-space:pre-wrap}
 .plan-status{font-size:.8125rem;color:var(--muted)}
+/* One compact rhythm across the five destinations; full content stays in place. */
+html,body{max-width:100%;overflow-x:clip}
+.app-shell,.app-shell>main,.app-shell .content{min-width:0;max-width:100%}
+.app-shell .discovery-screen,.app-shell .inbox-screen,.app-shell .circle-grid,
+.app-shell .profile-screen,.app-shell .settings-screen{width:100%;min-width:0}
+.app-shell :is(.discovery-screen,.inbox-screen,.profile-screen,.settings-screen)>.page-heading,
+.app-shell .profile-screen-heading{margin-bottom:12px}
+.app-shell :is(.discovery-screen,.inbox-screen,.profile-screen,.settings-screen) .page-heading p{max-width:44rem}
+/* Discover uses quiet rows and progressive disclosure instead of a stack of cards. */
+.app-shell .discovery-screen .profile-grid{display:block;width:min(100%,760px);margin:12px auto 0;border-top:1px solid var(--border)}
+.app-shell .discovery-screen .profile-grid>.compact-person{display:block;margin:0;padding:16px 0;border:0;border-bottom:1px solid var(--border);border-radius:0;background:transparent;box-shadow:none}
+.app-shell .discovery-screen .compact-person .person-title{margin:0 0 4px}
+.app-shell .discovery-screen .compact-person .bio-meta{margin:2px 0 8px}
+.app-shell .discovery-screen .compact-person .card-interests{margin:8px 0}
+.app-shell .discovery-screen .compact-person .discovery-thought{margin:8px 0 12px;padding:0;background:transparent}
+.app-shell .discovery-screen .discovery-thought>strong{display:block;font-size:.8125rem;color:var(--muted)}
+.app-shell .discovery-screen .discovery-question{display:block;margin:4px 0 8px;font-size:1rem;line-height:1.45;font-weight:600;overflow-wrap:anywhere}
+.app-shell .discovery-screen .discovery-answer{border-top:1px solid var(--border);border-bottom:1px solid var(--border)}
+.app-shell .discovery-screen .discovery-answer>summary{min-height:44px;padding:10px 0;color:var(--accent);font-size:.875rem;cursor:pointer}
+.app-shell .discovery-screen .discovery-answer-content{padding:0 0 10px}
+.app-shell .discovery-screen .discovery-answer-content>strong{font-size:.8125rem;color:var(--muted)}
+.app-shell .discovery-screen .discovery-answer-content>p{margin:4px 0;font-size:.9375rem;line-height:1.5;overflow-wrap:anywhere}
+.app-shell .discovery-screen .discovery-card-actions{grid-template-columns:minmax(0,1fr) auto;gap:8px;padding-top:8px}
+/* Circle cards become a compact catalogue while preserving their actions/details. */
+.app-shell .circle-grid{display:block;width:min(100%,760px);margin:12px auto 0;border-top:1px solid var(--border)}
+.app-shell .circle-grid>.circle-card{display:flex;margin:0;padding:14px 0;border:0;border-bottom:1px solid var(--border);border-radius:0;background:transparent;box-shadow:none}
+.app-shell .circle-grid .circle-card .circle-purpose{margin:2px 0 8px}
+.app-shell .circle-grid .circle-card .interest-tags{margin:4px 0}
+/* Profile and Settings retain their disclosures, with one consistent content width. */
+.app-shell .profile-screen,.app-shell .settings-screen{max-width:800px}
+.app-shell .profile-screen .profile-section-grid{border-radius:8px}
+.app-shell .profile-screen .profile-section-card:first-child{border-radius:8px 8px 0 0}
+.app-shell .profile-screen .profile-section-card:last-child{border-radius:0 0 8px 8px}
+.app-shell .settings-screen .settings-group{border-radius:8px}
+.app-shell .inbox-screen{max-width:800px}
+@media(max-width:720px){
+ .app-shell .content{padding-bottom:calc(104px + env(safe-area-inset-bottom))}
+ .app-shell .content:has(.conversation-screen,.circle-conversation){padding-bottom:0}
+ .app-shell .discovery-screen .profile-grid,.app-shell .circle-grid{margin-top:8px}
+ .app-shell .discovery-screen .compact-person{padding-block:12px}
+ .app-shell .discovery-screen .compact-person .person-title h2{font-size:1.0625rem}
+ .app-shell .profile-screen,.app-shell .settings-screen{max-width:none}
+ .app-shell .inbox-screen .inbox-toolbar{gap:8px}
+}
