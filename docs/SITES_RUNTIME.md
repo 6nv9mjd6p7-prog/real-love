@@ -1,4 +1,6 @@
-# vinext-starter
+# Real Love runtime and deployment
+
+This is the canonical reference for local and hosted runtime behavior. The GitHub source repository and the published Sites release are separate steps; a GitHub commit is not live until its matching Sites deployment succeeds.
 
 A clean full-stack starter running on [vinext](https://github.com/cloudflare/vinext), with optional Cloudflare D1 and Drizzle support.
 
