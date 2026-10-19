@@ -11,9 +11,9 @@ const location=compile(readFileSync('app/location.ts','utf8'));
 let state=[],index=0,ids=0;
 globalThis.__loc={useState:x=>{const i=index++;if(!(i in state))state[i]=x;return [state[i],next=>state[i]=typeof next==='function'?next(state[i]):next];},useRef:x=>{const i=index++;return state[i]??(state[i]={current:x});},useId:()=>`place-${ids++}`};
 const fake="const {useState,useRef,useId}=globalThis.__loc;const useEffect=()=>{};";
-const places=[{city:'Austin',region:'Texas',country:'United States',areaLat:30.26,areaLon:-97.74,locationPlaceId:'austin'},{city:'Austin',region:'Minnesota',country:'United States',areaLat:43.66,areaLon:-92.97,locationPlaceId:'austin-mn'}];
+const places=[{city:'Austin',region:'Texas',country:'United States',areaLat:30.26,areaLon:-97.74,locationPlaceId:'austin',locationSelectionToken:'token-austin'},{city:'Austin',region:'Minnesota',country:'United States',areaLat:43.66,areaLon:-92.97,locationPlaceId:'austin-mn',locationSelectionToken:'token-austin-mn'}];
 globalThis.__places=places;
-const source=readFileSync('app/location-editor.tsx','utf8').replace("import {useEffect,useId,useRef,useState} from 'react';",fake).replace("from './location'",`from '${location}'`).replace('useState<BroadLocationPoint[]>([])','useState(globalThis.__places)');
+const source=readFileSync('app/location-editor.tsx','utf8').replace("import {useEffect,useId,useRef,useState} from 'react';",fake).replace("from './location'",`from '${location}'`).replace('useState<LocationSuggestion[]>','useState(globalThis.__places)');
 const {default:Editor}=await import(compile(source));
 function nodes(n){return !n||typeof n!=='object'?[]:[n,...React.Children.toArray(n.props?.children).flatMap(nodes)];}
 let form={city:'',region:'',country:''};

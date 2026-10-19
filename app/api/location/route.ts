@@ -1,6 +1,9 @@
 import {getChatGPTUser} from '../../chatgpt-auth';
 import {initializeAccount,quota,readInput,safetyHeaders,failure} from '../../safety';
 import {reverseBroadLocations,searchBroadLocations} from '../../location-search';
+import {issueLocationSelection} from '../../location-selection';
+
+async function withSelectionTokens(member:string,places:any[]){return await Promise.all(places.map(async place=>({...place,locationSelectionToken:await issueLocationSelection(member,place)})));}
 
 async function userForLocation(){
  const user=await getChatGPTUser();if(!user)throw Object.assign(Error('Sign in to continue.'),{status:401});
@@ -12,7 +15,7 @@ export async function GET(req:Request){
   const url=new URL(req.url),expected=url.searchParams.get('expectedAccount');if(expected&&expected!==user.userId)return Response.json({error:'Your signed-in account changed. Refresh before continuing.'},{status:409,headers:safetyHeaders});
   const query=(url.searchParams.get('q')||'').trim();if(query.length<2)return Response.json({suggestions:[]},{headers:safetyHeaders});if(query.length>120)return Response.json({error:'Search for a city or general area using 120 characters or fewer.'},{status:400,headers:safetyHeaders});
   await quota(user.userId,'location_search',30,60);
-  return Response.json({suggestions:await searchBroadLocations(query)},{headers:safetyHeaders});
+  return Response.json({suggestions:await withSelectionTokens(user.userId,await searchBroadLocations(query))},{headers:safetyHeaders});
  }catch(error:any){if(error?.status===401)return Response.json({error:error.message},{status:401,headers:safetyHeaders});return failure(error);}
 }
 export async function POST(req:Request){
@@ -25,6 +28,6 @@ export async function POST(req:Request){
   await quota(user.userId,'location_reverse',10,60);
   const coarseLat=Math.round(lat*100)/100,coarseLon=Math.round(lon*100)/100;
   // Return provider area points, not the member's rounded device position, for profile matching.
-  const suggestions=await reverseBroadLocations(coarseLat,coarseLon);return Response.json({suggestion:suggestions[0],suggestions},{headers:safetyHeaders});
+  const suggestions=await withSelectionTokens(user.userId,await reverseBroadLocations(coarseLat,coarseLon));return Response.json({suggestion:suggestions[0],suggestions},{headers:safetyHeaders});
  }catch(error:any){if(error?.status===401)return Response.json({error:error.message},{status:401,headers:safetyHeaders});return failure(error);}
 }

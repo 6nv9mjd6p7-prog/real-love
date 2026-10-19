@@ -6,7 +6,7 @@ function nodes(n){return !n||typeof n!=='object'?[]:[n,...React.Children.toArray
 let form={city:'Old city',region:'Old region',country:'United States'},pending=false,success,error,options,requests=[];
 const originalNavigator=Object.getOwnPropertyDescriptor(globalThis,'navigator'),realFetch=globalThis.fetch;
 Object.defineProperty(globalThis,'navigator',{value:{geolocation:{getCurrentPosition(a,b,o){success=a;error=b;options=o;}}},configurable:true});
-globalThis.fetch=async(url,opt)=>{requests.push(JSON.parse(opt.body));return Response.json({suggestions:[{city:'Austin',region:'Texas',country:'United States',areaLat:30.2672,areaLon:-97.7431,locationPlaceId:'austin'}]});};
+globalThis.fetch=async(url,opt)=>{requests.push(JSON.parse(opt.body));return Response.json({suggestions:[{city:'Austin',region:'Texas',country:'United States',areaLat:30.2672,areaLon:-97.7431,locationPlaceId:'austin',locationSelectionToken:'token-austin'}]});};
 function render(){index=0;ids=0;return nodes(Editor({accountId:'member',form,setForm:f=>form=typeof f==='function'?f(form):f,me:{city:'Old city',region:'Old region',country:'United States'},busy:false,onPendingChange:p=>pending=p}));}
 const button=s=>render().find(n=>n.type==='button'&&n.props.children===s);const input=()=>render().find(n=>n.props.role==='combobox');
 assert.equal(input().props.value,'Old city, Old region, United States','saved location is an editable value, not only a placeholder');assert(button('Change area'));

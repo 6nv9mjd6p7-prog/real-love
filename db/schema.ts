@@ -35,6 +35,8 @@ export const campaignFeedback=sqliteTable('campaign_feedback',{id:text('id').pri
 
 export const circleActivityParticipants=sqliteTable('circle_activity_participants',{message:text('message').notNull(),member:text('member').notNull(),created:text('created').notNull()},t=>[primaryKey({columns:[t.message,t.member]}),index('idx_activity_participant_member').on(t.member)]);
 
+export const locationSelections=sqliteTable('location_selections',{token:text('token').primaryKey(),member:text('member').notNull(),place:text('place').notNull(),expires:text('expires').notNull()},t=>[index('idx_location_selections_member_expiry').on(t.member,t.expires)]);
+
 // One current invitation per member; decisions remain in the moderation audit log.
 export const reviewerInvitations=sqliteTable('reviewer_invitations',{
  member:text('member').primaryKey(),id:text('id').notNull(),issuer:text('issuer').notNull(),authority:text('authority').notNull(),

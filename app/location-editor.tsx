@@ -1,12 +1,13 @@
 'use client';
 import {useEffect,useId,useRef,useState} from 'react';
 import {locationKey,locationLabel,type BroadLocationPoint} from './location';
+type LocationSuggestion=BroadLocationPoint&{locationSelectionToken:string};
 
 // Locations use a searchable, keyboard-operated combobox because a fixed dropdown cannot cover place names.
 // Only a selected structured suggestion changes the saved area; free text remains a search query.
 export default function LocationEditor({accountId,form,setForm,me,busy,onPendingChange}:{accountId:string;form:any;setForm:(value:any)=>void;me:any;busy:boolean;onPendingChange?:(pending:boolean)=>void}){
  const inputId=useId(),listId=useId(),skipSearch=useRef(true),inputRef=useRef<HTMLInputElement>(null),detection=useRef(0),alive=useRef(true);
- const [query,setQuery]=useState(locationLabel(form)),[results,setResults]=useState<BroadLocationPoint[]>([]),[searching,setSearching]=useState(false),[finding,setFinding]=useState(false),[locating,setLocating]=useState(false),[retry,setRetry]=useState(0),[message,setMessage]=useState(''),[connectionKey,setConnectionKey]=useState('');
+ const [query,setQuery]=useState(locationLabel(form)),[results,setResults]=useState<LocationSuggestion[]>([]),[searching,setSearching]=useState(false),[finding,setFinding]=useState(false),[locating,setLocating]=useState(false),[retry,setRetry]=useState(0),[message,setMessage]=useState(''),[connectionKey,setConnectionKey]=useState('');
  const locationTimer=useRef<ReturnType<typeof setTimeout>|null>(null),locationRequest=useRef<AbortController|null>(null);
  const [deviceMessage,setDeviceMessage]=useState(''),[openBrowser,setOpenBrowser]=useState(false);
  function cancelDetection(){detection.current++;if(locationTimer.current!==null){clearTimeout(locationTimer.current);locationTimer.current=null;}locationRequest.current?.abort();locationRequest.current=null;}
@@ -26,10 +27,10 @@ export default function LocationEditor({accountId,form,setForm,me,busy,onPending
   return()=>{clearTimeout(timer);controller.abort();};
  },[query,accountId,retry]);
 
- function choose(place:BroadLocationPoint){
+ function choose(place:LocationSuggestion){
   cancelDetection();setDeviceMessage('');setOpenBrowser(false);setLocating(false);setFinding(false);skipSearch.current=true;onPendingChange?.(false);
   const canConfirm=!!connectionKey&&locationKey(place)===connectionKey;
-  setForm((previous:any)=>({...previous,city:place.city,region:place.region,country:place.country,areaLat:place.areaLat,areaLon:place.areaLon,locationPlaceId:place.locationPlaceId,confirmLocation:canConfirm}));
+  setForm((previous:any)=>({...previous,city:place.city,region:place.region,country:place.country,areaLat:place.areaLat,areaLon:place.areaLon,locationPlaceId:place.locationPlaceId,locationSelectionToken:place.locationSelectionToken,confirmLocation:canConfirm}));
   setQuery(locationLabel(place));setResults([]);setActiveOption(-1);setSuggestionsClosed(true);setMessage(canConfirm?'Selected from place data. Save your profile to confirm this area from your connection.':'Selected from place data. Nearby matching uses this area point, not an exact home or live location.');
  }
  async function find(){
@@ -75,7 +76,7 @@ export default function LocationEditor({accountId,form,setForm,me,busy,onPending
     const lat=Math.round(position.coords.latitude*100)/100,lon=Math.round(position.coords.longitude*100)/100;
     const response=await fetch('/api/location',{method:'POST',headers:{'Content-Type':'application/json'},signal:controller.signal,body:JSON.stringify({action:'reverse',lat,lon,expectedAccount:accountId})});
     const data:any=await response.json();if(!alive.current||ticket!==detection.current)return;if(!response.ok)throw Error(data.error||'Your current area could not be identified.');
-    const places=(data.suggestions?.length?data.suggestions:[data.suggestion]).filter(Boolean) as BroadLocationPoint[];if(!places.length)throw Error('No nearby places were found. Search for your city instead.');skipSearch.current=true;setQuery('');setResults(places);onPendingChange?.(true);setSuggestionsClosed(false);setActiveOption(-1);setDeviceMessage('Nearby places suggested'+(Number.isFinite(accuracy)?' · device accuracy about '+Math.max(1,Math.round(accuracy))+' metres':'')+'. Choose the correct area above, or type your city if these are wrong. Your saved area has not changed.');
+    const places=(data.suggestions?.length?data.suggestions:[data.suggestion]).filter(Boolean) filter((place:any)=>place?.locationSelectionToken) as LocationSuggestion[];if(!places.length)throw Error('No nearby places were found. Search for your city instead.');skipSearch.current=true;setQuery('');setResults(places);onPendingChange?.(true);setSuggestionsClosed(false);setActiveOption(-1);setDeviceMessage('Nearby places suggested'+(Number.isFinite(accuracy)?' · device accuracy about '+Math.max(1,Math.round(accuracy))+' metres':'')+'. Choose the correct area above, or type your city if these are wrong. Your saved area has not changed.');
    }catch(e:any){if(alive.current&&ticket===detection.current){setResults([]);setDeviceMessage(e.message||'Your current area could not be identified. Search for your city instead.');}}
    finally{if(alive.current&&ticket===detection.current)finish();}
   },fail,{enableHighAccuracy:true,timeout:20000,maximumAge:0});}catch{fail({});}
