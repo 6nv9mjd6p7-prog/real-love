@@ -837,3 +837,48 @@ Next: reopen preview in a permitted browser state, capture Discover and represen
 - Browser interactions and console inspection: blocked by unavailable local preview.
 
 **final result: blocked**
+
+## 2026-10-19 — Demo profile density follow-up
+
+- Reviewed the user-provided desktop demo screenshot. It showed four fictional profiles using the selected single-column layout, with substantial vertical gaps between the question, optional activity disclosure, and profile action.
+- Reduced spacing within the demo profile summary, including metadata, interest chips, connection context, question/answer, optional activities, and the profile action. All details remain present and accessible.
+- Automated checks after the CSS change: 66 tests passed, TypeScript passed, production build passed, and the Site package completed.
+- The desktop screenshot was reviewed at its supplied dimensions. A new browser-rendered comparison and mobile device check were not available for this follow-up.
+
+**final result: blocked for mobile visual verification**
+
+## 2026-10-19 — Five-screen compact design, option 1
+
+### Source and scope
+
+- Selected visual truth: `/workspace/scratch/681a5468fc36/generated_images/exec-1b740709-e0ac-4bd1-96e3-57da8e5ce0a2.png` (853 × 1844 raster pixels; a mobile Discover screen). The layout direction is adapted across Discover, Chats, Circles, My Profile, and Settings.
+- Implementation: `/workspace/sites/real-love-publish/app/globals.css`.
+- Intended comparison viewport: mobile 390 × 844 CSS px. A rendered implementation capture could not be obtained.
+- Browser preview: `http://terminal.local:4173/` was unavailable. The preview service reported a stale Vite process under `/site`, then refused to become healthy after restart; the cloud browser returned `net::ERR_CONNECTION_REFUSED`.
+- State: responsive app layout, default collapsed disclosures. No implementation screenshot, full-view comparison, focused-region comparison, or browser interaction evidence is available.
+
+### Changes applied
+
+- Replaced the 4-column mobile navigation layout with five equal destinations and kept it fixed at the bottom on non-conversation screens.
+- Used a consistent divider-based list rhythm for Discover profiles, circle listings, and profile sections.
+- Tightened page headings, search, summary rows, settings disclosure spacing, and chat-list rows while preserving existing components and actions.
+- Kept all existing profile content and details. The selected image's sample faces, ages, locations, online markers, and invitation action were not treated as product requirements.
+
+### Fidelity surfaces and findings
+
+- **Typography:** existing product font and established heading scale retained; actual mobile wrapping could not be inspected.
+- **Spacing and layout:** CSS now applies compact dividers, tighter spacing, and five fixed mobile tabs. Final device proportions and any overflow remain unverified.
+- **Colors and tokens:** existing ink, indigo, neutral background, border, and hover tokens reused.
+- **Image quality and assets:** no new raster imagery was added. Existing app-controlled photos and icon assets are untouched.
+- **Copy and content:** no copy or profile fields were removed; existing privacy, safety, and feature details remain accessible.
+- **Blocker:** no browser-rendered capture was available, so visual design QA and primary navigation interactions cannot be marked passed. No visual P0/P1/P2 findings can be asserted from source alone.
+
+### Automated checks
+
+- `npm test`: passed, 66 tests.
+- `npm run typecheck`: passed.
+- `npm run build`: passed.
+- `npm run lint`: existing repository lint fails with 441 errors and 69 warnings across API, app, and test files (mostly existing `any` typing and test helper hook/name rules); the CSS-only design change introduces no lintable source code.
+- Browser interactions and console inspection: blocked by unavailable local preview.
+
+**final result: blocked**
