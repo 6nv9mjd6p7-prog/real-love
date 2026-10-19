@@ -47,12 +47,12 @@ assert.equal(panels.find(n=>n.props.id.includes('-Chat-')).props.hidden,false);
 assert.equal(panels.find(n=>n.props.id.includes('-People-')).props.hidden,true);
 assert.equal(panels.find(n=>n.props.id.includes('-Plan-')).props.hidden,true);
 const chatPanel=panels.find(n=>n.props.id.includes('-Chat-')),plansPanel=panels.find(n=>n.props.id.includes('-Plan-'));
-assert(!elements(chatPanel).some(n=>n.props?.className==='circle-activity-strip'),'activity planning no longer leads the Chat view');
-assert(elements(plansPanel).some(n=>n.props?.className==='circle-activity-strip'),'optional activity idea remains available inside Plans');
+assert(elements(chatPanel).some(n=>n.props?.className==='circle-activity-strip'),'the current activity idea is visible as a compact strip in Chat');
+assert(!elements(plansPanel).some(n=>n.props?.className==='circle-activity-strip'),'activity details are not duplicated in Plans');
 assert(source.includes("if(!chatVisible.current||!scope"),'hidden transcript cannot acknowledge incoming messages');
 assert(source.includes("selectCircleView('Chat');nearBottom.current=false"),'opening search results reveals Chat');
 for(const initialView of ['Plan','People']){index=0;const restored=elements(Circles({accountId:'member',active:true,connections:[],initialCircle:circle.id,initialView,onReport:()=>{}}));assert.equal(restored.find(n=>n.props?.id==='circle-panel-'+initialView+'-'+circle.id).props.hidden,false,'explicit section route seeds the visible panel on remount');}
-console.log('Circle workspace keeps Chat conversation-first while preserving optional activity planning in Plans.');
+console.log('Circle workspace keeps the next activity visible in Chat and preserves full planning in Plans.');
 
 // Arrow navigation activates and focuses the matching tab; controls reference real panels.
 let sectionSource=readFileSync('app/circle-sections.tsx','utf8').replace(/^import .* from 'lucide-react';$/m,'const MessageCircle=()=>null,Users=()=>null,CalendarDays=()=>null;');

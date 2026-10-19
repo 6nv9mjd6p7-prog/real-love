@@ -740,3 +740,36 @@ Continues the notification-density finding from the desktop audit. Groups only a
 Integrated newer GitHub main 261b0d5dcbca8da84c09cee4cd238b924af92d4c before packaging: intellectual discovery ranking, ideas-first profiles, simplified chat details and public landing are preserved. No notification-file overlap occurred. Full suite: 62 files passed; TypeScript passed. Regression checks cover event conservation, separate conversation and circle grouping, separate consent/reactions/unavailable events, unchanged read values, stable group keys and individual action buttons. React review: pure derived grouping, top-level event component, no hooks in loops, no new effects/API in grouping and existing account-specific mount retained.
 
 Local fictional Activity preview uses the actual NotificationActivityList with eight messages, a separate photo-sharing request and separate circle admission request. Enter expands/collapses; all eight events remain; selecting the first invokes only its fictional callback. Unread count remains two after expansion. 390px screenshot inspected at /workspace/scratch/group-notifications-phone.jpg; 320px has no horizontal overflow. A preview-only hydration mismatch from server/device time zones was fixed by rendering the fictional fixture after mount; production notification data already loads client-side. No private messages, roles or notification permissions were changed during QA. Physical devices and screen readers remain unverified. QA passed for this scope; production build checked during packaging.
+
+## Follow-up: compact private and circle chat layout
+
+The compact chat pattern requested on 2026-10-19 is implemented across private and circle chat. Plans and conversation details remain available without competing with the message timeline.
+
+### Reviewed states
+
+- Private chat at 390 × 844: compact header, photo status, local Chat / Plans tabs, prompt disclosure, fixed composer.
+- Private Plans at 390 × 844: plan status, proposal actions, and Discuss in chat destination.
+- Circle chat at 390 × 844: circle header, upcoming activity strip above messages, conversation ideas disclosure, fixed composer, and Chat / Plan / Members navigation.
+- Circle chat at 320 × 568 and simulated keyboard state: narrow layout and reduced visible viewport.
+
+### Interaction and visual findings
+
+- Private plans open as a first-class local tab instead of expanding into the chat header.
+- Circle activity is visible in Chat, with a path to Plans retained.
+- “Discuss in chat” and “Add to draft” preserve the prompt or plan context in the composer.
+- Private chat tab navigation supports arrow keys, Home, and End; tabs are disabled while a voice note is being composed.
+- The narrow preview showed no horizontal overflow. The local preview can switch between Direct and Circle and repeat the same viewport sizes.
+- No P0–P2 visual or interaction issues were observed. Private chat retains more context than the circle reference, but its controls are grouped into compact secondary areas.
+
+### Verification
+
+- `pnpm typecheck`: passed.
+- `pnpm test`: 66 passed, 0 failed.
+- `pnpm build`: passed.
+- `git diff --check`: passed.
+- Visual inspection: performed in the local chat viewport preview.
+- Browser console: not inspected. The available CUA browser interface exposes accessibility state and screenshots but not console logs.
+
+### Final result: blocked
+
+The implementation and automated checks passed. Design QA remains blocked only on browser-console inspection because the available browser bridge does not expose console logs; no console-clean claim is made.
