@@ -1075,3 +1075,23 @@ html,body{max-width:100%;overflow-x:clip;overscroll-behavior-x:none}
  .section-tabs{gap:4px}
  .section-tabs button{padding:.55rem .75rem;font-size:.875rem}
 }
+
+/* Tighten the complete profile summary while keeping each detail available. */
+.compact-person{padding-block:12px}
+.compact-person>.demo-label{display:inline-flex;justify-self:start;margin-bottom:4px;padding:3px 6px;font-size:.625rem}
+.compact-person .person-title{margin-bottom:1px}
+.compact-person .bio-meta{margin:0 0 5px;line-height:1.35}
+.compact-person .card-interests{gap:5px;margin:3px 0 5px}
+.compact-person .card-interests .interest-action{min-height:32px;padding:4px 8px}
+.compact-person .connection-summary{margin:4px 0;padding:7px 9px}
+.compact-person .connection-summary p{margin:3px 0;line-height:1.4}
+.compact-person .card-starter{margin:5px 0;padding:6px 0}
+.compact-person .card-starter>p{margin-top:3px;line-height:1.4}
+.compact-person .discovery-card-actions{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:4px}
+.compact-person .card-connect-details{margin:0}
+.compact-person .profile-link{width:auto;min-height:40px;padding:7px 12px;border:1px solid var(--indigo);border-radius:8px}
+@media(max-width:720px){
+ .compact-person{padding-block:10px}
+ .compact-person .card-interests .interest-action{min-height:34px}
+ .compact-person .profile-link{min-height:44px}
+}
