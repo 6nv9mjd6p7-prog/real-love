@@ -1,6 +1,6 @@
 # Choice control audit
 
-Scanned all 99 tracked TSX files under `app/` and `components/`, including shared native/custom select and combobox implementations. The AST inventory found 85 native input/select/textarea declarations. A declaration inside a loop or helper can render several controls; this is not a screen or field-instance count. Server option allowlists, birth-date validation, public projections, and matching were also checked for consistency with the UI.
+Scanned all 99 tracked TSX files under `app/` and `components/`, including the former shared native/custom select and combobox primitives. The AST inventory found 85 native input/select/textarea declarations. A declaration inside a loop or helper can render several controls; this is not a screen or field-instance count. Server option allowlists, birth-date validation, public projections, and matching were also checked for consistency with the UI.
 
 ## Decisions
 
@@ -52,6 +52,8 @@ Validation uses interaction/render regression checks, TypeScript, and the produc
 | `app/moderation.tsx` | 4 |
 | `app/profile-editor.tsx` | 25 |
 | `app/worker-support.tsx` | 1 |
-| `components/ui/input.tsx` | 1 |
-| `components/ui/native-select.tsx` | 1 |
-| `components/ui/textarea.tsx` | 1 |
+
+
+## Follow-up cleanup — October 19, 2026
+
+The app uses its own native form controls and does not import the generated `components/ui/` library. The unused scaffold, its configuration, and dependencies were removed after this historical inventory; the audit decisions above remain relevant to the app's actual controls.
