@@ -47,7 +47,7 @@ assert(submit().props.disabled,'privacy acknowledgement is still required');
 nodes.find(n=>n.type==='input'&&n.props.type==='checkbox').props.onChange({target:{checked:true}});nodes=render();
 assert(!submit().props.disabled);
 elements(label('Circle name')).find(n=>n.type==='input').props.onChange({target:{value:'Hospitality organizing group'}});nodes=render();
-elements(label('What will you explore together?')).find(n=>n.type==='textarea').props.onChange({target:{value:'Learn about shared industry concerns and qualified organizing help.'}});nodes=render();
+elements(label('What is this circle for?')).find(n=>n.type==='textarea').props.onChange({target:{value:'Learn about shared industry concerns and qualified organizing help.'}});nodes=render();
 const originalWindow=Object.getOwnPropertyDescriptor(globalThis,'window');Object.defineProperty(globalThis,'window',{value:{location:{hash:'#circles/organize'}},configurable:true});
 let posted;
 globalThis.fetch=async(_url,options)=>{if(options?.method==='POST')posted=JSON.parse(options.body);return {ok:true,json:async()=>options?.method==='POST'?{ok:true}:{accountId:'member',circles:[]}};};
