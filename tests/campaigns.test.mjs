@@ -42,7 +42,7 @@ async function write(who,body){as(who);const r=await campaigns.POST(request({exp
 assert.equal((await read(null)).status,401);
 assert.equal((await write('author',{action:'propose',draft:payload})).status,400);
 assert.equal((await write('validation',{action:'propose',draft:{...payload,sources:[{url:'javascript:alert(1)',claim:'Invalid executable source.'}]},consent:true})).status,400);
-assert.equal((await write('author',{action:'propose',draft:{...payload,reviewDate:'2020-01-01'},consent:true})).status,400);
+const invalidReviewDate=await write('author',{action:'propose',draft:{...payload,reviewDate:'2020-01-01'},consent:true});process.stderr.write('DATE_DEBUG '+JSON.stringify({profile:sql.prepare("SELECT p.active,json_extract(p.data,'$.rulesVersion') AS rulesVersion,a.status FROM profiles p JOIN safety_accounts a ON a.id=p.id WHERE p.id='author'").get(),response:invalidReviewDate})+'\\n');assert.equal(invalidReviewDate.status,400);
 assert.equal((await write('author',{action:'propose',draft:payload,consent:true,expectedAccount:'other'})).status,409);
 as('author');assert.equal((await campaigns.POST(request({action:'propose',draft:payload,consent:true,expectedAccount:'author'},'https://evil.invalid'))).status,403);
 const proposed=await write('author',{action:'propose',draft:payload,consent:true});assert.equal(proposed.status,200);const campaign=proposed.data.campaign;
