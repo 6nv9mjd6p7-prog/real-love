@@ -32,7 +32,7 @@ function as(id){globalThis.__rlUser=id?{userId:id,email:id+'@test.invalid'}:null
 function request(body,origin='https://rl.test',cf=null){const value=new Request('https://rl.test/api/app',{method:'POST',headers:{'Content-Type':'application/json',Origin:origin},body:JSON.stringify(body)});if(cf)Object.defineProperty(value,'cf',{value:cf});return value;}
 async function post(id,body,cf=null){as(id);const r=await (body.action==='report'?reports:app).POST(request(body,'https://rl.test',cf));return {status:r.status,data:await r.json()};}
 async function get(id){as(id);const r=await app.GET();return {status:r.status,data:await r.json()};}
-const draft=(id)=>({...model.examples[1],birthDate:`${new Date().getUTCFullYear()-30}-01-01`,id,name:id,demo:false,gender:'Man',interested:['Woman'],orientation:'Asexual',aceOnly:true,intentions:['Build together','Friendship','Romance'],connectionBoundary:'Friendship only',firstStep:'A conversation about community decisions',consent:true,rulesVersion:'2026-10-02',active:true});
+const draft=(id)=>({...model.examples[1],birthDate:`${new Date().getUTCFullYear()-30}-01-01`,id,name:id,demo:false,gender:'Man',interested:['Woman'],orientation:'Asexual',aceOnly:true,intentions:['Build together','Friendship','Romance'],connectionBoundary:'Friendship only',firstStep:'A conversation about community decisions',consent:true,rulesVersion:'2026-10-02',active:true,areaLat:null,areaLon:null,locationPlaceId:''});
 const campaigns=await import(compile('app/api/campaigns/route.ts',replacements));
 for(const who of ['author','member','outsider','reviewer','referee','validation']){await post(who,{action:'profile',profile:draft(who)});sql.prepare("UPDATE safety_accounts SET status='admitted' WHERE id=?").run(who);sql.prepare("UPDATE profiles SET active=1,data=json_set(data,'$.rulesVersion','2026-10-02') WHERE id=?").run(who);}
 sql.prepare('INSERT INTO moderators (id) VALUES (?)').run('reviewer');
@@ -42,7 +42,7 @@ async function write(who,body){as(who);const r=await campaigns.POST(request({exp
 assert.equal((await read(null)).status,401);
 assert.equal((await write('author',{action:'propose',draft:payload})).status,400);
 assert.equal((await write('validation',{action:'propose',draft:{...payload,sources:[{url:'javascript:alert(1)',claim:'Invalid executable source.'}]},consent:true})).status,400);
-const invalidReviewDate=await write('author',{action:'propose',draft:{...payload,reviewDate:'2020-01-01'},consent:true});assert.equal(invalidReviewDate.status,400,JSON.stringify({profile:sql.prepare("SELECT p.active,json_extract(p.data,'$.rulesVersion') AS rulesVersion,a.status FROM profiles p JOIN safety_accounts a ON a.id=p.id WHERE p.id='author'").get(),response:invalidReviewDate}));
+assert.equal((await write('author',{action:'propose',draft:{...payload,reviewDate:'2020-01-01'},consent:true})).status,400);
 assert.equal((await write('author',{action:'propose',draft:payload,consent:true,expectedAccount:'other'})).status,409);
 as('author');assert.equal((await campaigns.POST(request({action:'propose',draft:payload,consent:true,expectedAccount:'author'},'https://evil.invalid'))).status,403);
 const proposed=await write('author',{action:'propose',draft:payload,consent:true});assert.equal(proposed.status,200);const campaign=proposed.data.campaign;
