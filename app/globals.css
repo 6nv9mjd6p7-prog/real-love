@@ -1014,3 +1014,64 @@ html,body{max-width:100%;overflow-x:clip;overscroll-behavior-x:none}
  .public-final-cta{align-items:stretch;flex-direction:column;margin:16px 14px 46px;padding:24px 20px}
  .public-footer{align-items:flex-start;flex-direction:column;padding:20px 16px}
 }
+
+/* Minimal, consistent hierarchy across Discover, Chats, Circles, Profile and Settings. */
+:root{--space-section:20px;--space-item:12px}
+.content>.page-heading{margin-bottom:18px}
+.content>.page-heading p{margin-top:6px;line-height:1.55}
+.section-tabs{margin-bottom:12px}
+.discovery-toolbar{margin-block:10px 4px}
+.discovery-toolbar>.search{min-height:48px;border-radius:12px}
+.profile-grid{grid-template-columns:minmax(0,1fr);gap:0}
+.profile-grid .compact-person{padding:16px 4px;border:0;border-bottom:1px solid var(--line);border-radius:0;background:transparent;box-shadow:none}
+.profile-grid .compact-person:first-child{border-top:1px solid var(--line)}
+.profile-grid .compact-person:hover{transform:none;box-shadow:none;background:var(--hover-surface)}
+.compact-person .person-title{margin-bottom:4px}
+.compact-person .bio-meta{margin:2px 0 8px}
+.compact-person .card-interests{margin:4px 0 8px}
+.compact-person .card-interests .interest-action{min-height:36px;padding:5px 9px}
+.compact-person .discovery-card-actions{margin-top:8px}
+.circle-grid{margin-top:10px;gap:0}
+.circle-grid .circle-card{padding:16px 4px;border:0;border-bottom:1px solid var(--line);border-radius:0;background:transparent;box-shadow:none}
+.circle-grid .circle-card:first-child{border-top:1px solid var(--line)}
+.circle-grid .circle-card .circle-card-meta{margin:8px 0}
+.circle-grid .circle-card .first-step{margin:8px 0;padding:9px 12px}
+.profile-overview{gap:12px}
+.profile-section-grid{grid-template-columns:minmax(0,1fr);gap:0}
+.profile-section-card{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:4px 12px;padding:12px 2px;border:0;border-bottom:1px solid var(--line);border-radius:0;background:transparent;box-shadow:none}
+.profile-section-card:first-child{border-top:1px solid var(--line)}
+.profile-section-card strong{font-size:1rem}
+.profile-section-summary{grid-column:1;line-height:1.45}
+.profile-section-action{grid-column:2;grid-row:1 / span 2;align-self:center;margin:0;white-space:nowrap}
+.profile-form{gap:12px}
+.profile-form>.form-section,.profile-form>.profile-extras,.settings-group,.settings-delete{border-radius:12px}
+.settings-groups{gap:10px}
+.settings-group>summary{display:grid;grid-template-columns:minmax(0,1fr);gap:2px;padding:12px 14px;min-height:60px;align-content:center}
+.settings-group>summary h2{font-size:1rem}
+.settings-group>summary .settings-summary{font-size:.8125rem;line-height:1.4;color:var(--muted)}
+.settings-group .care-grid{gap:8px}
+.inbox-section{padding:12px 0}
+.inbox-section h2{margin-bottom:8px}
+.conversation-row.chat-list-row{border:0;border-bottom:1px solid var(--line);border-radius:0;box-shadow:none;padding:10px 2px;min-height:64px}
+.conversation-row.chat-list-row:first-of-type{border-top:1px solid var(--line)}
+.conversation-row.chat-list-row:hover{background:var(--hover-surface)}
+.settings-shortcuts{gap:8px;margin-bottom:14px}
+.form-section,.care-card,.connection-card,.circle-card,.profile-section-card{box-shadow:none}
+@media(max-width:720px){
+ .app-shell:not(:has(.conversation-screen,.circle-conversation)){padding-bottom:calc(76px + env(safe-area-inset-bottom))}
+ .app-shell:not(:has(.conversation-screen,.circle-conversation))>.sidebar nav{grid-template-columns:repeat(5,minmax(0,1fr));}
+ .app-shell:not(:has(.conversation-screen,.circle-conversation)) .sidebar nav .nav-item{min-height:54px;padding:4px 1px;font-size:.6875rem;gap:2px}
+ .app-shell:not(:has(.conversation-screen,.circle-conversation)) .sidebar nav .nav-item svg{width:19px;height:19px}
+ .app-shell:not(:has(.conversation-screen,.circle-conversation)) .content{padding:10px 14px 18px}
+ .app-shell:not(:has(.conversation-screen,.circle-conversation)) .content>.page-heading{margin-bottom:12px}
+ .app-shell:not(:has(.conversation-screen,.circle-conversation)) .content>.page-heading p{font-size:.875rem;margin-top:4px}
+ .profile-grid .compact-person{padding:13px 2px}
+ .circle-grid .circle-card{padding:14px 2px}
+ .profile-section-card{padding:10px 2px}
+ .profile-section-card strong{font-size:.9375rem}
+ .settings-group>summary{padding:10px 12px;min-height:56px}
+ .settings-groups{gap:8px}
+ .inbox-section{padding:10px 0}
+ .section-tabs{gap:4px}
+ .section-tabs button{padding:.55rem .75rem;font-size:.875rem}
+}
