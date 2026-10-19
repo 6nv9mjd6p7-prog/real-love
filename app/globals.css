@@ -1095,3 +1095,21 @@ html,body{max-width:100%;overflow-x:clip;overscroll-behavior-x:none}
  .compact-person .card-interests .interest-action{min-height:34px}
  .compact-person .profile-link{min-height:44px}
 }
+
+/* Ensure demo profile density overrides the later shared design-system selectors. */
+.app-shell .discovery-screen .profile-grid>.compact-person.compact-person{padding-block:8px}
+.app-shell .discovery-screen .profile-grid>.compact-person>.demo-label{margin-bottom:2px;padding:2px 6px;font-size:.625rem}
+.app-shell .discovery-screen .profile-grid>.compact-person .person-title{margin:0 0 2px}
+.app-shell .discovery-screen .profile-grid>.compact-person .bio-meta{margin:1px 0 4px;line-height:1.35}
+.app-shell .discovery-screen .profile-grid>.compact-person .card-interests{gap:4px;margin:2px 0 4px}
+.app-shell .discovery-screen .profile-grid>.compact-person .card-interests .interest-action{min-height:32px;padding:4px 8px}
+.app-shell .discovery-screen .profile-grid>.compact-person>.connection-summary{margin:1px 0 3px;padding:3px 0}
+.app-shell .discovery-screen .profile-grid>.compact-person .connection-summary p{margin:2px 0;line-height:1.35}
+.app-shell .discovery-screen .profile-grid>.compact-person .card-starter{margin:2px 0;padding:3px 0}
+.app-shell .discovery-screen .profile-grid>.compact-person .card-starter>p{margin:2px 0;line-height:1.4}
+.app-shell .discovery-screen .profile-grid>.compact-person .discovery-answer>summary{min-height:36px;padding:6px 0}
+.app-shell .discovery-screen .profile-grid>.compact-person .discovery-card-actions{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:2px;padding-top:4px}
+.app-shell .discovery-screen .profile-grid>.compact-person .card-connect-details{margin:0}
+.app-shell .discovery-screen .profile-grid>.compact-person .card-connect-details>summary,.app-shell .discovery-screen .profile-grid>.compact-person>.connection-summary-compact>summary{min-height:36px;padding:6px 0}
+.app-shell .discovery-screen .profile-grid>.compact-person .profile-link{width:auto;min-height:40px;padding:6px 12px;border:1px solid var(--indigo);border-radius:8px}
+@media(max-width:720px){.app-shell .discovery-screen .profile-grid>.compact-person.compact-person{padding-block:8px}.app-shell .discovery-screen .profile-grid>.compact-person .card-connect-details>summary,.app-shell .discovery-screen .profile-grid>.compact-person>.connection-summary-compact>summary{min-height:44px;padding:10px 0}.app-shell .discovery-screen .profile-grid>.compact-person .card-interests .interest-action{min-height:36px}.app-shell .discovery-screen .profile-grid>.compact-person .profile-link{min-height:44px}}
