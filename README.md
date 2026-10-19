@@ -10,7 +10,7 @@ Real Love helps people find connection through shared interests, thoughtful conv
 - `scripts/`, `build/`, and `lib/`: install/build tooling, Cloudflare Worker integration, and connector helpers.
 - `tests/`: app behavior, API rules, safety boundaries, navigation, and UI regression tests.
 
-For the request flow, feature boundaries, and safe reading practices, see [Code reading guide](./docs/CODE_READING_GUIDE.md). For a complete file-by-file feature map, start with the modules under `app/` and their matching tests.
+For the request flow, feature boundaries, and safe reading practices, see the [Code reading guide](./docs/CODE_READING_GUIDE.md). Feature logic is organized under `app/`; matching behavior and safety checks live under `tests/`.
 
 ## Privacy boundaries
 
