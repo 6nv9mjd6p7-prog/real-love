@@ -39,6 +39,9 @@ next-env.d.ts
 *.tsbuildinfo
 /dist/
 /.wrangler/
+# Build archives are generated from the exact source commit for Sites publication.
+/.site-release-*.tar.gz
+
 # Checkout-local execution profile and tool state; never publish them.
 /.sites-runtime/
 /.agents/
