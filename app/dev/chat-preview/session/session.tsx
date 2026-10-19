@@ -1,4 +1,5 @@
 'use client';
+import {privatePlanNext,type PrivatePlan} from '../../../private-plan-model';
 import {useCallback,useEffect,useRef} from 'react';
 import Conversation from '../../../conversation';
 import MainNavigation from '../../../main-navigation';
@@ -19,6 +20,7 @@ const sampleMessages:ChatMessage[]=[
 export default function ChatPreviewSession(){
  const messagesRef=useRef<ChatMessage[]>(sampleMessages);
  const revision=useRef(1);
+ const plansRef=useRef<PrivatePlan[]>([{id:'fictional-plan',creator:samplePerson.id,kind:'activity',description:'Visit a small live music venue together.',timing:'Choose a day together',startsAt:'',status:'proposed',revision:0,created:new Date().toISOString(),mine:false}]);
  useEffect(()=>{
   const receive=(event:MessageEvent)=>{
    if(event.origin!==window.location.origin||event.source!==window.parent||event.data?.type!=='real-love-qa-keyboard')return;
@@ -29,7 +31,10 @@ export default function ChatPreviewSession(){
   window.addEventListener('message',receive);
   return()=>{window.removeEventListener('message',receive);document.documentElement.removeAttribute('data-qa-keyboard');};
  },[]);
- const api=useCallback(async(input:{action:string;knownRevision?:string;text?:string})=>{
+ const api=useCallback(async(input:any)=>{
+  if(input.action==='private_plans')return {plans:plansRef.current,hasMore:false,cursor:null};
+  if(input.action==='private_plan_create'){const plan:PrivatePlan={id:'fictional-plan-'+plansRef.current.length,creator:sampleMe.id,kind:input.kind,description:input.description,timing:input.timing,startsAt:input.startsAt,status:'proposed',revision:0,created:new Date().toISOString(),mine:true};plansRef.current=[plan,...plansRef.current];return {ok:true,plan};}
+  if(input.action==='private_plan_update'){const plan=plansRef.current.find(plan=>plan.id===input.plan);if(!plan)throw Error('Plan unavailable');const next=privatePlanNext(plan.status,plan.mine,input.decision);if(!next||plan.revision!==input.revision)throw Error('Plan changed');plansRef.current=plansRef.current.map(p=>p.id===plan.id?{...p,status:next,revision:p.revision+1}:p);return {ok:true};}
   if(input.action==='messages'){
    const known=String(revision.current);
    if(input.knownRevision===known)return {unchanged:true,revision:known};

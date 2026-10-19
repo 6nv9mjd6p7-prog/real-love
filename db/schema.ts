@@ -41,3 +41,6 @@ export const reviewerInvitations=sqliteTable('reviewer_invitations',{
  status:text('status').notNull().default('pending'),created:text('created').notNull(),expires:text('expires').notNull(),
  decisionId:text('decision_id').notNull().default(''),decided:text('decided').notNull().default('')
 },t=>[uniqueIndex('idx_reviewer_invitation_id').on(t.id)]);
+
+// Shared only by the two active participants in an accepted private conversation.
+export const directPlans=sqliteTable('direct_plans',{id:text('id').primaryKey(),connection:text('connection').notNull(),creator:text('creator').notNull(),kind:text('kind').notNull(),description:text('description').notNull(),timing:text('timing').notNull().default(''),startsAt:text('starts_at').notNull().default(''),status:text('status').notNull().default('proposed'),revision:integer('revision').notNull().default(0),created:text('created').notNull(),updated:text('updated').notNull()},t=>[index('idx_direct_plans_connection').on(t.connection)]);

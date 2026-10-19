@@ -997,3 +997,13 @@ html .app-shell>.sidebar nav .nav-item .nav-icon>.count{position:absolute;top:-9
  html[data-keyboard-open] .direct-chat .direct-compose-dock,
  html[data-qa-keyboard] .direct-chat .direct-compose-dock{bottom:max(0px,calc(100dvh - var(--app-viewport,100dvh) - var(--app-viewport-top,0px)))}
 }
+.app-shell .direct-chat .private-plans{border:0;border-top:1px solid var(--border);border-bottom:1px solid var(--border);border-radius:0;background:transparent;margin:0;padding:0}
+.app-shell .direct-chat .private-plans>summary{min-height:44px;display:flex;align-items:center;gap:12px;padding:10px 0;font-size:.875rem;color:var(--indigo);cursor:pointer}
+.private-plans>summary>span{font-size:.8125rem;font-weight:400;color:var(--muted)}
+.private-plans-content{padding:8px 0 12px;min-width:0}
+.private-plans-content>p{margin:0 0 8px}
+.private-plans .together-form{margin-top:12px}
+.private-plan-card{padding:12px 0;border-top:1px solid var(--border);overflow-wrap:anywhere}
+.private-plan-card>header{display:flex;flex-wrap:wrap;justify-content:space-between;gap:8px}
+.private-plan-card>p,.private-plan-card>time{display:block;margin:6px 0;white-space:pre-wrap}
+.plan-status{font-size:.8125rem;color:var(--muted)}

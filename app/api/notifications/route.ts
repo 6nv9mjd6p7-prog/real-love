@@ -24,14 +24,15 @@ function notificationDetails(row:any,viewer:string,viewerActive:boolean){
  let actor:any=null;try{actor=row.actor_data?JSON.parse(row.actor_data):null;}catch{}
  const actorAvailable=!!actor&&row.actor_active&&row.actor_status==='admitted'&&actor.rulesVersion===RULES_VERSION;
  const name=actorAvailable&&typeof actor.name==='string'?actor.name.trim()||'A member':'';
- if(['message','reaction','invitation','accepted','photo_exchange'].includes(row.kind)){
+ if(['message','reaction','invitation','accepted','photo_exchange','private_plan'].includes(row.kind)){
   const access=viewerActive&&actorAvailable&&[row.sender,row.recipient].includes(viewer)&&['pending','accepted'].includes(row.connection_status);
-  if(!access)return {...item,title:'Connection activity is no longer available',detail:'The invitation or conversation is closed, paused, or no longer accessible.',url:'',available:false,actionLabel:'Mark read'};
+  if(!access||(row.kind==='private_plan'&&row.connection_status!=='accepted'))return {...item,title:'Connection activity is no longer available',detail:'The invitation or conversation is closed, paused, or no longer accessible.',url:'',available:false,actionLabel:'Mark read'};
   const chat=row.connection_status==='accepted';
   item.url=chat?'#chat/'+encodeURIComponent(row.scope):'#conversations/requests';
   item.actionLabel=chat?'Open chat':'Review invitation';
   item.detail=chat?'Private conversation with '+name:'Invitation involving '+name;
-  if(row.kind==='message')item.title=name+' sent you '+(/voice/i.test(row.title)?'a voice note':/photo/i.test(row.title)?'a photo':'a message');
+  if(row.kind==='private_plan'){item.title=name+(/New private plan/i.test(row.title)?' proposed a private plan':' updated a private plan');item.actionLabel='View plans in chat';}
+  else if(row.kind==='message')item.title=name+' sent you '+(/voice/i.test(row.title)?'a voice note':/photo/i.test(row.title)?'a photo':'a message');
   else if(row.kind==='reaction')item.title=name+' reacted to your message';
   else if(row.kind==='invitation')item.title=name+' invited you to talk';
   else if(row.kind==='accepted')item.title=name+' accepted your invitation';

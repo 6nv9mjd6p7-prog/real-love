@@ -22,3 +22,6 @@ const projectDraft=draftKey('a','circle-project-one','post-1'),sameCircle=draftK
 for(const key of [projectDraft,sameCircle,anotherCircle,otherAccount])writeDraft(storage,key,'Private project draft');
 clearDraftKind(storage,'a','circle-project-one');assert.equal(readDraft(storage,projectDraft,''),'');assert.equal(readDraft(storage,sameCircle,''),'');assert.equal(readDraft(storage,anotherCircle,''),'Private project draft');assert.equal(readDraft(storage,otherAccount,''),'Private project draft');
 writeDraft(denied,projectDraft,'Memory project draft');clearDraftKind(denied,'a','circle-project-one');assert.equal(readDraft(denied,projectDraft,''),'','circle cleanup also clears memory fallback');
+const uuidDescriptor=Object.getOwnPropertyDescriptor(crypto,'randomUUID');
+Object.defineProperty(crypto,'randomUUID',{value:undefined,configurable:true});
+try{const secureFallback=messageAttempt('fallback-test','private-plan','chat','A plan');assert.match(secureFallback,/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/);assert.equal(messageAttempt('fallback-test','private-plan','chat','A plan'),secureFallback);}finally{if(uuidDescriptor)Object.defineProperty(crypto,'randomUUID',uuidDescriptor);else delete crypto.randomUUID;}

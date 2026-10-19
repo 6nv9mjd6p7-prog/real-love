@@ -19,7 +19,9 @@ export function messageAttempt(account:string,kind:string,id:string,text:string)
  const storage=tabStorage(),key=draftKey(account,kind+'-attempt',id);
  const previous=readDraft<{text:string;id:string}|null>(storage,key,null);
  if(previous?.text===text)return previous.id;
- const attempt={text,id:crypto.randomUUID()};writeDraft(storage,key,attempt);return attempt.id;
+ // getRandomValues also works in the HTTP-only local viewport lab. Never use Math.random.
+ const uuid=()=>{if(typeof crypto.randomUUID==='function')return crypto.randomUUID();const bytes=crypto.getRandomValues(new Uint8Array(16));bytes[6]=(bytes[6]&15)|64;bytes[8]=(bytes[8]&63)|128;const hex=Array.from(bytes,b=>b.toString(16).padStart(2,'0')).join('');return [hex.slice(0,8),hex.slice(8,12),hex.slice(12,16),hex.slice(16,20),hex.slice(20)].join('-');};
+ const attempt={text,id:uuid()};writeDraft(storage,key,attempt);return attempt.id;
 }
 export function clearMessageAttempt(account:string,kind:string,id:string){removeDraft(tabStorage(),draftKey(account,kind+'-attempt',id));}
 // Clear one account's exact draft kind, including its in-memory fallback.

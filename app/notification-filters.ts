@@ -10,7 +10,7 @@ export const notificationFilterOptions:{key:NotificationFilter;label:string}[]=[
 // Group only by notification kind; private titles and message text are not inspected.
 export function notificationCategory(kind:string):Exclude<NotificationFilter,'all'>{
  if(kind.startsWith('circle_'))return 'circles';
- if(kind==='message'||kind==='reaction')return 'chats';
+ if(kind==='message'||kind==='reaction'||kind==='private_plan')return 'chats';
  if(kind==='invitation'||kind==='accepted'||kind==='photo_exchange')return 'connections';
  return 'account';
 }
