@@ -1,130 +1,49 @@
 # Real Love
 
-Real Love helps people find connection through shared interests, thoughtful conversation, and mutual care. This repository contains its responsive web app and Cloudflare Worker backend, built with [Vinext](https://github.com/cloudflare/vinext), React, Cloudflare D1, and Drizzle.
+Real Love helps people find connection through shared interests, thoughtful conversation, and mutual care. This repository contains its responsive web app and Cloudflare Worker backend, built with React, Vinext, Cloudflare D1, and Drizzle.
 
-## Prerequisites
+## Project map
 
-- Node.js `>=22.13.0`
-- Portable: Windows, macOS, or Linux; no Bash required
-- Managed Linux: managed Linux runtime with Bash, `flock`, `curl`, `sha256sum`, and GNU `timeout`
-- Git is required only for publishing
+- `app/`: public landing page, discovery, profiles, private conversations, Circles, worker support, moderation, and API routes.
+- `db/schema.ts` and `drizzle/`: current D1 schema and ordered database migrations.
+- `public/`, `native-shell/`, and `ios/`: web install assets, offline shell, and the Capacitor iOS project.
+- `scripts/`, `build/`, and `lib/`: install/build tooling, Cloudflare Worker integration, and connector helpers.
+- `tests/`: app behavior, API rules, safety boundaries, navigation, and UI regression tests.
 
-## Sites Lifecycle
+For the request flow, feature boundaries, and safe reading practices, see [Code reading guide](./docs/CODE_READING_GUIDE.md). For a complete file-by-file feature map, start with the modules under `app/` and their matching tests.
 
-The Sites initializer copies the shared starter and selects managed-linux only when `SITES_MANAGED_LINUX_CONTAINER=1`; otherwise it selects portable. It saves the selection only in ignored `.sites-runtime/execution-profile.json`. Both profiles copy/configure first, then use the plugin's separate `install-dependencies.mjs` step to measure installation independently. Edit source under `app/` and follow the Sites skill for installation, preview, builds, and publishing.
+## Privacy boundaries
 
-Run `node <plugin-root>/scripts/configure-execution-profile.mjs` only when the profile is unknown for the current checkout and environment. Profile changes do not alter tracked source or require reinstalling otherwise-valid dependencies; restart an existing preview to use the new selection. Do not commit or upload `.sites-runtime/`.
+The server validates identity, input, permissions, and access for protected actions. Profile fields are projected before public display; photos and voice messages use protected routes and the configured R2 bucket. Circle membership controls access to Circle conversations and history.
 
-This starter does not use `wrangler.jsonc`.
+Private chat content is **not end-to-end encrypted**. The app's privacy disclosures describe its actual limits. Worker circles are optional peer-support spaces; they are not a union, do not provide legal representation, and do not guarantee protection from retaliation.
 
-`npm run install:ci` uses the pinned pnpm 11.25.0 toolchain and the committed `pnpm-lock.yaml` with a frozen install. It prepares an isolated writable store, uses the image seed only when its lockfile hash matches, and keeps network fallback available. Sharp uses prebuilt binaries unless explicitly configured otherwise. Do not overlap installers.
+## Develop and verify
 
-- **Portable:** Preserve the caller's HOME, package-manager cache, registry, proxy, temporary paths, retry/concurrency settings, and lifecycle-script policy.
-- **Managed Linux:** Use the project-local HOME/cache/tmp setup, Linux install lock, package-store preflight, and bounded timeout. Builds keep their existing timeout.
-
-`scripts/sites-env.mjs` preserves the caller's HOME, npm cache, proxy, XDG, and temporary-directory configuration while defaulting Wrangler and Miniflare state to the checkout. If npm reports an unwritable cache, select a writable path with `npm_config_cache` for that install. The `dev` and `start` scripts also keep Wrangler logs inside the checkout. Generated `.sites-runtime/` and `.wrangler/` directories are disposable and ignored by Git.
-
-On portable, `npm run dev` uses `vinext dev` with HMR, starting at port 5173. Vinext records the running server in ignored `.vinext/` state, rejects an ordinary duplicate launch, and recovers stale state after a stopped process; exactly simultaneous starts can race. Pass `--port <port>` or `--hostname <host>` after `npm run dev --` when needed; keep portable previews on loopback.
-
-For browser QA on managed Linux, use `sites-preview start`. The project's dev script runs Vite and accepts the supervisor's `--host 0.0.0.0 --port 4173 --strictPort` arguments. The internal browser uses `http://terminal.local:4173/`; it is not a user-facing URL. The supervisor owns the preview lifecycle. The ignored local profile survives the supervisor's cleared process environment.
-
-The portable profile simulates ChatGPT sign-in only for loopback development requests. Visit `/signin-with-chatgpt?return_to=/` to sign in as `local_seedy` (`seedy@sites.test`, display name `Seedy`) and `/signout-with-chatgpt?return_to=/` to sign out. The development cookie preserves that identity across server restarts. Mock auth is disabled in the managed-linux profile and is not included in production builds; hosted authentication remains dispatch-owned.
-
-The Worker uses `vinext/server/fetch-handler`, including Vinext's config-aware image handling. After building, `npm start` runs that Worker locally through Wrangler on `127.0.0.1`, sharing `.wrangler/state` with dev preview and local D1 migrations; it does not deploy the site or simulate sign-in. Use the URL printed by the server. Pass `npm start -- --port <port>` to select a different built-preview port.
-
-Local previews use Miniflare's placeholder `Request.cf` metadata without a network lookup. Set `CLOUDFLARE_CF_FETCH_ENABLED=true` to opt into fetching preview metadata; this setting does not change hosted request metadata.
-
-Local tool usage metrics are disabled by default. Set `WRANGLER_SEND_METRICS=true` to opt in.
-
-## Application Architecture
-
-- `app/` contains the discovery, profiles, direct conversations, circles, worker-support tools, moderation screens, and API routes.
-- `db/schema.ts` defines the D1 data model; `drizzle/` contains ordered database migrations.
-- `.openai/hosting.json` declares the Site identity and D1/R2 bindings; `db/index.ts` reads those bindings at runtime.
-- `vite.config.ts` configures local development bindings. `cloudflare-env.d.ts` declares the Cloudflare Worker environment types.
-- Profile photos and voice messages use protected routes and the configured R2 bucket. Private chat content is not end-to-end encrypted; the in-app privacy disclosure explains the actual limits.
-- Worker circles are optional peer-support spaces. They are not formal union representation or a guarantee of protection from retaliation.
-
-## Workspace Auth Headers
-
-Signed-in visitors receive both `oai-authenticated-user-id` and `oai-authenticated-user-email`. Private Sites require every visitor to sign in; public Sites may also have anonymous visitors, for whom neither header is present.
-
-The user ID is stable for the same user on the same Site and different across Sites. Use it as the durable user key; use email and name for display or contact purposes.
-
-SIWC-authenticated workspace sites may also receive `oai-authenticated-user-full-name` when the user's SIWC profile has a non-empty `name` claim. The full-name value is percent-encoded UTF-8 and is accompanied by `oai-authenticated-user-full-name-encoding: percent-encoded-utf-8`.
-
-Treat the full name as optional and fall back to email when it is absent:
-
-```tsx
-import { headers } from "next/headers";
-
-export default async function Home() {
-  const requestHeaders = await headers();
-  const userId = requestHeaders.get("oai-authenticated-user-id");
-  const email = requestHeaders.get("oai-authenticated-user-email");
-  const encodedFullName = requestHeaders.get("oai-authenticated-user-full-name");
-  const fullName =
-    encodedFullName &&
-    requestHeaders.get("oai-authenticated-user-full-name-encoding") ===
-      "percent-encoded-utf-8"
-      ? decodeURIComponent(encodedFullName)
-      : null;
-
-  const displayName = fullName ?? email;
-  // ...
-}
-```
-
-## Optional Dispatch-Owned ChatGPT Sign-In
-
-Import the ready-to-use helpers from `app/chatgpt-auth.ts` when the site needs optional or required ChatGPT sign-in:
-
-- Use `getChatGPTUser()` for optional signed-in UI.
-- Use the returned `userId` as the stable user key for user-owned records; do not use email as a durable identifier.
-- Use `requireChatGPTUser(returnTo)` for server-rendered pages that should send anonymous visitors through Sign in with ChatGPT.
-- In a Server Component, start sign-in with `<a href={chatGPTSignInPath(returnTo)} target="_top">`. The auth helper module is server-only; do not import it into a Client Component.
-- Do not use `fetch`, XHR, a client-side router, or a framework link that can prefetch the sign-in route. SIWC must start as a top-level navigation.
-- Never request the AuthAPI authorization endpoint directly. The dispatch-owned `/signin-with-chatgpt` route must start the SIWC flow.
-- Use `chatGPTSignOutPath(returnTo)` for browser sign-out links or actions.
-- Pass a same-origin relative `returnTo` path for the destination after sign-in or sign-out. The helper validates and safely encodes it.
-- Mark protected pages with `export const dynamic = "force-dynamic"` because they depend on per-request identity headers.
-
-Dispatch owns `/signin-with-chatgpt`, `/signout-with-chatgpt`, `/callback`, the OAuth cookies, and identity header injection. Do not implement app routes for those reserved paths. Routes that do not import and call the helper remain anonymous-compatible.
-
-SIWC establishes identity only; it does not prove workspace membership. Use the Sites hosting platform's access policy controls for workspace-wide restrictions, or enforce explicit server-side membership or allowlist checks.
-
-Use SIWC for account pages, user-specific dashboards, saved records, and write actions tied to the current ChatGPT user. Leave public content anonymous.
-
-## Local D1 migrations
-
-For a D1-backed local preview, generate SQL with `npm run db:generate`. Build once through the Sites skill's build entrypoint (or `npm run build` for standalone use) to generate `dist/server/wrangler.json`, rebuilding if bindings change. From the project root, apply each pending migration in order:
+Requires Node.js `>=22.13.0` and pnpm `11.25.0`.
 
 ```sh
-node --import ./scripts/sites-env.mjs ./node_modules/wrangler/bin/wrangler.js d1 execute DB --local --config dist/server/wrangler.json --persist-to .wrangler/state --file drizzle/0000_example.sql
+npm run install:ci
+npm run dev
+npm test
+npm run typecheck
+npm run build
 ```
 
-Replace the filename with the pending migration and `DB` with your D1 binding name if different. Use `.wrangler/state`, not `.wrangler/state/v3`; Wrangler adds the versioned directories. Do not replay migrations already applied locally. This updates only the preview database; publishing applies production migrations separately.
+For runtime profiles, local D1 migrations, hosted authentication, and preview behavior, use the canonical [Sites runtime guide](./docs/SITES_RUNTIME.md). For sign-in setup, see [Email sign-in setup](./EMAIL_SIGNIN_SETUP.md). For iOS setup and device limitations, see [iOS native setup](./IOS_NATIVE_SETUP.md).
 
-## Diagnostic Commands
+GitHub source changes do not by themselves publish the production Site. Follow the connected Sites release flow and confirm that its deployment succeeded.
 
-- `npm run install:ci`: perform the one locked dependency install
-- `npm run dev`: start the Vite/Vinext development server
-- `npm run test`: run the Node test suite in `tests/`
-- `npm run typecheck`: run strict TypeScript checking
-- `npm run lint`: run ESLint; existing lint violations are tracked separately and this command is not currently a clean release gate
-- `npm run build`: build the deployable Sites artifact
-- `npm run start`: preview the built Worker locally with D1/R2 support
-- `npm run db:generate`: generate Drizzle migrations after schema changes
-- `pnpm native:sync`: sync the Capacitor iOS project after native configuration or plugin changes
-- `pnpm native:open:ios`: open the iOS project in Xcode on macOS
+## Project documentation
 
-The iPhone project, its current limitations, physical-device checklist, and App Store handoff are documented in [IOS_NATIVE_SETUP.md](./IOS_NATIVE_SETUP.md).
+- [Code reading guide](./docs/CODE_READING_GUIDE.md)
+- [Release checks and remaining QA](./docs/release-checks.md)
+- [Launch readiness](./docs/launch-readiness.md)
+- [Worker support](./docs/worker-support.md)
+- [Connection to cooperation](./docs/connection-to-cooperation.md)
+- [UX reviews and design history](./docs/ux-review.md), [design QA history](./design-qa.md)
 
-When using the Sites plugin, follow its skill instructions for installation, builds, and publishing. These npm commands remain available for standalone use.
+## Upstream documentation
 
-The portable build runs Vinext directly without a host `timeout` command. The managed-linux build uses `scripts/build-verified.sh` and its existing `SITES_BUILD_TIMEOUT` setting.
-
-## Learn More
-
-- [vinext Documentation](https://github.com/cloudflare/vinext)
-- [Drizzle D1 Guide](https://orm.drizzle.team/docs/get-started/d1-new)
+- [Vinext](https://github.com/cloudflare/vinext)
+- [Drizzle D1](https://orm.drizzle.team/docs/get-started/d1-new)
