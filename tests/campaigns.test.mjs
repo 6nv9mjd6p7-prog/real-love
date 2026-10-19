@@ -32,7 +32,7 @@ function as(id){globalThis.__rlUser=id?{userId:id,email:id+'@test.invalid'}:null
 function request(body,origin='https://rl.test',cf=null){const value=new Request('https://rl.test/api/app',{method:'POST',headers:{'Content-Type':'application/json',Origin:origin},body:JSON.stringify(body)});if(cf)Object.defineProperty(value,'cf',{value:cf});return value;}
 async function post(id,body,cf=null){as(id);const r=await (body.action==='report'?reports:app).POST(request(body,'https://rl.test',cf));return {status:r.status,data:await r.json()};}
 async function get(id){as(id);const r=await app.GET();return {status:r.status,data:await r.json()};}
-const draft=(id)=>({...model.examples[1],birthDate:`${new Date().getUTCFullYear()-30}-01-01`,id,name:id,demo:false,gender:'Man',interested:['Woman'],orientation:'Asexual',aceOnly:true,intentions:['Build together','Friendship','Romance'],connectionBoundary:'Friendship only',firstStep:'A conversation about community decisions',consent:true,rulesVersion:'2026-10-02'});
+const draft=(id)=>({...model.examples[1],birthDate:`${new Date().getUTCFullYear()-30}-01-01`,id,name:id,demo:false,gender:'Man',interested:['Woman'],orientation:'Asexual',aceOnly:true,intentions:['Build together','Friendship','Romance'],connectionBoundary:'Friendship only',firstStep:'A conversation about community decisions',consent:true,rulesVersion:'2026-10-02',active:true});
 const campaigns=await import(compile('app/api/campaigns/route.ts',replacements));
 for(const who of ['author','member','outsider','reviewer','referee']){await post(who,{action:'profile',profile:draft(who)});sql.prepare("UPDATE safety_accounts SET status='admitted' WHERE id=?").run(who);}
 sql.prepare('INSERT INTO moderators (id) VALUES (?)').run('reviewer');
