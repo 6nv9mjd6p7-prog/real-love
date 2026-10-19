@@ -64,7 +64,7 @@ These recurring forms appear throughout the code. One physical line sometimes co
 
 `app/globals.css` is an accumulated cascade. The last matching rule may override an earlier rule, and mobile media queries can change the result. Read all matches for a selector before changing spacing or visibility.
 
-`components/ui/` contains reusable UI primitives. `scripts/` contains runtime/build tooling. `vendor/` contains third-party material. Lockfiles, generated native/build files, and assets should retain their machine-readable formats; explanatory material belongs beside them rather than in invalid JSON or generated output.
+`app/` contains the shipped interface and feature logic. `scripts/` contains runtime/build tooling. `vendor/` contains third-party material. Lockfiles, generated native/build files, and assets should retain their machine-readable formats; explanatory material belongs beside them rather than in invalid JSON or generated output.
 
 ## Reviewing safely
 

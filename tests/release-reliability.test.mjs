@@ -51,7 +51,6 @@ for(const action of ['actions/checkout','pnpm/action-setup','actions/setup-node'
 assert.match(ciWorkflow,/persist-credentials:\s*false/,'checkout does not persist its GitHub token into build steps');
 assert.match(readFileSync('.github/dependabot.yml','utf8'),/package-ecosystem:\s*github-actions[\s\S]*interval:\s*monthly/,'Dependabot reviews pinned GitHub Actions for updates monthly');
 for(const file of ['app/interactive-photo.tsx','app/chat-bubble.tsx','app/dev/chat-preview/preview.tsx'])assert.doesNotMatch(readFileSync(file,'utf8'),/\sstyle=\{/,'runtime styling in '+file+' uses policy-compatible classes and data attributes');
-for(const file of ['components/ui/chart.tsx','components/ui/progress.tsx','components/ui/sidebar.tsx','components/ui/sonner.tsx','components/ui/toggle-group.tsx'])assert.doesNotMatch(readFileSync(file,'utf8'),/\sstyle=\{/,'UI component styling in '+file+' remains compatible with strict CSP');
 assert.deepEqual(directives.get('media-src'),["'self'",'blob:'],'local voice previews and private saved notes are allowed');
 assert.deepEqual(directives.get('connect-src'),["'self'"],'recordings stay on this app');
 assert.deepEqual(directives.get('object-src'),["'none'"]);
