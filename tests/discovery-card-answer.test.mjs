@@ -12,20 +12,19 @@ const person={name:'Aisha',question:'Why do people become tribal?',perspective:'
 const render=p=>renderToStaticMarkup(React.createElement(Answer,{person:p}));
 const html=render(person);
 assert(html.includes('A question I carry')&&html.includes('Why do people become tribal?'),'the member question stays visible');
-assert.match(html,/<details class="discovery-answer"><summary>View answer<\/summary>/,'the longer response starts collapsed');
-assert(html.includes('Perspective answer')&&!html.includes('Care answer')&&!html.includes('Explore answer'),'one response is available at a time');
+assert(!html.includes('Perspective answer')&&!html.includes('Care answer'),'only one featured answer appears');
 assert(!html.includes('Long introduction'),'structured prompt content takes priority');
-assert(render({...person,question:'  '}).includes('View answer · My perspective'),'a response remains reachable when no question is provided');
+assert(render({...person,question:'  '}).includes('My perspective'),'a fallback answer is visible without expanding a disclosure');
+assert(!render({...person,question:'  '}).includes('<details'),'fallback answers are immediately readable');
 assert(render({...person,question:'',perspective:'',care:''}).includes('Explore answer'));
 const sparse=render({name:'Sam',about:'Introduction only'});assert(sparse.includes('Introduction only')&&!sparse.includes('discovery-thought'),'sparse profiles still introduce the person');
 assert(render({name:'Sam',about:'a'.repeat(200)}).includes('…'),'introduction fallback remains bounded');
 assert.equal(person.about,'Long introduction','card selection does not remove profile data');
-let selectedKey='';
-const interactive=Answer({person,onAsk:key=>selectedKey=key});
-const details=interactive.props.children[2];
-assert.equal(details.type,'details');
-const answerContent=details.props.children[1];
-const ask=answerContent.props.children.find(child=>child?.type==='button');
-assert.equal(ask.props.children,'Ask about this');ask.props.onClick();assert.equal(selectedKey,'perspective');
+for(const [profile,expected] of [[person,'question'],[{...person,question:''},'perspective'],[{...person,question:'',perspective:''},'care'],[{...person,question:'',perspective:'',care:''},'startIdea']]){
+ let selectedKey='';
+ const interactive=Answer({person:profile,onAsk:key=>selectedKey=key});
+ const ask=interactive.props.children.find(child=>child?.type==='button');
+ assert.equal(ask.props.children,'Ask about this');ask.props.onClick();assert.equal(selectedKey,expected,'invitation uses the currently visible answer');
+}
 assert(!renderToStaticMarkup(React.createElement(Answer,{person})).includes('Ask about this'),'no invitation action without eligibility callback');
-console.log('Discovery keeps the question visible, reveals one response on demand, and preserves all profile data.');
+console.log('Discovery features one visible answer and opens invitations with that exact answer context.');

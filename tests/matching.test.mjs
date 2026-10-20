@@ -83,3 +83,9 @@ assert.deepEqual(newDiscoveryPeople(candidates,[{status:'pending',person:{id:'pe
 console.log('Pending invitations and accepted contacts excluded from discovery without altering saved/profile data');
 
 const changedIdentity={...b,gender:'Self-described',genderDescription:'My own words',background:'Different cultural background'};assert.equal(discoveryScore(a,b),discoveryScore(a,changedIdentity),'gender and race do not change ranking');assert.equal(eligible(a,b),eligible(a,changedIdentity),'gender and race do not change friendship eligibility');
+
+const curious=connectionContext(basic,{...localExact,question:'How do communities stay open?',perspective:'A different perspective'});
+assert(curious.curiosity.some(text=>text.includes('How do communities stay open?')),'discussion includes the actual public question');
+assert(!curious.curiosity.some(text=>text.includes('A different perspective')),'one public answer avoids competing prompts');
+const sparseCuriosity=connectionContext({...basic,interests:[],topics:[]},{...unrelated,interests:[],topics:[],question:'',perspective:'',care:''});
+assert.deepEqual(sparseCuriosity.curiosity,[],'missing public answers and interests do not invent discussion context');

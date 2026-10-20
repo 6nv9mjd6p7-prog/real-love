@@ -88,11 +88,16 @@ export function connectionContext(a:Profile,b:Profile){
  const commonTimes=profileAvailability(a).filter(x=>!['Flexible','Varies','Occasional'].includes(x)&&profileAvailability(b).includes(x));
  const availability=commonTimes.length?commonTimes.join(', '):null;
  const distanceMiles=candidateDistance(a,b);
+ const curiosity:string[]=[];
+ if(exact.length)curiosity.push('What first drew each of you to '+exact[0]+'?');
+ if(b.question?.trim())curiosity.push('Ask about their question: “'+b.question.trim()+'”');
+ else if(b.perspective?.trim())curiosity.push('What shaped their perspective: “'+b.perspective.trim()+'”?');
+ else if(b.care?.trim())curiosity.push('What makes this important to them: “'+b.care.trim()+'”?');
  const discuss:string[]=[];
  if(profileAvailability(a).length&&profileAvailability(b).length&&!availability)discuss.push('Availability: you list '+profileAvailability(a).join(', ').toLowerCase()+'; they list '+profileAvailability(b).join(', ').toLowerCase()+'. Agree on a time together.');
  if(a.activities?.length&&b.activities?.length&&!activities.length)discuss.push('You listed different activities. Ask what you would both enjoy doing.');
  if(a.expectation&&b.expectation&&a.expectation!=='Unsure'&&b.expectation!=='Unsure'&&a.expectation!==b.expectation)discuss.push('You list different sexual expectations for a possible future relationship. Discuss them only if relevant; starting a friendship creates no sexual expectation.');
- return {exact,related,activities,availability,distanceMiles,sameArea:sameArea(a,b),online:a.remote&&b.remote,discuss};
+ return {exact,related,activities,availability,distanceMiles,sameArea:sameArea(a,b),online:a.remote&&b.remote,curiosity,discuss};
 }
 // Discover is for new introductions; pending invitations and accepted contacts live in the inbox.
 export function newDiscoveryPeople<T extends {id:string}>(people:T[],connections:{status:string;person:{id:string}}[]){
