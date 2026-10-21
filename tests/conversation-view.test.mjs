@@ -74,7 +74,7 @@ const sharedRow=renderToStaticMarkup(React.createElement(View,{accountId:'test',
 assert(sharedRow.indexOf('shared-photo-shortcut')<sharedRow.indexOf('conversation-details'),'agreed photo is outside nested disclosures');
 assert(sharedRow.includes('Photos · Shared'));
 let state=[],hook=0;
-const fake="const useState=initial=>{const i=globalThis.__photoHooks.index++;const states=globalThis.__photoHooks.state;if(!(i in states))states[i]=initial;return [states[i],next=>states[i]=typeof next==='function'?next(states[i]):next];};const useRef=initial=>{const i=globalThis.__photoHooks.index++;const states=globalThis.__photoHooks.state;return states[i]??(states[i]={current:initial});};const useEffect=()=>{},useLayoutEffect=()=>{};";
+const fake="const useCallback=fn=>fn;const useState=initial=>{const i=globalThis.__photoHooks.index++;const states=globalThis.__photoHooks.state;if(!(i in states))states[i]=initial;return [states[i],next=>states[i]=typeof next==='function'?next(states[i]):next];};const useRef=initial=>{const i=globalThis.__photoHooks.index++;const states=globalThis.__photoHooks.state;return states[i]??(states[i]={current:initial});};const useEffect=()=>{},useLayoutEffect=()=>{};";
 globalThis.__photoHooks={state:[],index:0};
 const {default:InteractiveView}=await import(compile(source.replace(/import \{[^}]*useState[^}]*\} from '[^']+';/,fake)));
 function elements(n){return !n||typeof n!=='object'?[]:[n,...React.Children.toArray(n.props?.children).flatMap(elements)];}
