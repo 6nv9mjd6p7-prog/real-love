@@ -7,7 +7,7 @@ export function mainDestination(route:string){
  if(route==='conversations'||route.startsWith('conversations/')||route.startsWith('chat/'))return 'conversations';
  return 'discover';
 }
-export default function MainNavigation({current,onNavigate,circleRequests=0,reviewAlerts=0,requests=0,unread=0}:{current:string;onNavigate:(route:string)=>void;circleRequests?:number;reviewAlerts?:number;requests?:number;unread?:number}){
+export default function MainNavigation({current,onNavigate,circleRequests=0,requests=0,unread=0}:{current:string;onNavigate:(route:string)=>void;circleRequests?:number;reviewAlerts?:number;requests?:number;unread?:number}){
  const items=[{key:'discover',label:'Discover',Icon:Compass,count:0,description:''},{key:'conversations',label:'Chats',Icon:MessageCircle,count:unread,description:`${unread} unread messages`},{key:'circles',label:'Circles',Icon:Users,count:circleRequests,description:'Circle requests'},{key:'profile',label:'My profile',Icon:UserRound,count:0,description:''},{key:'settings',label:'Settings',Icon:Shield,count:0,description:'Privacy and settings'}];
  const badge=(count:number)=>count>99?'99+':String(count);
  return <nav aria-label="Main navigation">{items.map(({key,label,Icon,count,description})=>{
