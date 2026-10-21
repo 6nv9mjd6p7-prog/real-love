@@ -4,7 +4,7 @@ import ts from 'typescript';
 const compile=source=>'data:text/javascript;base64,'+Buffer.from(ts.transpileModule(source,{compilerOptions:{module:ts.ModuleKind.ESNext,target:ts.ScriptTarget.ES2022}}).outputText).toString('base64');
 const {LatestRequest}=await import(compile(readFileSync('app/request-gate.ts','utf8'))),drafts=await import(compile(readFileSync('app/draft-storage.ts','utf8')));
 const source=readFileSync('app/circles.tsx','utf8');
-const start=source.indexOf('const load=useCallback('),end=source.indexOf('\nuseEffect',start),pollStart=source.indexOf('useEffect(()=>{load();const update='),pollEnd=source.indexOf('\nuseEffect',pollStart);assert(start>=0&&end>start&&pollStart>=0&&pollEnd>pollStart);
+const start=source.indexOf('const load=useCallback('),end=source.indexOf('\nuseEffect',start),pollStart=source.indexOf('useEffect(()=>{load();const update='),pollEnd=source.indexOf('\n// Apply the shortcut',pollStart);assert(start>=0&&end>start&&pollStart>=0&&pollEnd>pollStart);
 const loader=source.slice(start,end),poll=source.slice(pollStart,pollEnd),setters=[...new Set(loader.match(/\bset[A-Z]\w+/g))];
 const names=['workerArea','accountId','active','loadGate','clearDrafts','tabStorage','useCallback','useEffect',...setters];
 const {default:render}=await import(compile(`export default function render({${names.join(',')}}){${loader}\n${poll}\nreturn load;}`));
