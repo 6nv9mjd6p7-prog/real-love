@@ -15,7 +15,7 @@ export default function CirclePlan({accountId,circleId,disabled,refreshKey,initi
  const [joining,setJoining]=useState(''),[cancelling,setCancelling]=useState(''),[loadError,setLoadError]=useState('');
  let draft=emptyDraft;try{const value=JSON.parse(raw);if(kinds.some(([kind])=>kind===value.kind)&&typeof value.description==='string'&&typeof value.when==='string')draft={...emptyDraft,...value,startsLocal:typeof value.startsLocal==='string'?value.startsLocal:''};}catch{}
  const alive=useRef(true),generation=useRef(0),pending=useRef(false),controller=useRef<AbortController|null>(null),formHeading=useRef<HTMLHeadingElement>(null),addButton=useRef<HTMLButtonElement>(null),wasComposing=useRef(false);
- useEffect(()=>{alive.current=true;return()=>{alive.current=false;generation.current++;controller.current?.abort();};},[]);
+ useEffect(()=>{alive.current=true;const generationRef=generation,controllerRef=controller;return()=>{alive.current=false;generationRef.current++;controllerRef.current?.abort();};},[]);
  useEffect(()=>{if(composing&&!wasComposing.current){wasComposing.current=true;formHeading.current?.focus();}else if(!composing&&!saving&&wasComposing.current){wasComposing.current=false;addButton.current?.focus();}},[composing,saving]);
  async function api(body:Record<string,unknown>,signal?:AbortSignal){const response=await fetch('/api/circles',{method:'POST',headers:{'Content-Type':'application/json'},cache:'no-store',signal,body:JSON.stringify({...body,circle:circleId,expectedAccount:accountId})});const data:any=await response.json();if(!response.ok)throw Error(data.error||'Plans could not load. Try again.');return data;}
  const load=useCallback(async(before?:number)=>{

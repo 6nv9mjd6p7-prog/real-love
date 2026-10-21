@@ -11,7 +11,7 @@ export default function ProjectProgress({accountId,circleId,projectId,refreshKey
  const [raw,setRaw]=useTabDraft(accountId,kind,projectId);
  let draft={step:'',update:''};try{const value=JSON.parse(raw);if(typeof value.step==='string'&&typeof value.update==='string')draft=value;}catch{}
  const alive=useRef(true),generation=useRef(0),pending=useRef(false),request=useRef<AbortController|null>(null);
- useEffect(()=>{alive.current=true;return()=>{alive.current=false;generation.current++;request.current?.abort();};},[]);
+ useEffect(()=>{alive.current=true;const generationRef=generation,requestRef=request;return()=>{alive.current=false;generationRef.current++;requestRef.current?.abort();};},[]);
  async function api(body:Record<string,unknown>,signal?:AbortSignal){const response=await fetch('/api/circles',{method:'POST',headers:{'Content-Type':'application/json'},cache:'no-store',signal,body:JSON.stringify({...body,circle:circleId,project:projectId,expectedAccount:accountId})});const result:any=await response.json();if(!response.ok)throw Error(result.error||'Project progress is unavailable.');return result;}
  const load=useCallback(async(before?:number)=>{
   const ticket=++generation.current;request.current?.abort();const controller=new AbortController();request.current=controller;setLoading(true);setLoadError('');
