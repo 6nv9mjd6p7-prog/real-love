@@ -48,6 +48,10 @@ jobs:
       - name: Check TypeScript
         run: pnpm typecheck
 
+      - name: Report ESLint baseline
+        continue-on-error: true
+        run: pnpm lint
+
       - name: Audit production dependencies
         run: pnpm audit --prod --audit-level low
 
