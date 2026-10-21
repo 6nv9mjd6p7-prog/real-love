@@ -17,13 +17,13 @@ export default function CirclePlan({accountId,circleId,disabled,refreshKey,initi
  const alive=useRef(true),generation=useRef(0),pending=useRef(false),controller=useRef<AbortController|null>(null),formHeading=useRef<HTMLHeadingElement>(null),addButton=useRef<HTMLButtonElement>(null),wasComposing=useRef(false);
  useEffect(()=>{alive.current=true;const generationRef=generation,controllerRef=controller;return()=>{alive.current=false;generationRef.current++;controllerRef.current?.abort();};},[]);
  useEffect(()=>{if(composing&&!wasComposing.current){wasComposing.current=true;formHeading.current?.focus();}else if(!composing&&!saving&&wasComposing.current){wasComposing.current=false;addButton.current?.focus();}},[composing,saving]);
- async function api(body:Record<string,unknown>,signal?:AbortSignal){const response=await fetch('/api/circles',{method:'POST',headers:{'Content-Type':'application/json'},cache:'no-store',signal,body:JSON.stringify({...body,circle:circleId,expectedAccount:accountId})});const data:any=await response.json();if(!response.ok)throw Error(data.error||'Plans could not load. Try again.');return data;}
+ const api=useCallback(async(body:Record<string,unknown>,signal?:AbortSignal)=>{const response=await fetch('/api/circles',{method:'POST',headers:{'Content-Type':'application/json'},cache:'no-store',signal,body:JSON.stringify({...body,circle:circleId,expectedAccount:accountId})});const data:any=await response.json();if(!response.ok)throw Error(data.error||'Plans could not load. Try again.');return data;},[accountId,circleId]);
  const load=useCallback(async(before?:number)=>{
   const ticket=++generation.current;controller.current?.abort();const request=new AbortController();controller.current=request;setLoading(true);setLoadError('');
   try{const data=await api({action:'together_list',...(before?{before}:{})},request.signal);if(!alive.current||ticket!==generation.current)return;setPosts(previous=>before?[...previous,...data.posts.filter((post:Post)=>!previous.some(p=>p.id===post.id))]:data.posts);setCursor(data.cursor);setMore(data.hasMore);setLoaded(true);}
   catch(e:any){if(alive.current&&ticket===generation.current&&!request.signal.aborted){setPosts([]);setMore(false);setLoaded(false);setLoadError(e.message||'Plans could not load. Try again.');}}
   finally{if(alive.current&&ticket===generation.current)setLoading(false);}
- },[accountId,circleId]);
+ },[api]);
  const visible=expanded??open;
  useEffect(()=>{if(visible&&!saving)void load();},[visible,refreshKey,load,saving]);
  function change(field:string,value:string){setRaw(JSON.stringify({...draft,[field]:value}));setConsent(false);}
