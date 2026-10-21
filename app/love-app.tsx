@@ -16,7 +16,7 @@ import {manageDialogFocus} from './modal-focus';
 import {LatestRequest} from './request-gate';
 import {invitationContexts,invitationOpening,invitationStatus,type InvitationContext} from './invitations';
 import {useState,useEffect,useCallback,useRef} from 'react';
-import {Heart,Compass,MessageCircle,Bell,UserRound,Shield,Bookmark,X,EyeOff,Search} from 'lucide-react';
+import {Heart,Compass,MessageCircle,Bell,UserRound,Bookmark,X,EyeOff,Search} from 'lucide-react';
 import LoadingSpace from './loading-space';
 import PublicLanding from './public-landing';
 import Circles from './circles';
@@ -40,7 +40,7 @@ import {useTabDraft} from './use-tab-draft';
 import {draftKey,readDraft,writeDraft,removeDraft,clearDrafts,tabStorage} from './draft-storage';
 import {profileDraftChanged,profileDraftError} from './profile-draft';
 import {RULES_VERSION,reportReasons} from './rules';
-import {type Profile,newDiscoveryPeople,examples,genders,interestGroups,startRoles,normalizeProfile,orderedProfileInterests,profileInterests,interestOverlap,matchesDiscovery,compareDiscovery,activityOptions,availabilityOptions,profileHasInterest,profileGender,profileLocation,matchesProfileFilters,profileSearchText,discoverySearchRelevance,discoverySearchSuggestions,profileFilterLabels,removeProfileFilter} from './model';
+import {type Profile,newDiscoveryPeople,examples,genders,interestGroups,normalizeProfile,orderedProfileInterests,profileInterests,interestOverlap,matchesDiscovery,compareDiscovery,activityOptions,availabilityOptions,profileHasInterest,profileGender,profileLocation,matchesProfileFilters,profileSearchText,discoverySearchRelevance,discoverySearchSuggestions,profileFilterLabels,removeProfileFilter} from './model';
 type Connection={id:string;status:string;available?:boolean;created?:string;closure_kind?:string;context?:InvitationContext|null;proposal?:string;incoming:boolean;person:Profile;photoMine?:boolean;photoOther?:boolean;photoState?:string;photosShared?:boolean;canReconnect?:boolean;reconnectAllowed?:boolean;unread?:number;lastMessage?:{body:string;created:string;mine:boolean}|null};
 // Optional identity and preference answers start blank; only explicit user selections populate them.
 // Discovery dropdowns select one filter value, while profile availability/participation use arrays.
