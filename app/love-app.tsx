@@ -101,7 +101,8 @@ export default function LoveApp({signedIn,accountId,emailSignIn=false,legacySign
  let selectedContext:InvitationContext|null=null;try{selectedContext=contextDraft?JSON.parse(contextDraft):null;}catch{}
  const contextChoices=selected?invitationContexts(selected):[];
  const openingContext=useRef<{person:string;account:string;context:InvitationContext}|null>(null);
- useEffect(()=>{const opening=openingContext.current;if(!opening)return;if(opening.account!==accountId){openingContext.current=null;return;}if(opening.person!==selected?.id||!proposalReady||!contextReady)return;openingContext.current=null;if(!selected.demo&&!existing&&canConnect){setContextDraft(JSON.stringify(opening.context));if(!proposal.trim())setProposal(invitationOpening(opening.context));setInvitationOpen(true);}},[route,selected?.id,accountId,proposalReady,contextReady,proposal]);
+ const canOpenCardInvitation=!!selected&&!selected.demo&&!existing&&canConnect;
+ useEffect(()=>{const opening=openingContext.current;if(!opening)return;if(opening.account!==accountId){openingContext.current=null;return;}if(opening.person!==selected?.id||!proposalReady||!contextReady)return;openingContext.current=null;if(canOpenCardInvitation){setContextDraft(JSON.stringify(opening.context));if(!proposal.trim())setProposal(invitationOpening(opening.context));setInvitationOpen(true);}},[route,selected?.id,accountId,proposalReady,contextReady,proposal,canOpenCardInvitation,setContextDraft,setProposal]);
  function askFromCard(person:Profile,key:string){
   if(busy||!canConnect||person.demo||connections.some(c=>c.person.id===person.id&&c.status!=='closed'))return;
   const context=invitationContexts(person).find(choice=>choice.key===key);if(!context)return;
