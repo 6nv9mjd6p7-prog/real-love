@@ -7,7 +7,7 @@ import React from 'react';
 import {renderToStaticMarkup} from 'react-dom/server';
 const require=createRequire(import.meta.url);
 let source=ts.transpileModule(readFileSync('app/moderation.tsx','utf8').replace("import OwnerMetrics from './owner-metrics';","const OwnerMetrics=()=>null;"),{compilerOptions:{module:ts.ModuleKind.ESNext,jsx:ts.JsxEmit.ReactJSX}}).outputText;
-source=source.replace(/import \{ useState, useEffect \} from ['"]react['"];?/,'const useEffect=()=>{}; const useState=initial=>[globalThis.reviewStates[globalThis.reviewIndex++]??initial,()=>{}];');
+source=source.replace(/import \{ useCallback, useState, useEffect \} from ['"]react['"];?/,'const useCallback=fn=>fn; const useEffect=()=>{}; const useState=initial=>[globalThis.reviewStates[globalThis.reviewIndex++]??initial,()=>{}];');
 source=source.replace(/from ["']react\/jsx-runtime["']/,`from '${pathToFileURL(require.resolve('react/jsx-runtime')).href}'`);
 const {default:Review}=await import('data:text/javascript;base64,'+Buffer.from(source).toString('base64'));
 const data={owner:true,admissions:[{id:'applicant',name:'Applicant',age:25}],cases:[],moderators:[],photos:[]};
