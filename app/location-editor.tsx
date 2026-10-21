@@ -6,7 +6,7 @@ type LocationSuggestion=BroadLocationPoint&{locationSelectionToken:string};
 // Locations use a searchable, keyboard-operated combobox because a fixed dropdown cannot cover place names.
 // Only a selected structured suggestion changes the saved area; free text remains a search query.
 export default function LocationEditor({accountId,form,setForm,me,busy,onPendingChange}:{accountId:string;form:any;setForm:(value:any)=>void;me:any;busy:boolean;onPendingChange?:(pending:boolean)=>void}){
- const inputId=useId(),listId=useId(),skipSearch=useRef(true),inputRef=useRef<HTMLInputElement>(null),detection=useRef(0),alive=useRef(true);
+ const inputId=useId(),listId=useId(),skipSearch=useRef(true),inputRef=useRef<HTMLInputElement>(null),detection=useRef(0),alive=useRef(true),pendingCallback=useRef(onPendingChange);pendingCallback.current=onPendingChange;
  const [query,setQuery]=useState(locationLabel(form)),[results,setResults]=useState<LocationSuggestion[]>([]),[searching,setSearching]=useState(false),[finding,setFinding]=useState(false),[locating,setLocating]=useState(false),[retry,setRetry]=useState(0),[message,setMessage]=useState(''),[connectionKey,setConnectionKey]=useState('');
  const locationTimer=useRef<ReturnType<typeof setTimeout>|null>(null),locationRequest=useRef<AbortController|null>(null);
  const [deviceMessage,setDeviceMessage]=useState(''),[openBrowser,setOpenBrowser]=useState(false);
@@ -14,11 +14,11 @@ export default function LocationEditor({accountId,form,setForm,me,busy,onPending
  const [activeOption,setActiveOption]=useState(-1),[suggestionsClosed,setSuggestionsClosed]=useState(false);
  const listVisible=results.length>0&&!suggestionsClosed;
  useEffect(()=>{setActiveOption(-1);setSuggestionsClosed(false);},[results]);
- useEffect(()=>{alive.current=true;onPendingChange?.(false);return()=>{alive.current=false;cancelDetection();};},[accountId]);
+ useEffect(()=>{alive.current=true;pendingCallback.current?.(false);return()=>{alive.current=false;cancelDetection();};},[accountId]);
  function edit(){cancelDetection();setDeviceMessage('');setOpenBrowser(false);setLocating(false);setFinding(false);skipSearch.current=true;setQuery(locationLabel(form));setResults([]);setMessage('Type your city or area, then choose the matching suggestion.');setConnectionKey('');onPendingChange?.(false);inputRef.current?.focus();inputRef.current?.select();}
  const confirmed=!!me?.locationConfirmed&&locationKey(form)===locationKey(me)&&!form.confirmLocation;
  const selected=locationLabel(form),hasDistancePoint=typeof form.areaLat==='number'&&typeof form.areaLon==='number'&&!!form.locationPlaceId;
- useEffect(()=>{skipSearch.current=true;setQuery(selected);setResults([]);onPendingChange?.(false);},[selected]);
+ useEffect(()=>{skipSearch.current=true;setQuery(selected);setResults([]);pendingCallback.current?.(false);},[selected]);
 
  useEffect(()=>{
   if(skipSearch.current){skipSearch.current=false;return;}
