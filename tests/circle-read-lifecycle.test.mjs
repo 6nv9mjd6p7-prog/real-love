@@ -4,7 +4,7 @@ import ts from 'typescript';
 
 // Execute the real acknowledgement callback and its effects.
 const source=readFileSync('app/circles.tsx','utf8');
-const start=source.indexOf('const acknowledge=useCallback('),end=source.indexOf('async function load()',start);assert(start>=0&&end>start);
+const start=source.indexOf('const acknowledge=useCallback('),end=source.indexOf('const load=useCallback(',start);assert(start>=0&&end>start);
 const names=['selected','readCursor','api','chatVisible','readBusy','readThrough','nearBottom','loadingRef','busyRef','messages','circleView','moreOpen','conversationLoading','busy','historyBusy','useCallback','useRef','useEffect','useLayoutEffect'];
 const js=ts.transpileModule(`export default function render({${names.join(',')}}){${source.slice(start,end)}return acknowledge;}`,{compilerOptions:{module:ts.ModuleKind.ESNext,target:ts.ScriptTarget.ES2022}}).outputText;
 const {default:render}=await import('data:text/javascript;base64,'+Buffer.from(js).toString('base64'));
