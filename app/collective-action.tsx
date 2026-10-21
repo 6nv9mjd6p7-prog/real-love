@@ -37,7 +37,7 @@ export default function CollectiveAction({accountId}:{accountId:string}){
   }catch(e:any){if(e.name!=='AbortError'&&version===requestVersion.current)setError(e.message||'Could not load campaigns.');return false;}
   finally{if(version===requestVersion.current&&!signal?.aborted){setLoading(false);setPageBusy(false);}}
  },[accountId,tab]);
- useEffect(()=>{setCampaigns([]);setNextCursor(null);const controller=new AbortController();load(controller.signal);return()=>{controller.abort();requestVersion.current++;};},[load]);
+ useEffect(()=>{const requestVersionRef=requestVersion;setCampaigns([]);setNextCursor(null);const controller=new AbortController();load(controller.signal);return()=>{controller.abort();requestVersionRef.current++;};},[load]);
  async function act(payload:any){setBusy(true);setNotice('');setError('');try{const r=await fetch('/api/campaigns',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({...payload,expectedAccount:accountId})});const d:any=await r.json();if(!r.ok)throw Error(d.error);const refreshed=await load();if(!refreshed){setNotice('Your change was saved, but the updated list could not load. Retry loading to see it.');return true;}setNotice(payload.action==='propose'?'Proposal submitted. Only you and authorized reviewers can see it until approval.':payload.action==='feedback'?'Submitted privately for review. No response time is guaranteed.':payload.action==='join'?'Your participation is saved privately.':payload.action==='leave'?'Your participation has been removed.':'Saved.');return true;}catch(e:any){setError(e.message||'Could not save. Please retry.');return false;}finally{setBusy(false);}}
  const chosen=campaigns.find(c=>c.id===selected);
  const filtered=campaigns;
