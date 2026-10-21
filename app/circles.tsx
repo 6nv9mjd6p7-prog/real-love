@@ -56,7 +56,8 @@ function focusComposer(){selectCircleView('Chat');requestAnimationFrame(()=>comp
 useLayoutEffect(()=>{if(circleView==='Chat'&&nearBottom.current&&messagePane.current)messagePane.current.scrollTop=messagePane.current.scrollHeight;},[circleView]);
 useEffect(()=>{if(handoverTarget)setMoreOpen(true);},[handoverTarget]);
 function reviewLeaving(c:Circle){leaveReturn.current=document.activeElement as HTMLElement;setLeaveCircle(c);}
-useEffect(()=>{if(leaveCircle)leaveReview.current?.focus();else if(leaveReturn.current?.isConnected){leaveReturn.current.focus({preventScroll:true});leaveReturn.current=null;}},[leaveCircle?.id]);
+const leaveCircleId=leaveCircle?.id;
+useEffect(()=>{if(leaveCircleId!==undefined)leaveReview.current?.focus();else if(leaveReturn.current?.isConnected){leaveReturn.current.focus({preventScroll:true});leaveReturn.current=null;}},[leaveCircleId]);
 const loadGate=useRef(new LatestRequest()),conversationGate=useRef(new LatestRequest()),busyRef=useRef(busy),loadingRef=useRef(conversationLoading);busyRef.current=busy;loadingRef.current=conversationLoading;
 useEffect(()=>()=>{viewing.current='';loadGate.current.cancel();conversationGate.current.cancel();},[]);
 const viewing=useRef('');viewing.current=selected?.id??'';
