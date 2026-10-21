@@ -13,7 +13,7 @@ export async function issueLocationSelection(member:string,point:BroadLocationPo
 }
 export async function takeLocationSelection(member:string,token:string){
  if(!token||token.length>100)return null;const now=new Date().toISOString();
- const row=await db().prepare('DELETE FROM location_selections WHERE token=? AND member=? AND expires>? RETURNING place').bind(token,member,now).first<any>();
+ const row=await db().prepare('DELETE FROM location_selections WHERE token=? AND member=? AND expires>? RETURNING place').bind(token,member,now).first<{place:string}>();
  if(!row)return null;
  try{return validPoint(JSON.parse(row.place));}catch{return null;}
 }
