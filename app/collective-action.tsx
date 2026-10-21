@@ -20,7 +20,7 @@ export default function CollectiveAction({accountId}:{accountId:string}){
   const restore=()=>{if(window.location.hash!=='#circles/action')return;const saved=readCampaignView(accountId);setTab(saved.tab);setSelected(saved.selected);setCompose(saved.compose);setConsent(false);restoreScroll.current=saved.scroll;};restore();
   const recovered=readDraft<any>(tabStorage(),proposalKey,null);if(recovered?.draft){setDraft(recovered.draft);setConsent(false);}draftReady.current=true;
   window.addEventListener('popstate',restore);return()=>{alive.current=false;window.removeEventListener('popstate',restore);};
- },[accountId]);
+ },[accountId,proposalKey]);
  useEffect(()=>{if(draftReady.current)writeDraft(tabStorage(),proposalKey,{draft});},[draft,proposalKey]);
  useEffect(()=>{if(!loading&&restoreScroll.current!==null){const top=restoreScroll.current;restoreScroll.current=null;requestAnimationFrame(()=>requestAnimationFrame(()=>window.scrollTo({top})));}},[loading,selected,compose]);
  const requestVersion=useRef(0),selectedRef=useRef(selected);selectedRef.current=selected;
