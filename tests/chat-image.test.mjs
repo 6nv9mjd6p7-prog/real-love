@@ -41,7 +41,7 @@ assert.match(bubble,/<InteractivePhoto src=\{m\.image\.url\} label=\{'Photo shar
 assert.match(bubble,/<figcaption className="message-body">\{m\.body\}<\/figcaption>/,'photo captions remain readable without duplicating the caption as image alt text');
 assert.match(photoViewer,/el\?\.showModal\(\)/,'the photo viewer opens as a native modal dialog');
 assert.match(photoViewer,/onCancel=\{\(\)=>setOpen\(false\)\}/,'the photo viewer supports Escape dismissal');
-assert.match(photoViewer,/trigger\.current\?\.focus\(\{preventScroll:true\}\)/,'closing the viewer returns focus to the photo that opened it');
+assert.match(photoViewer,/(?:trigger\.current|triggerEl)\?\.focus\(\{preventScroll:true\}\)/,'closing the viewer returns focus to the photo that opened it');
 assert.match(photoViewer,/description\|\|label/,'the enlarged image uses the caption as its accessible description when available');
 assert.match(reports,/evidence\.photoEvidenceKey=key/,'reported chat images are retained as specifically reported evidence');
 assert.match(moderation,/evidence\.photo=/,'moderators receive a scoped image evidence URL');
