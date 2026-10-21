@@ -39,7 +39,7 @@ export async function GET(req?:Request){try{
  if(!mine&&!publicVisible&&!participation&&!canReview)continue;
  const updates=await db().prepare("SELECT id,body,kind,created FROM campaign_updates WHERE campaign=? AND (published=1 OR ?=1) ORDER BY created DESC").bind(c.id,canReview||mine?1:0).all();
  const feedbackRows=await db().prepare("SELECT id,kind,body,status,created,actor FROM campaign_feedback WHERE campaign=? AND (?=1 OR actor=?) ORDER BY created DESC").bind(c.id,canReview?1:0,u.userId).all();
- const feedback=[];for(const item of feedbackRows.results as any[]){if(item.actor!==u.userId&&(!canReview||!await independent(u.userId,item.actor)))continue;const {actor,...safe}=item;feedback.push(safe);}
+ const feedback=[];for(const item of feedbackRows.results as any[]){if(item.actor!==u.userId&&(!canReview||!await independent(u.userId,item.actor)))continue;const safe={...item};delete safe.actor;feedback.push(safe);}
  campaigns.push({id:c.id,...JSON.parse(c.data),status:due?'review_due':c.status,version:c.version,mine,participating:!!participation,canReview,updates:updates.results,feedback});
  }
  return reply({accountId:u.userId,reviewer,active,campaigns,nextCursor});

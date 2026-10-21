@@ -9,7 +9,7 @@ import {invitationContexts} from '../../invitations';
 import {SafetyError,RULES_VERSION,initializeAccount,account,admitted,activeMember,moderator,isOwner,quota,readInput,contentCheck,failure,safetyHeaders} from '../../safety';
 import { env } from 'cloudflare:workers';
 import {getChatGPTUser} from '../../chatgpt-auth';
-import {eligible,eligibleForIntention,compareDiscovery,canonicalIntention,normalizeProfile,ageFromBirthDate,birthDateCorrectionState,orientationOptions,profilePrompts,genders,intentions,expectations,startRoles,availabilityOptions,activityOptions,connectionBoundaries,communicationOptions, type Profile} from '../../model';
+import {eligible,eligibleForIntention,compareDiscovery,canonicalIntention,normalizeProfile,ageFromBirthDate,birthDateCorrectionState,orientationOptions,profilePrompts,genders,expectations,startRoles,availabilityOptions,activityOptions,connectionBoundaries,communicationOptions, type Profile} from '../../model';
 import {z} from 'zod';
 import {publicProfile} from '../../photo-policy';
 import {connectionLocation,locationDistanceMiles,locationIsConfirmed,locationKey} from '../../location';
