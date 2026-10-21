@@ -14,7 +14,7 @@ import ConversationIdeas from './conversation-ideas';
 import NotificationToggle from './notification-toggle';
 import {mergeHistory,readMessageWindow} from './merge-history';
 import {LatestRequest} from './request-gate';
-import {useState,useEffect,useLayoutEffect,useRef,useCallback} from 'react';
+import {useState,useEffect,useLayoutEffect,useRef,useCallback,useEffectEvent} from 'react';
 import type {Profile} from './model';
 import CircleMessage from './circle-message';
 import ChatComposer from './chat-composer';
@@ -73,7 +73,8 @@ useEffect(()=>{const check=()=>acknowledge();document.addEventListener('visibili
 const load=useCallback(async()=>{const ticket=loadGate.current.begin();try{const r=await fetch(workerArea?'/api/circles?scope=worker':'/api/circles');const d:any=await r.json();if(!loadGate.current.current(ticket))return;if(!r.ok)throw Error(d.error);if(d.accountId!==accountId){clearDrafts(tabStorage());window.location.reload();return;}setLoadError('');setMyArea(d.myArea??null);setCanNearby(d.canNearby===true);setCircles(d.circles);setSelected(s=>s?d.circles.find((c:Circle)=>c.id===s.id)??null:null);return d.circles as Circle[];}catch(e:any){if(loadGate.current.current(ticket)){setLoadError(e.message||'Circles could not load. Please retry.');setMyArea(null);setCanNearby(false);setShareArea(false);setShareNearby(false);}}finally{if(loadGate.current.current(ticket))setLoaded(true);}},[workerArea,accountId]);
 useEffect(()=>{if(!initialSection)return;setSection(['Discover','Joined','Requests'].includes(initialSection)?initialSection as CircleSection:'Discover');},[initialSection]);
 // Account-scoped tab state survives leaving the worker/general branch without exposing it on profiles.
-useEffect(()=>{const stored=readCircleView();if(stored.query)setQuery(stored.query);if(!initialSection&&stored.section)setSection(stored.section);},[accountId,workerArea]);
+const restoreCircleView=useEffectEvent(()=>{const stored=readCircleView();if(stored.query)setQuery(stored.query);if(!initialSection&&stored.section)setSection(stored.section);});
+useEffect(()=>{restoreCircleView();},[accountId,workerArea]);
 useEffect(()=>{setWorkerCircles(organizing||initialWorkerBrowse);setCompose(organizing||initialCompose);setWorkerConsent(false);if(organizing)setWorkerCategory('worker_organizing');},[organizing,initialWorkerBrowse,initialCompose]);
 function readCircleView(){try{return JSON.parse(sessionStorage.getItem('real-love-circle-view:'+accountId+':'+workerArea)||'{}');}catch{return {};}}
 useEffect(()=>{try{sessionStorage.setItem('real-love-circle-view:'+accountId+':'+workerArea,JSON.stringify({query,section}));}catch{}},[query,section,accountId,workerArea]);
