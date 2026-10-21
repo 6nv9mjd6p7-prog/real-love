@@ -1,5 +1,7 @@
 # Circle workspace — selected concept 2
 
+> Historical terminology note: older QA entries below use **Together** and **Next activity** because those were the labels at the time of capture. The current product uses **Plan**, and activities are optional/secondary. Internal legacy identifiers may still use `together_*` for compatibility.
+
 final result: blocked
 
 The selected layout is implemented and published as v160. Desktop interaction checks pass. Final phone design acceptance remains blocked by the browser's lack of a supported viewport-resize capability and the unavailable control-browser local-preview skill. This is a verification gap, not a demonstrated mobile defect.
