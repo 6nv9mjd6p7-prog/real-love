@@ -12,13 +12,13 @@ export default function ProjectProgress({accountId,circleId,projectId,refreshKey
  let draft={step:'',update:''};try{const value=JSON.parse(raw);if(typeof value.step==='string'&&typeof value.update==='string')draft=value;}catch{}
  const alive=useRef(true),generation=useRef(0),pending=useRef(false),request=useRef<AbortController|null>(null);
  useEffect(()=>{alive.current=true;const generationRef=generation,requestRef=request;return()=>{alive.current=false;generationRef.current++;requestRef.current?.abort();};},[]);
- async function api(body:Record<string,unknown>,signal?:AbortSignal){const response=await fetch('/api/circles',{method:'POST',headers:{'Content-Type':'application/json'},cache:'no-store',signal,body:JSON.stringify({...body,circle:circleId,project:projectId,expectedAccount:accountId})});const result:any=await response.json();if(!response.ok)throw Error(result.error||'Project progress is unavailable.');return result;}
+ const api=useCallback(async(body:Record<string,unknown>,signal?:AbortSignal)=>{const response=await fetch('/api/circles',{method:'POST',headers:{'Content-Type':'application/json'},cache:'no-store',signal,body:JSON.stringify({...body,circle:circleId,project:projectId,expectedAccount:accountId})});const result:any=await response.json();if(!response.ok)throw Error(result.error||'Project progress is unavailable.');return result;},[accountId,circleId,projectId]);
  const load=useCallback(async(before?:number)=>{
   const ticket=++generation.current;request.current?.abort();const controller=new AbortController();request.current=controller;setLoading(true);setLoadError('');
   try{const result=await api({action:'project_details',...(before?{before}:{})},controller.signal);if(!alive.current||ticket!==generation.current)return;setData(previous=>before&&previous?{...result,updates:[...previous.updates,...result.updates.filter((entry:Entry)=>!previous.updates.some(old=>old.id===entry.id))]}:result);}
   catch(error:any){if(alive.current&&ticket===generation.current&&!controller.signal.aborted){setData(null);setLoadError(error.message||'Project progress is unavailable.');}}
   finally{if(alive.current&&ticket===generation.current)setLoading(false);}
- },[accountId,circleId,projectId]);
+ },[api]);
  useEffect(()=>{if(open&&!saving)void load();},[open,refreshKey,load,saving]);
  function change(field:'step'|'update',value:string){setRaw(JSON.stringify({...draft,[field]:value}));}
  async function add(type:'step'|'update'){
