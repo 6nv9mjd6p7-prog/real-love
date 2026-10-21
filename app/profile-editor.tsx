@@ -4,7 +4,7 @@ import {profileSetupError,profileValidationIssue,profileResumeStep} from './prof
 import ProfileSections from './profile-sections';
 import Guidelines from './guidelines';
 import LocationEditor from './location-editor';
-import {ageFromBirthDate,birthDateCorrectionState,profilePrompts,profileAvailability,profileParticipation,editableAvailabilityOptions,orientationOptions,introPromptOptions,genders,interestGroups,startRoles,availabilityOptions,activityOptions,connectionBoundaries,expectations,communicationOptions} from './model';
+import {ageFromBirthDate,birthDateCorrectionState,profilePrompts,profileAvailability,profileParticipation,editableAvailabilityOptions,orientationOptions,introPromptOptions,genders,interestGroups,startRoles,activityOptions,connectionBoundaries,expectations,communicationOptions} from './model';
 export default function ProfileEditor({accountId,form,setForm,me,consent,setConsent,busy,onSave,onPreview,errorMessage='',changed=true,needsReview=true,photoSetup,onProgress,onLocationPendingChange }:{accountId:string;form:any;setForm:(x:any)=>void;me:any;consent:boolean;setConsent:(x:boolean)=>void;busy:boolean;errorMessage?:string;changed?:boolean;needsReview?:boolean;photoSetup?:ReactNode;onProgress?:(step:number)=>void;onLocationPendingChange?:(pending:boolean)=>void;onSave:()=>Promise<void>;onPreview:()=>void}){
  changed=changed||form.confirmLocation===true;
  const [step,setStep]=useState(me?(consent?0:3):profileResumeStep(form)),[query,setQuery]=useState(''),[error,setError]=useState(''),[issue,setIssue]=useState<ReturnType<typeof profileValidationIssue>>(null);
