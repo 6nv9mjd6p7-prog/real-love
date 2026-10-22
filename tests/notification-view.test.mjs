@@ -14,7 +14,7 @@ for(const native of [false,true]){globalThis.__native=native;const html=renderTo
 console.log('Web and native activity-first notification layouts and collapsed preference controls passed (render tests).');
 
 // Render the actual pending-invitation controls without a network or role change.
-const invitationSource=source.replace("import {useCallback,useEffect,useRef,useState,useLayoutEffect} from 'react';", "import {useRef} from 'react';const useCallback=fn=>fn;const useEffect=()=>{},useLayoutEffect=()=>{};const useState=initial=>[Array.isArray(initial)&&++globalThis.__arrayState===2?[{id:'pending-role',expires:'2099-01-01T00:00:00Z'}]:initial,()=>{}];");
+const invitationSource=source.replace("import {useCallback,useEffect,useRef,useState,useLayoutEffect,useSyncExternalStore} from 'react';", "import {useRef,useSyncExternalStore} from 'react';const useCallback=fn=>fn;const useEffect=()=>{},useLayoutEffect=()=>{};const useState=initial=>[Array.isArray(initial)&&++globalThis.__arrayState===2?[{id:'pending-role',expires:'2099-01-01T00:00:00Z'}]:initial,()=>{}];");
 const {default:InvitedCenter}=await import(compile(invitationSource));
 globalThis.__arrayState=0;globalThis.__native=false;
 const invited=renderToStaticMarkup(React.createElement(InvitedCenter,{accountId:'test',open:true,onUnread:()=>{},onNavigate:()=>{}}));
@@ -25,7 +25,7 @@ assert(invited.includes('cannot browse unrestricted private chats or manage revi
 delete globalThis.__arrayState;
 console.log('Pending reviewer invitation displays acceptance, decline, expiry and responsibility copy.');
 
-const groupedSource=source.replace("import {useCallback,useEffect,useRef,useState,useLayoutEffect} from 'react';", "import {useRef} from 'react';const useCallback=fn=>fn;const useEffect=()=>{},useLayoutEffect=()=>{};const useState=initial=>{const i=globalThis.__groupState++;return [i===0?globalThis.__groupItems:i===8?false:initial,()=>{}];};");
+const groupedSource=source.replace("import {useCallback,useEffect,useRef,useState,useLayoutEffect,useSyncExternalStore} from 'react';", "import {useRef,useSyncExternalStore} from 'react';const useCallback=fn=>fn;const useEffect=()=>{},useLayoutEffect=()=>{};const useState=initial=>{const i=globalThis.__groupState++;return [i===0?globalThis.__groupItems:i===7?false:initial,()=>{}];};");
 const {default:GroupedCenter}=await import(compile(groupedSource));
 globalThis.__groupState=0;globalThis.__groupItems=[{id:'new',kind:'message',url:'#chat/a',title:'Maya sent you a message',created:'2026-10-18T12:00:00Z',read:0,detail:'Private conversation with Maya'},{id:'old',kind:'message',url:'#chat/a',title:'Maya sent you a voice note',created:'2026-10-17T12:00:00Z',read:1,detail:'Private conversation with Maya'}];
 const groupedHtml=renderToStaticMarkup(React.createElement(GroupedCenter,{accountId:'test',open:true,onUnread:()=>{},onNavigate:()=>{}}));
