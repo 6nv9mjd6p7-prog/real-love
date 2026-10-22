@@ -72,7 +72,9 @@ export default function LoveApp({signedIn,accountId,emailSignIn=false,legacySign
  const hasProfile=!!me;
  useEffect(()=>{if(route==='profile'&&signedIn&&accountId&&!hasProfile)fetch('/api/metrics',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'signup_started',expectedAccount:accountId})}).catch(()=>{});},[route,signedIn,accountId,hasProfile]);
  const {interestMode,locationFilter,radiusMiles,filterMinAge,filterMaxAge,activityFilter,availabilityFilter,search,category,aceFilter,profileFilters}=discovery.filters;
- useEffect(()=>{setPeopleLimit(50);},[search,category,interestMode,locationFilter,radiusMiles,filterMinAge,filterMaxAge,activityFilter,availabilityFilter,aceFilter,profileFilters]);
+ const peopleFilters=[search,category,interestMode,locationFilter,radiusMiles,filterMinAge,filterMaxAge,activityFilter,availabilityFilter,aceFilter,profileFilters] as const;
+ const [pageFilters,setPageFilters]=useState(peopleFilters);
+ if(peopleFilters.some((value,index)=>!Object.is(value,pageFilters[index]))){setPageFilters(peopleFilters);setPeopleLimit(50);}
  const setInterestMode=(v:'mine'|'any')=>discovery.set('interestMode',v),setLocationFilter=(v:'any'|'local'|'online')=>discovery.set('locationFilter',v),setRadiusMiles=(v:number)=>discovery.set('radiusMiles',Math.max(5,Math.min(100,Math.round(v/5)*5))),setFilterMinAge=(v:number)=>discovery.set('filterMinAge',v),setFilterMaxAge=(v:number)=>discovery.set('filterMaxAge',v),setActivityFilter=(v:string)=>discovery.set('activityFilter',v),setAvailabilityFilter=(v:string)=>discovery.set('availabilityFilter',v),setSearch=(v:string)=>discovery.set('search',v),setCategory=(v:string)=>discovery.set('category',v),setAceFilter=(v:boolean)=>discovery.set('aceFilter',v);
  const applyDiscoveryView=(preferences:DiscoveryPreferences)=>{for(const key of Object.keys(defaultDiscovery) as (keyof DiscoveryPreferences)[])discovery.set(key,preferences[key]);};
  const [loadError,setLoadError]=useState(''),[initialized,setInitialized]=useState(!signedIn);
