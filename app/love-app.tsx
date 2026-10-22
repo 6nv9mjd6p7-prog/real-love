@@ -1,6 +1,6 @@
 'use client';
 import type {OwnProfile,ProfileForm,ReportTarget,AccountStatus,ReportReceipt} from './client-profile-types';
-import {allowedAppRoute,circleRouteInfo,recordAppNavigation,backWithinApp,appBackDestination,routeBackLabel} from './native-links';
+import {allowedAppRoute,circleRouteInfo,recordAppNavigation,pushAppRoute,backWithinApp,appBackDestination,routeBackLabel} from './native-links';
 import DiscoveryDetails from './discovery-details';
 import DiscoveryCardAnswer from './discovery-card-answer';
 import DiscoverySearchRecovery from './discovery-search-recovery';
@@ -94,7 +94,7 @@ export default function LoveApp({signedIn,accountId,emailSignIn=false,legacySign
  useEffect(()=>{load();},[load]);
  useEffect(()=>{if('scrollRestoration' in history)history.scrollRestoration='manual';const remember=()=>scrollPositions.current.set(currentRoute.current,window.scrollY);let first=true;const change=()=>{let next='discover';try{next=allowedAppRoute(window.location.hash)||'discover';}catch{}recordAppNavigation(first?null:currentRoute.current,next,accountId);first=false;const inboxSection=/^conversations\/(chats|requests|sent)$/.exec(next);if(inboxSection)setInboxTab({chats:'Chats',requests:'Requests',sent:'Sent'}[inboxSection[1]]!);else if(next==='conversations')setInboxTab('Chats');currentRoute.current=next;setRoute(inboxSection?'conversations':next);setDeleteConfirm(false);setCloseTarget(null);const top=returnScroll.current??scrollPositions.current.get(next)??0;returnScroll.current=null;requestAnimationFrame(()=>requestAnimationFrame(()=>window.scrollTo({top})));};change();window.addEventListener('scroll',remember,{passive:true});window.addEventListener('hashchange',change);return()=>{window.removeEventListener('scroll',remember);window.removeEventListener('hashchange',change);};},[accountId]);
  useEffect(()=>{if(!signedIn)return;const update=()=>{if(!document.hidden)load();};const timer=setInterval(update,30000);document.addEventListener('visibilitychange',update);return()=>{clearInterval(timer);document.removeEventListener('visibilitychange',update);};},[load,signedIn]);
- function nav(name:string){const next=routeNames[name]||name;if(next.startsWith('person/')&&!route.startsWith('person/')){const origin={route:currentRoute.current,scroll:window.scrollY};setProfileOrigins(previous=>new Map(previous).set(next,origin));}scrollPositions.current.set(currentRoute.current,window.scrollY);window.location.hash=next;if(next.startsWith('person/'))window.dispatchEvent(new Event('real-love-engaged'));if(next==='conversations')setInboxTab('Chats');if(next===route)window.scrollTo({top:0});}
+ function nav(name:string){const next=routeNames[name]||name;if(next.startsWith('person/')&&!route.startsWith('person/')){const origin={route:currentRoute.current,scroll:window.scrollY};setProfileOrigins(previous=>new Map(previous).set(next,origin));}scrollPositions.current.set(currentRoute.current,window.scrollY);pushAppRoute(next);if(next.startsWith('person/'))window.dispatchEvent(new Event('real-love-engaged'));if(next==='conversations')setInboxTab('Chats');if(next===route)window.scrollTo({top:0});}
 
  const circleRoute=circleRouteInfo(route);
  const exampleMode=route==='examples';
