@@ -6,8 +6,9 @@ import assert from 'node:assert/strict';
 import React from 'react';
 import {renderToStaticMarkup} from 'react-dom/server';
 const require=createRequire(import.meta.url);
+let rendering=false,restart=false;
 let slots=[],index=0,focusEffect,focused='';
-const hooks={useState(initial){const i=index++;if(!(i in slots))slots[i]=initial;return [slots[i],value=>slots[i]=typeof value==='function'?value(slots[i]):value];},useRef(initial){return hooks.useState({current:initial})[0];},useEffect(fn,deps){if(deps?.length===2)focusEffect=fn;},useCallback:fn=>fn,useId:()=> 'plan-test'};
+const hooks={useState(initial){const i=index++;if(!(i in slots))slots[i]=initial;return [slots[i],value=>{const next=typeof value==='function'?value(slots[i]):value;if(!Object.is(next,slots[i])){slots[i]=next;if(rendering)restart=true;}}];},useRef(initial){return hooks.useState({current:initial})[0];},useEffect(fn,deps){if(deps?.length===2)focusEffect=fn;},useCallback(fn,deps){const i=index++;if(!slots[i]||deps.some((value,j)=>!Object.is(value,slots[i].deps[j])))slots[i]={fn,deps};return slots[i].fn;},useId:()=> 'plan-test'};
 globalThis.__togetherHooks=hooks;
 let attempts=new Map();
 globalThis.__togetherAttempt=(_account,_kind,_circle,fingerprint)=>{if(!attempts.has(fingerprint))attempts.set(fingerprint,crypto.randomUUID());return attempts.get(fingerprint);};
@@ -21,7 +22,7 @@ const {default:Plan}=await import('data:text/javascript;base64,'+Buffer.from(cod
 function elements(node){if(!node||typeof node!=='object')return [];return [node,...React.Children.toArray(node.props?.children).flatMap(elements)];}
 let tree,nodes,discussed,reported,posted=0,calls=[];
 const props={accountId:'member',circleId:'circle',disabled:false,refreshKey:[],onDiscuss:post=>discussed=post,onReport:post=>reported=post,onPosted:async()=>posted++};
-function render(){index=0;tree=Plan(props);nodes=elements(tree);for(const node of nodes){if(node.type==='button'&&node.props.ref)node.props.ref.current={focus(){if(!node.props.disabled)focused=String(node.props.children);}};if(node.type==='h2'&&node.props.ref)node.props.ref.current={focus(){focused=String(node.props.children);}};}focusEffect?.();return renderToStaticMarkup(tree);}
+function render(){do{restart=false;index=0;rendering=true;tree=Plan(props);rendering=false;}while(restart);nodes=elements(tree);for(const node of nodes){if(node.type==='button'&&node.props.ref)node.props.ref.current={focus(){if(!node.props.disabled)focused=String(node.props.children);}};if(node.type==='h2'&&node.props.ref)node.props.ref.current={focus(){focused=String(node.props.children);}};}focusEffect?.();return renderToStaticMarkup(tree);}
 function button(label){return nodes.find(node=>node.type==='button'&&node.props.children===label);}
 const tick=()=>new Promise(resolve=>setImmediate(resolve));
 let html=render();assert(html.includes('Plan')&&html.includes('Talk · Help · Do · Build'));assert(!nodes.some(node=>node.type==='form'),'form is not forced into the initial chat');
