@@ -1,5 +1,5 @@
 'use client';
-import {useEffect,useId,useRef,useState} from 'react';
+import {useEffect,useId,useRef,useState,useLayoutEffect} from 'react';
 import {locationKey,locationLabel,type BroadLocationPoint} from './location';
 type LocationForm=Omit<Partial<BroadLocationPoint>,'areaLat'|'areaLon'>&{areaLat?:number|null;areaLon?:number|null;confirmLocation?:boolean;locationSelectionToken?:string};
 type PlaceResponse={error?:string;suggestions?:LocationSuggestion[];suggestion?:LocationSuggestion};
@@ -9,7 +9,8 @@ type LocationSuggestion=BroadLocationPoint&{locationSelectionToken:string};
 // Locations use a searchable, keyboard-operated combobox because a fixed dropdown cannot cover place names.
 // Only a selected structured suggestion changes the saved area; free text remains a search query.
 export default function LocationEditor<T extends LocationForm>({accountId,form,setForm,me,busy,onPendingChange}:{accountId:string;form:T;setForm:(value:T|((previous:T)=>T))=>void;me:(LocationForm&{locationConfirmed?:boolean})|null;busy:boolean;onPendingChange?:(pending:boolean)=>void}){
- const inputId=useId(),listId=useId(),skipSearch=useRef(true),inputRef=useRef<HTMLInputElement>(null),detection=useRef(0),alive=useRef(true),pendingCallback=useRef(onPendingChange);pendingCallback.current=onPendingChange;
+ const inputId=useId(),listId=useId(),skipSearch=useRef(true),inputRef=useRef<HTMLInputElement>(null),detection=useRef(0),alive=useRef(true),pendingCallback=useRef(onPendingChange);
+ useLayoutEffect(()=>{pendingCallback.current=onPendingChange;},[onPendingChange]);
  const [query,setQuery]=useState(locationLabel(form)),[results,setResults]=useState<LocationSuggestion[]>([]),[searching,setSearching]=useState(false),[finding,setFinding]=useState(false),[locating,setLocating]=useState(false),[retry,setRetry]=useState(0),[message,setMessage]=useState(''),[connectionKey,setConnectionKey]=useState('');
  const locationTimer=useRef<ReturnType<typeof setTimeout>|null>(null),locationRequest=useRef<AbortController|null>(null);
  const [deviceMessage,setDeviceMessage]=useState(''),[openBrowser,setOpenBrowser]=useState(false);

@@ -1,7 +1,7 @@
 'use client';
 import NotificationToggle from './notification-toggle';
 import {Capacitor} from '@capacitor/core';
-import {useCallback,useEffect,useRef,useState} from 'react';
+import {useCallback,useEffect,useRef,useState,useLayoutEffect} from 'react';
 import {LatestRequest} from './request-gate';
 import {disableDeviceNotifications,notificationOwner,rememberNotificationOwner} from './device-notifications';
 import {useNativeApp} from './use-native-app';
@@ -13,7 +13,8 @@ export default function NotificationCenter({accountId,open,reviewer=false,onUnre
  const [items,setItems]=useState<Item[]>([]),[filter,setFilter]=useState<NotificationFilter>('all'),[publicKey,setPublicKey]=useState(''),[supported,setSupported]=useState(false),[enabled,setEnabled]=useState(false),[busy,setBusy]=useState(false),[notice,setNotice]=useState(''),[error,setError]=useState(''),[loading,setLoading]=useState(true),[iosNeedsInstall,setIosNeedsInstall]=useState(false);
  const [reviewerInvitations,setReviewerInvitations]=useState<{id:string;expires:string}[]>([]);
  const refreshGate=useRef(new LatestRequest());
- const live=useRef(true),unreadCallback=useRef(onUnread);unreadCallback.current=onUnread;
+ const live=useRef(true),unreadCallback=useRef(onUnread);
+ useLayoutEffect(()=>{unreadCallback.current=onUnread;},[onUnread]);
  async function api(data:Record<string,unknown>){const r=await fetch('/api/notifications',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({...data,expectedAccount:accountId})});const d:{error?:string}=await r.json();if(!r.ok)throw Error(d.error||'Notifications could not update.');return d;}
  const refresh=useCallback(async()=>{const ticket=refreshGate.current.begin();try{const r=await fetch('/api/notifications',{cache:'no-store'});const d:NotificationFeed=await r.json();if(!r.ok)throw Error(d.error||'Notifications could not load.');if(!live.current||!refreshGate.current.current(ticket))return;if(d.accountId!==accountId){window.location.reload();return;}setItems(d.notifications);setReviewerInvitations(d.reviewerInvitations||[]);onCircleUpdates?.(d.notifications.filter((x:Item)=>!x.read&&x.kind.startsWith('circle_')).length);setPublicKey(d.publicKey||'');setError('');const count=d.notifications.filter((x:Item)=>!x.read).length;unreadCallback.current(count);const badge=navigator as Navigator&{setAppBadge?:(count:number)=>Promise<void>;clearAppBadge?:()=>Promise<void>};try{if(count)await badge.setAppBadge?.(count);else await badge.clearAppBadge?.();}catch{}document.title=(count?'('+count+') ':'')+'Real Love';}catch(e:unknown){if(live.current&&refreshGate.current.current(ticket))setError((e as Error).message);}finally{if(live.current&&refreshGate.current.current(ticket))setLoading(false);}},[accountId,onCircleUpdates]);
  useEffect(()=>{const gate=refreshGate.current;setFilter('all');live.current=true;void refresh();const update=()=>{if(!document.hidden)void refresh();};const timer=setInterval(update,15000);document.addEventListener('visibilitychange',update);navigator.serviceWorker?.addEventListener('message',update);

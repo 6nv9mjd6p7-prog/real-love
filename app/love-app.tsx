@@ -16,7 +16,7 @@ import {clearSupportPrompts,supportStorage} from './support-prompt';
 import {manageDialogFocus} from './modal-focus';
 import {LatestRequest} from './request-gate';
 import {invitationContexts,invitationOpening,invitationStatus,type InvitationContext} from './invitations';
-import {useState,useEffect,useCallback,useRef} from 'react';
+import {useState,useEffect,useCallback,useRef,useLayoutEffect} from 'react';
 import {Heart,Compass,MessageCircle,Bell,UserRound,Bookmark,X,EyeOff,Search} from 'lucide-react';
 import LoadingSpace from './loading-space';
 import PublicLanding from './public-landing';
@@ -82,7 +82,8 @@ export default function LoveApp({signedIn,accountId,emailSignIn=false,legacySign
  useEffect(()=>{if(!initialized||!signedIn||!formReady.current)return;if(profileDraftChanged(form,savedDraft||empty,empty,consent,savedConsent))writeDraft(tabStorage(),profileKey,{form,consent,rulesVersion:RULES_VERSION});else removeDraft(tabStorage(),profileKey);},[form,consent,savedDraft,savedConsent,initialized,signedIn,profileKey]);
  const loadGate=useRef(new LatestRequest());
  useEffect(()=>()=>loadGate.current.cancel(),[]);
- const busyRef=useRef(busy);busyRef.current=busy;
+ const busyRef=useRef(busy);
+ useLayoutEffect(()=>{busyRef.current=busy;},[busy]);
  const formReady=useRef(false),previousRoute=useRef('');
  useEffect(()=>{if(previousRoute.current&&previousRoute.current!==route){document.getElementById('main-content')?.focus({preventScroll:true});}previousRoute.current=route;},[route]);
  const api=useCallback(async(data:Record<string,unknown>)=>{const r=await fetch('/api/app',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({...data,expectedAccount:accountId})});const x:{error?:string;locationConfirmed?:boolean}=await r.json();if(!r.ok)throw Object.assign(Error(x.error||'Please try again.'),{status:r.status});if(!['messages','read_messages'].includes(data.action as string))window.dispatchEvent(new Event('real-love-engaged'));return x;},[accountId]);

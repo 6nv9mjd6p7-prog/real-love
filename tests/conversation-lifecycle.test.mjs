@@ -42,6 +42,8 @@ props={...props,onRead:()=>notified+=10};render();await settle();assert.equal(st
 view.scrollAway();latest=[...latest,{id:'two',mine:false}];await interval();await settle();
 assert.equal(view.newCount,1);assert.equal(reads.length,1,'scrolled-up messages remain unread');
 await interval();await settle();assert.equal(view.newCount,1,'repeat polls do not inflate the counter');
+// A discarded render must not publish its callback to an in-flight committed chat.
+const committedHooks=hooks.slice();index=0;Conversation({...props,onRead:()=>notified+=100});pending=[];hooks.splice(0,hooks.length,...committedHooks);
 await view.showLatest();await settle();assert.equal(view.newCount,0);assert.equal(reads.length,2);assert.equal(notified,11,'acknowledgement uses the latest parent callback');
 for(const guard of ['hidden','unfocused','offline']){
  document.hidden=guard==='hidden';focused=guard!=='unfocused';navigator.onLine=guard!=='offline';
