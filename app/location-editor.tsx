@@ -16,13 +16,16 @@ export default function LocationEditor<T extends LocationForm>({accountId,form,s
  const [deviceMessage,setDeviceMessage]=useState(''),[openBrowser,setOpenBrowser]=useState(false);
  function cancelDetection(){detection.current++;if(locationTimer.current!==null){clearTimeout(locationTimer.current);locationTimer.current=null;}locationRequest.current?.abort();locationRequest.current=null;}
  const [activeOption,setActiveOption]=useState(-1),[suggestionsClosed,setSuggestionsClosed]=useState(false);
+ const [optionResults,setOptionResults]=useState(results);
+ if(optionResults!==results){setOptionResults(results);setActiveOption(-1);setSuggestionsClosed(false);}
  const listVisible=results.length>0&&!suggestionsClosed;
- useEffect(()=>{setActiveOption(-1);setSuggestionsClosed(false);},[results]);
  useEffect(()=>{alive.current=true;pendingCallback.current?.(false);return()=>{alive.current=false;cancelDetection();};},[accountId]);
  function edit(){cancelDetection();setDeviceMessage('');setOpenBrowser(false);setLocating(false);setFinding(false);skipSearch.current=true;setQuery(locationLabel(form));setResults([]);setMessage('Type your city or area, then choose the matching suggestion.');setConnectionKey('');onPendingChange?.(false);inputRef.current?.focus();inputRef.current?.select();}
  const confirmed=!!me?.locationConfirmed&&locationKey(form)===locationKey(me)&&!form.confirmLocation;
  const selected=locationLabel(form),hasDistancePoint=typeof form.areaLat==='number'&&typeof form.areaLon==='number'&&!!form.locationPlaceId;
- useEffect(()=>{skipSearch.current=true;setQuery(selected);setResults([]);pendingCallback.current?.(false);},[selected]);
+ const [selectedArea,setSelectedArea]=useState(selected);
+ if(selectedArea!==selected){setSelectedArea(selected);setQuery(selected);setResults([]);}
+ useEffect(()=>{skipSearch.current=true;pendingCallback.current?.(false);},[selected]);
 
  useEffect(()=>{
   if(skipSearch.current){skipSearch.current=false;return;}
