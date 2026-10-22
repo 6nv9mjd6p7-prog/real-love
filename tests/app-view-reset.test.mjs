@@ -7,14 +7,14 @@ const app=source.statements.find(node=>ts.isFunctionDeclaration(node)&&node.name
 const stateNames=['circleUpdates','signupPhoto','signupPhotoPreview','photoError','viewAccount','invitationOpen','invitationView'];
 const statements=app.body.statements.flatMap(node=>{
  if(ts.isVariableStatement(node)){
-  const declarations=node.declarationList.declarations.filter(d=>ts.isArrayBindingPattern(d.name)&&stateNames.includes(d.name.elements[0].name?.text));
+  const declarations=node.declarationList.declarations.filter(d=>ts.isArrayBindingPattern(d.name)&&stateNames.includes(d.name.elements[0].name?.text)||ts.isIdentifier(d.name)&&d.name.text==='signupPhotoPreview');
   return declarations.length?['const '+declarations.map(d=>d.getText(source)).join(',')+';']:[];
  }
  if(ts.isIfStatement(node)&&/^(viewAccount|invitationView\.)/.test(node.expression.getText(source)))return[node.getText(source)];
  return [];
 });
-const code=`const useState=(...args)=>globalThis.__appResetHooks.useState(...args);
-export default function view({accountId,route,existing}){${statements.join('\n')}return {circleUpdates,setCircleUpdates,signupPhoto,setSignupPhoto,signupPhotoPreview,setSignupPhotoPreview,photoError,setPhotoError,invitationOpen,setInvitationOpen};}`;
+const code=`const useState=(...args)=>globalThis.__appResetHooks.useState(...args);const useObjectUrl=photo=>photo?'blob:private':'';
+export default function view({accountId,route,existing}){${statements.join('\n')}return {circleUpdates,setCircleUpdates,signupPhoto,setSignupPhoto,signupPhotoPreview,photoError,setPhotoError,invitationOpen,setInvitationOpen};}`;
 const js=ts.transpileModule(code,{compilerOptions:{module:ts.ModuleKind.ESNext,target:ts.ScriptTarget.ES2022}}).outputText;
 const {default:view}=await import('data:text/javascript;base64,'+Buffer.from(js).toString('base64'));
 const slots=[];let index,dirty;
@@ -23,7 +23,7 @@ function render(props){for(let pass=0;pass<10;pass++){index=0;dirty=false;const 
 let props={accountId:'a',route:'person/alice',existing:null},state=render(props);
 assert.equal(state.circleUpdates,0);assert.equal(state.signupPhoto,null);assert.equal(state.invitationOpen,false);
 const photo={name:'private.jpg'};
-state.setCircleUpdates(7);state.setSignupPhoto(photo);state.setSignupPhotoPreview('blob:private');state.setPhotoError('Retry upload');state.setInvitationOpen(true);
+state.setCircleUpdates(7);state.setSignupPhoto(photo);state.setPhotoError('Retry upload');state.setInvitationOpen(true);
 state=render(props);
 assert.equal(state.circleUpdates,7);assert.equal(state.signupPhoto,photo);assert.equal(state.photoError,'Retry upload');assert.equal(state.invitationOpen,true,'ordinary renders preserve an open invitation');
 props={...props,route:'person/bob'};state=render(props);
