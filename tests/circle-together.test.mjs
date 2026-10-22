@@ -11,7 +11,7 @@ const hooks={useState(initial){const i=index++;if(!(i in slots))slots[i]=initial
 globalThis.__togetherHooks=hooks;
 let attempts=new Map();
 globalThis.__togetherAttempt=(_account,_kind,_circle,fingerprint)=>{if(!attempts.has(fingerprint))attempts.set(fingerprint,crypto.randomUUID());return attempts.get(fingerprint);};
-let source=readFileSync('app/circle-plan.tsx','utf8')
+let source=readFileSync('app/circle-plan.tsx','utf8').replace("import {useCurrentTime} from './use-current-time';",'const useCurrentTime=()=>globalThis.__clockNow??Date.now();')
  .replace("import {useCallback,useEffect,useId,useRef,useState} from 'react';",'const {useCallback,useEffect,useId,useRef,useState}=globalThis.__togetherHooks;')
  .replace("import ProjectProgress from './project-progress';",'const ProjectProgress=()=>null;')
  .replace("import {useTabDraft} from './use-tab-draft';",'const useTabDraft=()=>globalThis.__togetherHooks.useState(\'\');')
@@ -61,11 +61,13 @@ assert.equal(calls.at(-1).startsAt,new Date(localStart).toISOString(),'device-lo
 let planned={...post,id:'activity',kind:'activity',body:'Activity: Learn together',startsAt:new Date(localStart).toISOString(),canClose:true,canJoin:true,joined:false,participants:[]};
 async function showActivity(){globalThis.fetch=async(_url,options)=>{calls.push(JSON.parse(options.body));return {ok:true,json:async()=>({posts:[planned],cursor:1,hasMore:false})};};button('Refresh posts').props.onClick();await tick();render();}
 await showActivity();const beforeResponse=calls.length;button('Planning to join').props.onClick();render();assert.equal(calls.length,beforeResponse,'interest opens a disclosure before sharing a response');assert(renderToStaticMarkup(tree).includes('visible inside this circle'));
+globalThis.__clockNow=Date.parse(planned.startsAt);render();assert(!button('Planning to join'),'responses close at the exact activity start');assert(!button('Share my response'),'an open consent confirmation cannot submit after the deadline');assert.equal(calls.length,beforeResponse,'clock ticks do not fetch or submit participation');globalThis.__clockNow-=1;render();
 button('Keep private').props.onClick();render();assert.equal(calls.length,beforeResponse,'keeping private never submits participation');
 button('Planning to join').props.onClick();render();globalThis.fetch=async(_url,options)=>{calls.push(JSON.parse(options.body));return {ok:true,json:async()=>({ok:true})};};button('Share my response').props.onClick();await tick();render();assert.equal(calls.at(-1).action,'together_respond');assert.equal(calls.at(-1).join,true);assert.equal(calls.at(-1).participationConsent,true);
 planned={...planned,joined:true,participants:[{id:'member',name:'My chosen name'}]};await showActivity();assert(renderToStaticMarkup(tree).includes('My chosen name'));globalThis.fetch=async(_url,options)=>{calls.push(JSON.parse(options.body));return {ok:true,json:async()=>({ok:true})};};button('Withdraw response').props.onClick();await tick();render();assert.equal(calls.at(-1).join,false,'withdrawal does not ask for an explanation or a penalty');
 planned={...planned,joined:false,participants:[]};await showActivity();const beforeCancel=calls.length;button('Cancel activity').props.onClick();render();assert.equal(calls.length,beforeCancel,'cancellation is confirmed before mutation');globalThis.fetch=async(_url,options)=>{calls.push(JSON.parse(options.body));return {ok:true,json:async()=>({ok:true})};};button('Confirm cancellation').props.onClick();await tick();render();assert.equal(calls.at(-1).action,'together_cancel');
 planned={...planned,status:'cancelled',canJoin:false,joined:true};await showActivity();assert(renderToStaticMarkup(tree).includes('Cancelled'));assert(!button('Planning to join'));assert(button('Withdraw response'),'cancellation never traps an existing response');
+delete globalThis.__clockNow;
 console.log('Activity time conversion, named-response disclosure, opt-in, private cancellation, withdrawal and cancellation confirmation passed.');
 
 slots=[];index=0;tree=Plan({...props,initialOpen:true});assert.equal(tree.props.open,true,'list shortcut expands Plan');tree.props.onToggle({currentTarget:{open:false}});index=0;tree=Plan({...props,initialOpen:true});assert.equal(tree.props.open,false,'opened shortcut remains manually collapsible');

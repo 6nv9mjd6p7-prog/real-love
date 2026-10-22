@@ -1,4 +1,5 @@
 'use client';
+import {useCurrentTime} from './use-current-time';
 import {useEffect,useRef,useState} from 'react';
 
 export type CampaignDraft={title:string;company:string;summary:string;demand:string;uncertainty:string;alternatives:string;reviewDate:string;sources:{url:string;claim:string}[]};
@@ -8,6 +9,7 @@ export default function CampaignProposal({draft,setDraft,consent,setConsent,busy
  const [step,setStep]=useState(0),[submitting,setSubmitting]=useState(false);
  const heading=useRef<HTMLHeadingElement>(null),sending=useRef(false);
  useEffect(()=>{heading.current?.focus();},[step]);
+ const now=useCurrentTime();
  const steps=['Purpose','Evidence','Review and submit'];
  function update(next:CampaignDraft){setDraft(next);setConsent(false);}
  async function submit(e:React.FormEvent<HTMLFormElement>){
@@ -35,7 +37,7 @@ export default function CampaignProposal({draft,setDraft,consent,setConsent,busy
     {([['Campaign title',draft.title],['Company or brand',draft.company],['What happened',draft.summary],['The demand',draft.demand],['Uncertainty and responses',draft.uncertainty],['Alternatives and interests',draft.alternatives]]).map(([label,value])=><div key={label}><h3>{label}</h3><p>{value}</p></div>)}
     <div><h3>Evidence sources</h3>{draft.sources.map((s,i)=><div key={i}><p>{s.url}</p><p>{s.claim}</p></div>)}</div>
    </section>
-   <label>Next review date · within 90 days<input disabled={busy||submitting} type="date" required min={new Date(Date.now()+86400000).toISOString().slice(0,10)} max={new Date(Date.now()+90*86400000).toISOString().slice(0,10)} value={draft.reviewDate} onChange={e=>update({...draft,reviewDate:e.target.value})}/></label>
+   <label>Next review date · within 90 days<input disabled={busy||submitting} type="date" required min={new Date(now+86400000).toISOString().slice(0,10)} max={new Date(now+90*86400000).toISOString().slice(0,10)} value={draft.reviewDate} onChange={e=>update({...draft,reviewDate:e.target.value})}/></label>
    <label className="campaign-check"><input disabled={busy||submitting} type="checkbox" required checked={consent} onChange={e=>setConsent(e.target.checked)}/>I will keep participation voluntary, avoid threats and personal targeting, disclose conflicts, and distinguish evidence from allegations.</label>
   </>}
   <div className="setup-actions">{step>0&&<button type="button" className="secondary" disabled={busy||submitting} onClick={()=>setStep(step-1)}>Back</button>}<button className="primary" disabled={busy||submitting}>{busy||submitting?'Submitting…':step===0?'Continue to evidence':step===1?'Review proposal':'Submit for review'}</button></div>
