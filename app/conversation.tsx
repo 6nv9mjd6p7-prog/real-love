@@ -18,7 +18,8 @@ import {appendPrompt,conversationPrompts,sharedConversationInterests,incomingSin
 import {CalendarDays,MessageCircle} from 'lucide-react';
 export default function Conversation({accountId,me,connection,api,onBack,onProfile,onReport,onBlock,onClose,onPhoto,onCircle,onRead,onManagePhoto,backLabel='Chats'}:{accountId:string;me?:OwnProfile|null;connection:ConversationConnection;api:(x:Record<string,unknown>)=>Promise<unknown>;onBack:()=>void;onProfile:()=>void;onReport:(p:ReportTarget)=>void;onBlock:()=>void;onClose:()=>void;onPhoto:(share:boolean,ongoing?:boolean)=>Promise<boolean>;onCircle:()=>void;onRead:()=>void;onManagePhoto?:()=>void;backLabel?:string}){
  const [privateView,setPrivateView]=useState<'Chat'|'Plans'>('Chat');
- useEffect(()=>{setPrivateView('Chat');},[connection.id]);
+ const [viewConnection,setViewConnection]=useState(connection.id);
+ if(viewConnection!==connection.id){setViewConnection(connection.id);setPrivateView('Chat');}
  function navigatePrivateTabs(event:KeyboardEvent<HTMLButtonElement>,index:number){const next=event.key==='ArrowRight'?(index+1)%2:event.key==='ArrowLeft'?(index+1)%2:event.key==='Home'?0:event.key==='End'?1:null;if(next===null||composerActive)return;event.preventDefault();setPrivateView(next===0?'Chat':'Plans');event.currentTarget.parentElement?.querySelectorAll<HTMLButtonElement>('[role="tab"]')[next]?.focus();}
  const [ongoingConsent,setOngoingConsent]=useState(false);
  const [composerActive,setComposerActive]=useState(false);
