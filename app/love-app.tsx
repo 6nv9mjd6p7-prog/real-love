@@ -52,7 +52,6 @@ const routeNames:Record<string,string>={'Discover':'discover','Saved':'saved','C
 export default function LoveApp({signedIn,accountId,emailSignIn=false,legacySignIn=true}:{signedIn:boolean;accountId:string;emailSignIn?:boolean;legacySignIn?:boolean}){
  const [notificationCount,setNotificationCount]=useState(0);
  const [circleUpdates,setCircleUpdates]=useState(0);
- useEffect(()=>{setCircleUpdates(0);},[accountId]);
  const [reviewAlerts,setReviewAlerts]=useState(0);
  const [profileOrigins,setProfileOrigins]=useState(()=>new Map<string,{route:string;scroll:number}>());
  const returnScroll=useRef<number|null>(null);
@@ -63,7 +62,8 @@ export default function LoveApp({signedIn,accountId,emailSignIn=false,legacySign
  const scrollPositions=useRef(new Map<string,number>()),currentRoute=useRef('discover');
  const [locationPending,setLocationPending]=useState(false);
  const [signupPhoto,setSignupPhoto]=useState<File|null>(null),[signupPhotoPreview,setSignupPhotoPreview]=useState(''),[photoError,setPhotoError]=useState('');
- useEffect(()=>{setSignupPhoto(null);setPhotoError('');},[accountId]);
+ const [viewAccount,setViewAccount]=useState(accountId);
+ if(viewAccount!==accountId){setViewAccount(accountId);setCircleUpdates(0);setSignupPhoto(null);setSignupPhotoPreview('');setPhotoError('');}
  useEffect(()=>{if(!signupPhoto){setSignupPhotoPreview('');return;}const url=URL.createObjectURL(signupPhoto);setSignupPhotoPreview(url);return()=>URL.revokeObjectURL(url);},[signupPhoto]);
  const demoContext=route==='examples'||examples.some(p=>route==='person/'+encodeURIComponent(p.id));
  const discoverPreferences=useDiscoveryPreferences(accountId,demoContext);
@@ -100,7 +100,8 @@ export default function LoveApp({signedIn,accountId,emailSignIn=false,legacySign
  const existing=selected?connections.find(c=>c.person.id===selected.id&&c.status!=='closed'):null;
  const chat=route.startsWith('chat/')?connections.find(c=>c.id===decodeURIComponent(route.slice(5))):null;
  const [invitationOpen,setInvitationOpen]=useState(false);
- useEffect(()=>{setInvitationOpen(false);},[route,accountId,existing?.id]);
+ const [invitationView,setInvitationView]=useState({route,accountId,connection:existing?.id});
+ if(invitationView.route!==route||invitationView.accountId!==accountId||invitationView.connection!==existing?.id){setInvitationView({route,accountId,connection:existing?.id});setInvitationOpen(false);}
  const [proposal,setProposal,proposalReady]=useTabDraft(accountId,'invitation',selected?.id||'');
  const [contextDraft,setContextDraft,contextReady]=useTabDraft(accountId,'invitation-context',selected?.id||'');
  let selectedContext:InvitationContext|null=null;try{selectedContext=contextDraft?JSON.parse(contextDraft):null;}catch{}
