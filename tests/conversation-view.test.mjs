@@ -74,7 +74,6 @@ assert(legacyExchange.includes('Stop sharing'));
 const sharedRow=renderToStaticMarkup(React.createElement(View,{accountId:'test',me:{...examples[1],photoUploaded:true},connection:{id:'test',person:{...examples[1],hasPhoto:true},photoMine:true,photoOther:true,photosShared:true,photoOngoingMine:true,photoOngoingOther:true},api:noop,onBack:noop,onProfile:noop,onReport:noop,onBlock:noop,onClose:noop,onPhoto:async()=>true,onCircle:noop,onRead:noop}));
 assert(sharedRow.indexOf('shared-photo-shortcut')<sharedRow.indexOf('conversation-details'),'agreed photo is outside nested disclosures');
 assert(sharedRow.includes('Photos · Shared'));
-let state=[],hook=0;
 const fake="const useCallback=fn=>fn;const useState=initial=>{const i=globalThis.__photoHooks.index++;const states=globalThis.__photoHooks.state;if(!(i in states))states[i]=initial;return [states[i],next=>states[i]=typeof next==='function'?next(states[i]):next];};const useRef=initial=>{const i=globalThis.__photoHooks.index++;const states=globalThis.__photoHooks.state;return states[i]??(states[i]={current:initial});};const useEffect=()=>{},useLayoutEffect=()=>{};";
 globalThis.__photoHooks={state:[],index:0};
 const {default:InteractiveView}=await import(compile(source.replace(/import \{[^}]*useState[^}]*\} from '[^']+';/,fake)));
