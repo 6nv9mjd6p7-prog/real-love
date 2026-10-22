@@ -1,12 +1,14 @@
 import {env} from 'cloudflare:workers';
 import {reactionOptions,EDIT_WINDOW_MS,DELETE_WINDOW_MS,MAX_MESSAGE_EDITS,messageChangeAllowed,type MessageReaction} from './chat-tools';
 import {SafetyError,contentCheck} from './safety';
+export type MessageContent={id:string;sender:string;body:string;created:string;reply_to:string;audio_key:string;audio_type:string;audio_duration:number;attachment_key:string;attachment_type:string;edited_at:string;deleted_at:string;edit_count:number;edit_history:string};
+export type MessageRow=MessageContent&{rowid:number};
 type Kind='direct'|'circle';
 type ReactionRow={message:string;member:string;emoji:string};
 type ReplyRow={rowid:number;id:string;sender:string;body:string;data:string|null};
 type EditableMessageRow={id:string;body:string;created:string;audio_key:string;attachment_key:string;edited_at:string;deleted_at:string;edit_count:number;edit_history:string;cooperation_parent?:string};
 const db=()=>env.DB!;
-export async function enrichMessages(rows:any[],kind:Kind,scope:string,viewer:string,visible:(row:any)=>Promise<boolean>,reactionVisible:(member:string)=>Promise<boolean>){
+export async function enrichMessages<T extends MessageContent>(rows:T[],kind:Kind,scope:string,viewer:string,visible:(row:ReplyRow)=>Promise<boolean>,reactionVisible:(member:string)=>Promise<boolean>){
  const reactions=new Map<string,MessageReaction[]>(),visibility=new Map<string,boolean>();
  for(let start=0;start<rows.length;start+=70){const ids=rows.slice(start,start+70).map(x=>x.id);if(!ids.length)continue;
   const result=await db().prepare(`SELECT message,member,emoji FROM message_reactions WHERE kind=? AND scope=? AND message IN (${ids.map(()=>'?').join(',')})`).bind(kind,scope,...ids).all<ReactionRow>();
