@@ -2,16 +2,17 @@ import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import ts from 'typescript';
 const source=readFileSync('app/circles.tsx','utf8');
-const start=source.indexOf('useEffect(()=>{if(!initialSection)return;'),end=source.indexOf('useEffect(()=>{load();',start);assert(start>=0&&end>start);
+const start=source.indexOf('// Account-scoped tab state'),end=source.indexOf('useEffect(()=>{load();',start),resetStart=source.indexOf('const [sectionRequest,'),resetEnd=source.indexOf('const [workerCircles,',resetStart);assert(start>=0&&end>start&&resetStart>=0&&resetEnd>resetStart);
+const ast=ts.createSourceFile('circles.tsx',source,ts.ScriptTarget.Latest,true,ts.ScriptKind.TSX);let sectionInitializer;function findSection(node){if(ts.isVariableDeclaration(node)&&ts.isArrayBindingPattern(node.name)&&node.name.elements[0]?.name?.getText(ast)==='section')sectionInitializer=node.initializer.getText(ast);ts.forEachChild(node,findSection);}findSection(ast);assert(sectionInitializer);
 // Include the actual section, restoration, storage reader and persistence code.
-const restoration=source.slice(start,end).split('\n').filter(line=>!line.startsWith('useEffect(()=>{setWorkerCircles')).join('\n');
-const js=ts.transpileModule(`export default function render({accountId,workerArea,initialSection,query,section,setQuery,setSection,useEffect,useEffectEvent}){${restoration}}`,{compilerOptions:{module:ts.ModuleKind.ESNext,target:ts.ScriptTarget.ES2022}}).outputText;
+const restoration=source.slice(resetStart,resetEnd)+source.slice(start,end);
+const js=ts.transpileModule(`export default function render({accountId,workerArea,initialSection,query,setQuery,useState,useEffect,useEffectEvent}){const [section,setSection]=${sectionInitializer};${restoration}}`,{compilerOptions:{module:ts.ModuleKind.ESNext,target:ts.ScriptTarget.ES2022}}).outputText;
 const {default:render}=await import('data:text/javascript;base64,'+Buffer.from(js).toString('base64'));
 const items=new Map(),reads=[];let blocked=false;
 globalThis.sessionStorage={getItem(key){reads.push(key);if(blocked)throw Error('storage blocked');return items.get(key)??null;},setItem(key,value){if(blocked)throw Error('storage blocked');items.set(key,value);}};
 const key=(account,worker)=>'real-love-circle-view:'+account+':'+worker;
 let slots=[],index=0,pending=[],eventCommits=[],state={query:'',section:'Discover'},props;
-const runtime={useEffect(fn,deps){const i=index++,old=slots[i];if(!old||deps.some((value,j)=>!Object.is(value,old[j]))){slots[i]=deps;pending.push(fn);}},useEffectEvent(fn){const i=index++;slots[i]??={current:fn};eventCommits.push(()=>slots[i].current=fn);return (...args)=>slots[i].current(...args);}};
+const runtime={useState(initial){const i=index++;if(!(i in slots))slots[i]={value:typeof initial==='function'?initial():initial};if(i===0)state.section=slots[i].value;return [slots[i].value,next=>{slots[i].value=typeof next==='function'?next(slots[i].value):next;if(i===0)state.section=slots[i].value;}];},useEffect(fn,deps){const i=index++,old=slots[i];if(!old||deps.some((value,j)=>!Object.is(value,old[j]))){slots[i]=deps;pending.push(fn);}},useEffectEvent(fn){const i=index++;slots[i]??={current:fn};eventCommits.push(()=>slots[i].current=fn);return (...args)=>slots[i].current(...args);}};
 function view(changes={}){props={...props,...changes};index=0;render({...props,...state,setQuery:value=>state.query=value,setSection:value=>state.section=value,...runtime});const commits=eventCommits,effects=pending;eventCommits=[];pending=[];commits.forEach(fn=>fn());effects.forEach(fn=>fn());}
 function settle(changes={}){view(changes);view();view();}
 function mount(accountId,workerArea=false,initialSection=''){slots=[];pending=[];eventCommits=[];state={query:'',section:'Discover'};props={accountId,workerArea,initialSection};settle();}
