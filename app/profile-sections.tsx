@@ -1,6 +1,7 @@
 'use client';
+import type {ProfileForm} from './client-profile-types';
 // Overview rows keep section summaries and editing destinations visible.
-export default function ProfileSections({form,photoUploaded,busy,changed,onPreview,onChoose}:{form:any;photoUploaded:boolean;busy:boolean;changed:boolean;onPreview:()=>void;onChoose:(section:number)=>void}){
+export default function ProfileSections({form,photoUploaded,busy,changed,onPreview,onChoose}:{form:ProfileForm;photoUploaded:boolean;busy:boolean;changed:boolean;onPreview:()=>void;onChoose:(section:number)=>void}){
  const sections=[
   {title:'Basics',detail:[form.name,form.age&&`${form.age} years old`,form.city].filter(Boolean).join(' · ')||'Name, age, and general area',hint:'Name, location, and optional identity answers'},
   {title:'Interests',detail:form.interests?.join(' · ')||'Choose what you enjoy',hint:'Topics that give someone a way to connect'},

@@ -36,8 +36,8 @@ export function ageFromBirthDate(value:unknown,today=new Date()):number|null{
  const age=today.getUTCFullYear()-year-(today.getUTCMonth()+1<month||today.getUTCMonth()+1===month&&today.getUTCDate()<day?1:0);
  return age>=0?age:null;
 }
-export function profileAvailability(p:Partial<Profile>){return Array.isArray(p.availabilityChoices)?p.availabilityChoices:p.availability?[p.availability]:[];}
-export function profileParticipation(p:Partial<Profile>){return Array.isArray(p.participation)?p.participation:p.startRole?[p.startRole]:[];}
+export function profileAvailability(p:Pick<Partial<Profile>,'availabilityChoices'|'availability'>){return Array.isArray(p.availabilityChoices)?p.availabilityChoices:p.availability?[p.availability]:[];}
+export function profileParticipation(p:Pick<Partial<Profile>,'participation'|'startRole'>){return Array.isArray(p.participation)?p.participation:p.startRole?[p.startRole]:[];}
 export const profilePrompts=[
  ['care','What do you care about?','A concern, cause, or something you want to understand.'],
  ['question','What question keeps coming back to you?','A question about yourself, society, or being human.'],
