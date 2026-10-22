@@ -1,10 +1,11 @@
 
 'use client';
-import {useState,useEffect} from 'react';
+import {useState} from 'react';
 import InteractivePhoto from './interactive-photo';
 export default function SharedAvatar({person,shared,onProfile,onReport}:{onProfile?:()=>void;onReport?:()=>void;person:{id:string;name:string;hasPhoto?:boolean;photoDescription?:string};shared:boolean}){
  const [failed,setFailed]=useState(false);
- useEffect(()=>setFailed(false),[person.id,person.hasPhoto,shared]);
+ const [source,setSource]=useState({id:person.id,hasPhoto:person.hasPhoto,shared});
+ if(source.id!==person.id||source.hasPhoto!==person.hasPhoto||source.shared!==shared){setSource({id:person.id,hasPhoto:person.hasPhoto,shared});setFailed(false);}
  const label=person.photoDescription?person.name+'’s shared profile photo: '+person.photoDescription:person.name+'’s shared profile photo';
  return shared&&person.hasPhoto&&!failed?<InteractivePhoto className="shared-avatar-trigger" src={'/api/photo?member='+encodeURIComponent(person.id)} label={label} onProfile={onProfile} onReport={onReport} onThumbnailError={()=>setFailed(true)}/>:onProfile?<button type="button" className="shared-avatar avatar-placeholder" aria-label={'View '+person.name+'’s profile · photo private or unavailable'} onClick={onProfile}>{person.name.trim().slice(0,1).toUpperCase()||'?'}</button>:<span className="shared-avatar avatar-placeholder" aria-hidden="true">{person.name.trim().slice(0,1).toUpperCase()||'?'}</span>;
 }
