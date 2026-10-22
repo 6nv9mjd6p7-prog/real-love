@@ -54,7 +54,7 @@ assert(!selected.includes('/api/photo'));
 assert(selected.includes('not been uploaded yet'));
 assert(!renderPhoto({uploaded:true}).includes('/api/photo'));
 const app=readFileSync('app/love-app.tsx','utf8');
-assert(app.includes('<ProfilePreviewPhoto memberId={me?.id} uploaded={!!(me as any)?.photoUploaded} selected={signupPhotoPreview} version={photoVersion} description={form.photoDescription}/>'));
+assert(app.includes('<ProfilePreviewPhoto memberId={me?.id} uploaded={!!(me as OwnProfile)?.photoUploaded} selected={signupPhotoPreview} version={photoVersion} description={form.photoDescription}/>'));
 console.log('Own photo previews retain private photo-description text without changing sharing consent');
 
 assert(html.includes('How ')&&html.includes('communicates'));assert(html.includes('Ask before giving advice.'));assert(html.includes('Please ask directly.'));assert(html.includes('Conversation ideas'));assert(html.includes('Everyday'));assert(html.includes('Communicate'));assert(html.includes('A conversation starting point'));assert(html.includes('No conversation identifier or message text is collected'));
