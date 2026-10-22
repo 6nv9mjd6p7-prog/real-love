@@ -69,6 +69,8 @@ export function recordAppNavigation(previous:string|null,route:string,account:st
  if(marker?.account===account&&marker.route===route)return;
  history.replaceState({...state,realLoveNavigation:{account,route,parent:previous&&allowedAppRoute(previous)?previous:null}},'');
 }
+// Hash navigation creates the browser entry; the root router records its parent.
+export function pushAppRoute(route:string){window.location.hash=route;}
 export function replaceAppRoute(route:string,account:string,preserveParent=false){
  const next=allowedAppRoute(route)||'circles';
  const parent=preserveParent&&history.state?.realLoveNavigation?.account===account?history.state.realLoveNavigation.parent:null;

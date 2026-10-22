@@ -6,14 +6,14 @@ const text=readFileSync('app/love-app.tsx','utf8'),source=ts.createSourceFile('a
 let app;ts.forEachChild(source,node=>{if(ts.isFunctionDeclaration(node)&&node.name?.text==='LoveApp')app=node;});
 const handler=name=>app.body.statements.find(node=>ts.isFunctionDeclaration(node)&&node.name.text===name).getText(source);
 let label;function visit(node){if(ts.isCallExpression(node)&&node.expression.getText(source)==='routeBackLabel'&&node.getText(source).includes('profileOrigins'))label=node.getText(source);ts.forEachChild(node,visit);}visit(app);assert(label);
-const dependencies=['route','routeNames','profileOrigins','setProfileOrigins','currentRoute','scrollPositions','returnScroll','accountId','selected','setInboxTab','backWithinApp','appBackDestination','routeBackLabel'];
+const dependencies=['route','routeNames','profileOrigins','setProfileOrigins','currentRoute','scrollPositions','returnScroll','accountId','selected','setInboxTab','backWithinApp','appBackDestination','routeBackLabel','pushAppRoute'];
 const {default:create}=await import(compile(`export default function create({${dependencies.join(',')}}){${handler('nav')} ${handler('backFromProfile')} return {nav,backFromProfile,label:()=>${label}};}`));
-const {routeBackLabel}=await import(compile(readFileSync('app/native-links.ts','utf8')));
+const {routeBackLabel,pushAppRoute}=await import(compile(readFileSync('app/native-links.ts','utf8')));
 const originalWindow=Object.getOwnPropertyDescriptor(globalThis,'window');
 let origins=new Map(),pending=[],returned=[],inbox=[],events=[];
 const browser={scrollY:240,location:{hash:'#saved'},dispatchEvent:event=>events.push(event.type),scrollTo:position=>events.push(position)};
 Object.defineProperty(globalThis,'window',{value:browser,configurable:true});
-const context={route:'saved',routeNames:{Saved:'saved',Chats:'conversations'},profileOrigins:origins,setProfileOrigins:update=>pending.push(update),currentRoute:{current:'saved'},scrollPositions:{current:new Map()},returnScroll:{current:null},accountId:'member',selected:null,setInboxTab:tab=>inbox.push(tab),backWithinApp:(route,account)=>returned.push({route,account}),appBackDestination:fallback=>fallback,routeBackLabel};
+const context={route:'saved',routeNames:{Saved:'saved',Chats:'conversations'},profileOrigins:origins,setProfileOrigins:update=>pending.push(update),currentRoute:{current:'saved'},scrollPositions:{current:new Map()},returnScroll:{current:null},accountId:'member',selected:null,setInboxTab:tab=>inbox.push(tab),backWithinApp:(route,account)=>returned.push({route,account}),appBackDestination:fallback=>fallback,routeBackLabel,pushAppRoute};
 try{
  create(context).nav('person/alice');
  assert.equal(browser.location.hash,'person/alice');assert.equal(context.scrollPositions.current.get('saved'),240);assert.deepEqual(events,['real-love-engaged']);
