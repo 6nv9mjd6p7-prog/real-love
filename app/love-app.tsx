@@ -38,6 +38,7 @@ import {onboardingNext} from './onboarding';
 import {useDiscoveryPreferences} from './use-discovery-preferences';
 import {defaultDiscovery,clearDiscovery,preferenceStorage,type DiscoveryPreferences} from './discovery-preferences';
 import {useTabDraft} from './use-tab-draft';
+import {useObjectUrl} from './use-object-url';
 import {draftKey,readDraft,writeDraft,removeDraft,clearDrafts,tabStorage} from './draft-storage';
 import {profileDraftChanged,profileDraftError} from './profile-draft';
 import {RULES_VERSION,reportReasons} from './rules';
@@ -61,10 +62,10 @@ export default function LoveApp({signedIn,accountId,emailSignIn=false,legacySign
  const [inboxTab,setInboxTab]=useState('Chats'),[inboxSearch,setInboxSearch]=useState(''),[chatFilter,setChatFilter]=useState('All'),[peopleLimit,setPeopleLimit]=useState(50),[closeTarget,setCloseTarget]=useState<Connection|null>(null);
  const scrollPositions=useRef(new Map<string,number>()),currentRoute=useRef('discover');
  const [locationPending,setLocationPending]=useState(false);
- const [signupPhoto,setSignupPhoto]=useState<File|null>(null),[signupPhotoPreview,setSignupPhotoPreview]=useState(''),[photoError,setPhotoError]=useState('');
+ const [signupPhoto,setSignupPhoto]=useState<File|null>(null),[photoError,setPhotoError]=useState('');
  const [viewAccount,setViewAccount]=useState(accountId);
- if(viewAccount!==accountId){setViewAccount(accountId);setCircleUpdates(0);setSignupPhoto(null);setSignupPhotoPreview('');setPhotoError('');}
- useEffect(()=>{if(!signupPhoto){setSignupPhotoPreview('');return;}const url=URL.createObjectURL(signupPhoto);setSignupPhotoPreview(url);return()=>URL.revokeObjectURL(url);},[signupPhoto]);
+ if(viewAccount!==accountId){setViewAccount(accountId);setCircleUpdates(0);setSignupPhoto(null);setPhotoError('');}
+ const signupPhotoPreview=useObjectUrl(signupPhoto);
  const demoContext=route==='examples'||examples.some(p=>route==='person/'+encodeURIComponent(p.id));
  const discoverPreferences=useDiscoveryPreferences(accountId,demoContext);
  const savedPreferences=useDiscoveryPreferences(accountId,false,'saved');
