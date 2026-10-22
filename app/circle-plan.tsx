@@ -20,15 +20,18 @@ export default function CirclePlan({accountId,circleId,disabled,refreshKey,initi
  useEffect(()=>{alive.current=true;const generationRef=generation,controllerRef=controller;return()=>{alive.current=false;generationRef.current++;controllerRef.current?.abort();};},[]);
  useEffect(()=>{if(composing&&!wasComposing.current){wasComposing.current=true;formHeading.current?.focus();}else if(!composing&&!saving&&wasComposing.current){wasComposing.current=false;addButton.current?.focus();}},[composing,saving]);
  const api=useCallback(async(body:Record<string,unknown>,signal?:AbortSignal):Promise<unknown>=>{const response=await fetch('/api/circles',{method:'POST',headers:{'Content-Type':'application/json'},cache:'no-store',signal,body:JSON.stringify({...body,circle:circleId,expectedAccount:accountId})});const data:{error?:string}=await response.json();if(!response.ok)throw Error(data.error||'Plans could not load. Try again.');return data;},[accountId,circleId]);
- const load=useCallback(async(before?:number)=>{
-  const ticket=++generation.current;controller.current?.abort();const request=new AbortController();controller.current=request;setLoading(true);setLoadError('');
-  try{const data=await api({action:'together_list',...(before?{before}:{})},request.signal) as PostPage;if(!alive.current||ticket!==generation.current)return;setPosts(previous=>before?[...previous,...data.posts.filter((post:Post)=>!previous.some(p=>p.id===post.id))]:data.posts);setCursor(data.cursor);setMore(data.hasMore);setLoaded(true);}
-  catch(e:unknown){if(alive.current&&ticket===generation.current&&!request.signal.aborted){setPosts([]);setMore(false);setLoaded(false);setLoadError((e as Error).message||'Plans could not load. Try again.');}}
-  finally{if(alive.current&&ticket===generation.current)setLoading(false);}
+ const load=useCallback((before?:number)=>{
+  const ticket=++generation.current;controller.current?.abort();const request=new AbortController();controller.current=request;
+  return api({action:'together_list',...(before?{before}:{})},request.signal).then(value=>{const data=value as PostPage;if(!alive.current||ticket!==generation.current)return;setPosts(previous=>before?[...previous,...data.posts.filter((post:Post)=>!previous.some(p=>p.id===post.id))]:data.posts);setCursor(data.cursor);setMore(data.hasMore);setLoaded(true);})
+   .catch((e:unknown)=>{if(alive.current&&ticket===generation.current&&!request.signal.aborted){setPosts([]);setMore(false);setLoaded(false);setLoadError((e as Error).message||'Plans could not load. Try again.');}})
+   .finally(()=>{if(alive.current&&ticket===generation.current)setLoading(false);});
  },[api]);
  const now=useCurrentTime();
- const visible=expanded??open;
+ const visible=expanded??open,loadInputs=[visible,refreshKey,accountId,circleId,saving];
+ const [previousLoadInputs,setPreviousLoadInputs]=useState<unknown[]|null>(null);
+ if(!previousLoadInputs||loadInputs.some((value,index)=>!Object.is(value,previousLoadInputs[index]))){setPreviousLoadInputs(loadInputs);if(visible&&!saving){setLoading(true);setLoadError('');}}
  useEffect(()=>{if(visible&&!saving)void load();},[visible,refreshKey,load,saving]);
+ function refresh(before?:number){setLoading(true);setLoadError('');return load(before);}
  function change(field:string,value:string){setRaw(JSON.stringify({...draft,[field]:value}));setConsent(false);}
  async function publish(){
   if(pending.current||disabled||!consent)return;pending.current=true;setSaving(true);setError('');setNotice('');
@@ -44,7 +47,7 @@ export default function CirclePlan({accountId,circleId,disabled,refreshKey,initi
   <div className="together-content">
    <p>Offer help, ask a question, plan an activity, or suggest a project with this circle. Helping is voluntary; nobody owes a response or a favour.</p>
    <p className="field-help">Only circle participants with access to this history can read these posts. New members see posts from when they join. Nothing is added to your profile or public discovery.</p>
-   <div className="inline-actions"><button ref={addButton} type="button" className="secondary" disabled={disabled||saving||composing} onClick={()=>setComposing(true)}>{raw?'Continue plan draft':'Create a plan'}</button><button type="button" className="text-button" disabled={loading||saving||disabled} onClick={()=>void load()}>Refresh posts</button></div>
+   <div className="inline-actions"><button ref={addButton} type="button" className="secondary" disabled={disabled||saving||composing} onClick={()=>setComposing(true)}>{raw?'Continue plan draft':'Create a plan'}</button><button type="button" className="text-button" disabled={loading||saving||disabled} onClick={()=>void refresh()}>Refresh posts</button></div>
    {notice&&<p role="status" className="field-help">{notice}</p>}{error&&<p role="alert" className="inline-error">{error}</p>}{loadError&&<p role="alert" className="inline-error">{loadError}</p>}
    {composing&&<form className="together-form" onSubmit={event=>{event.preventDefault();void publish();}}>
     <h2 ref={formHeading} tabIndex={-1}>Share with your circle</h2>
@@ -69,7 +72,7 @@ export default function CirclePlan({accountId,circleId,disabled,refreshKey,initi
       {cancelling===post.id&&<div className="participation-confirm" role="group" aria-label="Confirm cancelling activity"><p>Cancel this activity? New responses will stop. An in-app update will be sent to eligible members who responded.</p><button type="button" className="danger" disabled={saving||disabled} onClick={()=>void cancelActivity(post)}>Confirm cancellation</button><button type="button" className="muted-button" disabled={saving} onClick={()=>setCancelling('')}>Keep activity</button></div>}
      </section>}
     </article>)}
-   </div>{more&&cursor&&<button type="button" className="secondary" disabled={loading||saving||disabled} onClick={()=>void load(cursor)}>Show older posts</button>}
+   </div>{more&&cursor&&<button type="button" className="secondary" disabled={loading||saving||disabled} onClick={()=>void refresh(cursor)}>Show older posts</button>}
   </div>
  </details>;
 }

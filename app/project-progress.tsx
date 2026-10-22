@@ -13,13 +13,17 @@ export default function ProjectProgress({accountId,circleId,projectId,refreshKey
  const alive=useRef(true),generation=useRef(0),pending=useRef(false),request=useRef<AbortController|null>(null);
  useEffect(()=>{alive.current=true;const generationRef=generation,requestRef=request;return()=>{alive.current=false;generationRef.current++;requestRef.current?.abort();};},[]);
  const api=useCallback(async(body:Record<string,unknown>,signal?:AbortSignal):Promise<unknown>=>{const response=await fetch('/api/circles',{method:'POST',headers:{'Content-Type':'application/json'},cache:'no-store',signal,body:JSON.stringify({...body,circle:circleId,project:projectId,expectedAccount:accountId})});const result:{error?:string}=await response.json();if(!response.ok)throw Error(result.error||'Project progress is unavailable.');return result;},[accountId,circleId,projectId]);
- const load=useCallback(async(before?:number)=>{
-  const ticket=++generation.current;request.current?.abort();const controller=new AbortController();request.current=controller;setLoading(true);setLoadError('');
-  try{const result=await api({action:'project_details',...(before?{before}:{})},controller.signal) as Details;if(!alive.current||ticket!==generation.current)return;setData(previous=>before&&previous?{...result,updates:[...previous.updates,...result.updates.filter((entry:Entry)=>!previous.updates.some(old=>old.id===entry.id))]}:result);}
-  catch(error:unknown){if(alive.current&&ticket===generation.current&&!controller.signal.aborted){setData(null);setLoadError((error as Error).message||'Project progress is unavailable.');}}
-  finally{if(alive.current&&ticket===generation.current)setLoading(false);}
+ const load=useCallback((before?:number)=>{
+  const ticket=++generation.current;request.current?.abort();const controller=new AbortController();request.current=controller;
+  return api({action:'project_details',...(before?{before}:{})},controller.signal).then(value=>{const result=value as Details;if(!alive.current||ticket!==generation.current)return;setData(previous=>before&&previous?{...result,updates:[...previous.updates,...result.updates.filter((entry:Entry)=>!previous.updates.some(old=>old.id===entry.id))]}:result);})
+   .catch((error:unknown)=>{if(alive.current&&ticket===generation.current&&!controller.signal.aborted){setData(null);setLoadError((error as Error).message||'Project progress is unavailable.');}})
+   .finally(()=>{if(alive.current&&ticket===generation.current)setLoading(false);});
  },[api]);
+ const loadInputs=[open,refreshKey,accountId,circleId,projectId,saving];
+ const [previousLoadInputs,setPreviousLoadInputs]=useState<unknown[]|null>(null);
+ if(!previousLoadInputs||loadInputs.some((value,index)=>!Object.is(value,previousLoadInputs[index]))){setPreviousLoadInputs(loadInputs);if(open&&!saving){setLoading(true);setLoadError('');}}
  useEffect(()=>{if(open&&!saving)void load();},[open,refreshKey,load,saving]);
+ function refresh(before?:number){setLoading(true);setLoadError('');return load(before);}
  function change(field:'step'|'update',value:string){setRaw(JSON.stringify({...draft,[field]:value}));}
  async function add(type:'step'|'update'){
   if(disabled||pending.current||!data||data.status!=='open')return;pending.current=true;setSaving(true);setActionError('');setNotice('');
@@ -31,7 +35,7 @@ export default function ProjectProgress({accountId,circleId,projectId,refreshKey
  return <details className="project-progress" onToggle={event=>setOpen(event.currentTarget.open)}>
   <summary>Project steps &amp; updates</summary>
   <p className="field-help">Plan small steps together. Updates are shared in this circle and its chat. Steps do not assign work or create an obligation to help.</p>
-  <button type="button" className="text-button" disabled={loading||saving||disabled} onClick={()=>void load()}>Refresh project</button>
+  <button type="button" className="text-button" disabled={loading||saving||disabled} onClick={()=>void refresh()}>Refresh project</button>
   {loading&&!data&&<p role="status">Loading project…</p>}{loadError&&<p role="alert" className="inline-error">{loadError}</p>}{actionError&&<p role="alert" className="inline-error">{actionError}</p>}{notice&&<p role="status" className="field-help">{notice}</p>}
   {data&&<><p className="field-help">{data.status==='open'?'The project author and hosts manage steps. Members can share progress.':'This project is closed. Steps and updates remain available in your permitted history.'}</p>
    <section aria-label="Project steps"><h3>Small steps</h3>{!data.steps.length&&<p className="field-help">No steps visible in your project history yet.</p>}
@@ -40,7 +44,7 @@ export default function ProjectProgress({accountId,circleId,projectId,refreshKey
    </section>
    <section aria-label="Project updates"><h3>Progress updates</h3>{data.status==='open'&&<details><summary>Share an update</summary><form className="project-entry-form" onSubmit={event=>{event.preventDefault();void add('update');}}><label htmlFor={uid+'-update'}>What changed, or what would help next?<textarea id={uid+'-update'} required minLength={10} maxLength={1000} rows={3} disabled={saving||disabled} value={draft.update} onChange={event=>change('update',event.target.value)} placeholder="We found a useful reading. Next we could choose a time to discuss it."/></label><p className="field-help">Share your own information. Keep private details, money requests and pressure on other members out of updates.</p><button type="submit" className="secondary" disabled={saving||disabled||draft.update.trim().length<10}>Share update</button></form></details>}
     {!data.updates.length&&<p className="field-help">No updates visible in your project history yet.</p>}{data.updates.map(update=><article key={update.id} className="project-update"><p>{update.body.startsWith('Project update: ')?update.body.slice(16):update.body}</p><p className="field-help">{update.name} · <time dateTime={update.created}>{new Date(update.created).toLocaleString()}</time></p>{!update.mine&&<button type="button" className="text-button" disabled={saving} onClick={()=>onReport(update)}>Report update</button>}</article>)}
-    {data.hasMore&&data.cursor&&<button type="button" className="secondary" disabled={loading||saving||disabled} onClick={()=>void load(data.cursor!)}>Show older updates</button>}
+    {data.hasMore&&data.cursor&&<button type="button" className="secondary" disabled={loading||saving||disabled} onClick={()=>void refresh(data.cursor!)}>Show older updates</button>}
    </section>
   </>}
  </details>;
