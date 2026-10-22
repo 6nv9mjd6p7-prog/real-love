@@ -2,7 +2,7 @@
 import {appBackDestination,backWithinApp,routeBackLabel} from './native-links';
 import {readCampaignView,saveCampaignView} from './campaign-navigation';
 import {readDraft,writeDraft,removeDraft,draftKey,tabStorage} from './draft-storage';
-import {useCallback,useEffect,useState,useRef} from 'react';
+import {useCallback,useEffect,useState,useRef,useLayoutEffect} from 'react';
 import CampaignProposal,{type CampaignDraft} from './campaign-proposal';
 
 type Campaign={id:string;title:string;company:string;summary:string;demand:string;uncertainty:string;alternatives:string;sources:{url:string;claim:string}[];reviewDate:string;status:string;version:number;mine:boolean;participating:boolean;canReview:boolean;updates:{id:string;body:string;kind:string;created:string}[];feedback:{id:string;kind:string;body:string;status:string}[]};
@@ -24,7 +24,8 @@ export default function CollectiveAction({accountId}:{accountId:string}){
  },[accountId,proposalKey]);
  useEffect(()=>{if(draftReady.current)writeDraft(tabStorage(),proposalKey,{draft});},[draft,proposalKey]);
  useEffect(()=>{if(!loading&&restoreScroll.current!==null){const top=restoreScroll.current;restoreScroll.current=null;requestAnimationFrame(()=>requestAnimationFrame(()=>window.scrollTo({top})));}},[loading,selected,compose]);
- const requestVersion=useRef(0),selectedRef=useRef(selected);selectedRef.current=selected;
+ const requestVersion=useRef(0),selectedRef=useRef(selected);
+ useLayoutEffect(()=>{selectedRef.current=selected;},[selected]);
  const load=useCallback(async(signal?:AbortSignal,cursor?:string)=>{
   const version=++requestVersion.current;setError('');if(cursor)setPageBusy(true);else setLoading(true);
   try{
