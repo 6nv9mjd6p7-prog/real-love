@@ -1,11 +1,14 @@
 'use client';
 import {useEffect,useId,useRef,useState} from 'react';
 import {locationKey,locationLabel,type BroadLocationPoint} from './location';
+type LocationForm=Omit<Partial<BroadLocationPoint>,'areaLat'|'areaLon'>&{areaLat?:number|null;areaLon?:number|null;confirmLocation?:boolean;locationSelectionToken?:string};
+type PlaceResponse={error?:string;suggestions?:LocationSuggestion[];suggestion?:LocationSuggestion};
+type PolicyDocument=Document&{permissionsPolicy?:{allowsFeature:(feature:string)=>boolean};featurePolicy?:{allowsFeature:(feature:string)=>boolean}};
 type LocationSuggestion=BroadLocationPoint&{locationSelectionToken:string};
 
 // Locations use a searchable, keyboard-operated combobox because a fixed dropdown cannot cover place names.
 // Only a selected structured suggestion changes the saved area; free text remains a search query.
-export default function LocationEditor({accountId,form,setForm,me,busy,onPendingChange}:{accountId:string;form:any;setForm:(value:any)=>void;me:any;busy:boolean;onPendingChange?:(pending:boolean)=>void}){
+export default function LocationEditor<T extends LocationForm>({accountId,form,setForm,me,busy,onPendingChange}:{accountId:string;form:T;setForm:(value:T|((previous:T)=>T))=>void;me:(LocationForm&{locationConfirmed?:boolean})|null;busy:boolean;onPendingChange?:(pending:boolean)=>void}){
  const inputId=useId(),listId=useId(),skipSearch=useRef(true),inputRef=useRef<HTMLInputElement>(null),detection=useRef(0),alive=useRef(true),pendingCallback=useRef(onPendingChange);pendingCallback.current=onPendingChange;
  const [query,setQuery]=useState(locationLabel(form)),[results,setResults]=useState<LocationSuggestion[]>([]),[searching,setSearching]=useState(false),[finding,setFinding]=useState(false),[locating,setLocating]=useState(false),[retry,setRetry]=useState(0),[message,setMessage]=useState(''),[connectionKey,setConnectionKey]=useState('');
  const locationTimer=useRef<ReturnType<typeof setTimeout>|null>(null),locationRequest=useRef<AbortController|null>(null);
@@ -23,20 +26,20 @@ export default function LocationEditor({accountId,form,setForm,me,busy,onPending
  useEffect(()=>{
   if(skipSearch.current){skipSearch.current=false;return;}
   const q=query.trim();if(q.length<2){setResults([]);setSearching(false);return;}
-  const controller=new AbortController(),timer=setTimeout(async()=>{setSearching(true);try{const response=await fetch('/api/location?q='+encodeURIComponent(q)+'&expectedAccount='+encodeURIComponent(accountId),{signal:controller.signal,cache:'no-store'});const data:any=await response.json();if(controller.signal.aborted||!alive.current)return;if(!response.ok)throw Error(data.error||'Place suggestions are unavailable.');setResults(data.suggestions||[]);setMessage(data.suggestions?.length?'':'No matching city or general area found. Try a nearby city or a more complete name.');}catch(e:any){if(e.name!=='AbortError'&&!controller.signal.aborted&&alive.current){setResults([]);setMessage(e.message||'Place suggestions are unavailable.');}}finally{if(!controller.signal.aborted&&alive.current)setSearching(false);}},400);
+  const controller=new AbortController(),timer=setTimeout(async()=>{setSearching(true);try{const response=await fetch('/api/location?q='+encodeURIComponent(q)+'&expectedAccount='+encodeURIComponent(accountId),{signal:controller.signal,cache:'no-store'});const data:PlaceResponse=await response.json();if(controller.signal.aborted||!alive.current)return;if(!response.ok)throw Error(data.error||'Place suggestions are unavailable.');setResults(data.suggestions||[]);setMessage(data.suggestions?.length?'':'No matching city or general area found. Try a nearby city or a more complete name.');}catch(e:unknown){if((e as Error).name!=='AbortError'&&!controller.signal.aborted&&alive.current){setResults([]);setMessage((e as Error).message||'Place suggestions are unavailable.');}}finally{if(!controller.signal.aborted&&alive.current)setSearching(false);}},400);
   return()=>{clearTimeout(timer);controller.abort();};
  },[query,accountId,retry]);
 
  function choose(place:LocationSuggestion){
   cancelDetection();setDeviceMessage('');setOpenBrowser(false);setLocating(false);setFinding(false);skipSearch.current=true;onPendingChange?.(false);
   const canConfirm=!!connectionKey&&locationKey(place)===connectionKey;
-  setForm((previous:any)=>({...previous,city:place.city,region:place.region,country:place.country,areaLat:place.areaLat,areaLon:place.areaLon,locationPlaceId:place.locationPlaceId,locationSelectionToken:place.locationSelectionToken,confirmLocation:canConfirm}));
+  setForm((previous:T)=>({...previous,city:place.city,region:place.region,country:place.country,areaLat:place.areaLat,areaLon:place.areaLon,locationPlaceId:place.locationPlaceId,locationSelectionToken:place.locationSelectionToken,confirmLocation:canConfirm}));
   setQuery(locationLabel(place));setResults([]);setActiveOption(-1);setSuggestionsClosed(true);setMessage(canConfirm?'Selected from place data. Save your profile to confirm this area from your connection.':'Selected from place data. Nearby matching uses this area point, not an exact home or live location.');
  }
  async function find(){
   if(finding)return;cancelDetection();setDeviceMessage('');setOpenBrowser(false);const ticket=detection.current;setFinding(true);setLocating(false);setMessage('');
-  try{const response=await fetch('/api/app',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'connection_location',expectedAccount:accountId})});const data:any=await response.json();if(!alive.current||ticket!==detection.current)return;if(!response.ok)throw Error(data.error||'Your connection area could not be checked.');const key=locationKey(data.location);setConnectionKey(key);setQuery(locationLabel(data.location));onPendingChange?.(true);setMessage('Internet connections can point to another city. Search or choose a place yourself; your saved area has not changed.');}
-  catch(e:any){if(alive.current&&ticket===detection.current){setConnectionKey('');setMessage(e.message||'Your connection area could not be checked.');}}
+  try{const response=await fetch('/api/app',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'connection_location',expectedAccount:accountId})});const data:{error?:string;location:Partial<BroadLocationPoint>}=await response.json();if(!alive.current||ticket!==detection.current)return;if(!response.ok)throw Error(data.error||'Your connection area could not be checked.');const key=locationKey(data.location);setConnectionKey(key);setQuery(locationLabel(data.location));onPendingChange?.(true);setMessage('Internet connections can point to another city. Search or choose a place yourself; your saved area has not changed.');}
+  catch(e:unknown){if(alive.current&&ticket===detection.current){setConnectionKey('');setMessage((e as Error).message||'Your connection area could not be checked.');}}
   finally{if(alive.current&&ticket===detection.current)setFinding(false);}
  }
  function locate(){
@@ -49,7 +52,7 @@ export default function LocationEditor({accountId,form,setForm,me,busy,onPending
    :'Location permission was not granted. Open this site’s browser permissions, allow Location, then try again. Check device Location Services too. You can also type your city.';
   if(globalThis.isSecureContext===false){setDeviceMessage('Location requires a secure browser page. Open Real Love in your browser or type your city.');setOpenBrowser(true);return;}
   // An embedding page can deny geolocation even when this origin allows it.
-  const policy=typeof document!=='undefined'?(document as any).permissionsPolicy||(document as any).featurePolicy:null;
+  const policy=typeof document!=='undefined'?(document as PolicyDocument).permissionsPolicy||(document as PolicyDocument).featurePolicy:null;
   try{if(policy?.allowsFeature('geolocation')===false){setDeviceMessage(embedded?'This embedded view blocks location permission. Open Real Love in your browser, then choose Use my current area.':'This page blocks location access. Open Real Love in your browser or type your city.');setOpenBrowser(true);return;}}catch{/* Some browsers do not expose policy inspection. Try the permission request below. */}
   if(!navigator.geolocation){setDeviceMessage('This browser does not provide location access. Open Real Love in another browser or type your city.');setOpenBrowser(true);return;}
   const ticket=detection.current;setLocating(true);setConnectionKey('');
@@ -75,9 +78,9 @@ export default function LocationEditor({accountId,form,setForm,me,busy,onPending
    try{
     const lat=Math.round(position.coords.latitude*100)/100,lon=Math.round(position.coords.longitude*100)/100;
     const response=await fetch('/api/location',{method:'POST',headers:{'Content-Type':'application/json'},signal:controller.signal,body:JSON.stringify({action:'reverse',lat,lon,expectedAccount:accountId})});
-    const data:any=await response.json();if(!alive.current||ticket!==detection.current)return;if(!response.ok)throw Error(data.error||'Your current area could not be identified.');
-    const places=(data.suggestions?.length?data.suggestions:[data.suggestion]).filter(Boolean).filter((place:any)=>place?.locationSelectionToken) as LocationSuggestion[];if(!places.length)throw Error('No nearby places were found. Search for your city instead.');skipSearch.current=true;setQuery('');setResults(places);onPendingChange?.(true);setSuggestionsClosed(false);setActiveOption(-1);setDeviceMessage('Nearby places suggested'+(Number.isFinite(accuracy)?' · device accuracy about '+Math.max(1,Math.round(accuracy))+' metres':'')+'. Choose the correct area above, or type your city if these are wrong. Your saved area has not changed.');
-   }catch(e:any){if(alive.current&&ticket===detection.current){setResults([]);setDeviceMessage(e.message||'Your current area could not be identified. Search for your city instead.');}}
+    const data:PlaceResponse=await response.json();if(!alive.current||ticket!==detection.current)return;if(!response.ok)throw Error(data.error||'Your current area could not be identified.');
+    const places=(data.suggestions?.length?data.suggestions:[data.suggestion]).filter(Boolean).filter((place:LocationSuggestion|undefined)=>place?.locationSelectionToken) as LocationSuggestion[];if(!places.length)throw Error('No nearby places were found. Search for your city instead.');skipSearch.current=true;setQuery('');setResults(places);onPendingChange?.(true);setSuggestionsClosed(false);setActiveOption(-1);setDeviceMessage('Nearby places suggested'+(Number.isFinite(accuracy)?' · device accuracy about '+Math.max(1,Math.round(accuracy))+' metres':'')+'. Choose the correct area above, or type your city if these are wrong. Your saved area has not changed.');
+   }catch(e:unknown){if(alive.current&&ticket===detection.current){setResults([]);setDeviceMessage((e as Error).message||'Your current area could not be identified. Search for your city instead.');}}
    finally{if(alive.current&&ticket===detection.current)finish();}
   },fail,{enableHighAccuracy:true,timeout:20000,maximumAge:0});}catch{fail({});}
  }
