@@ -2,8 +2,8 @@ import {db} from './safety';
 import {locationKey,type BroadLocationPoint} from './location';
 
 const lifetimeMs=15*60*1000;
-const validPoint=(value:any):BroadLocationPoint|null=>{
- if(!value||typeof value.city!=='string'||typeof value.region!=='string'||typeof value.country!=='string'||typeof value.locationPlaceId!=='string'||typeof value.areaLat!=='number'||typeof value.areaLon!=='number'||!Number.isFinite(value.areaLat)||!Number.isFinite(value.areaLon)||value.areaLat<-90||value.areaLat>90||value.areaLon<-180||value.areaLon>180||!locationKey(value))return null;
+const validPoint=(value:Record<keyof BroadLocationPoint,unknown>|null|undefined):BroadLocationPoint|null=>{
+ if(!value||typeof value.city!=='string'||typeof value.region!=='string'||typeof value.country!=='string'||typeof value.locationPlaceId!=='string'||typeof value.areaLat!=='number'||typeof value.areaLon!=='number'||!Number.isFinite(value.areaLat)||!Number.isFinite(value.areaLon)||value.areaLat<-90||value.areaLat>90||value.areaLon<-180||value.areaLon>180||!locationKey(value as BroadLocationPoint))return null;
  return {city:value.city,region:value.region,country:value.country,areaLat:value.areaLat,areaLon:value.areaLon,locationPlaceId:value.locationPlaceId};
 };
 export async function issueLocationSelection(member:string,point:BroadLocationPoint){

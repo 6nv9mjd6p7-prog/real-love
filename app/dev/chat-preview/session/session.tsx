@@ -31,10 +31,10 @@ export default function ChatPreviewSession(){
   window.addEventListener('message',receive);
   return()=>{window.removeEventListener('message',receive);document.documentElement.removeAttribute('data-qa-keyboard');};
  },[]);
- const api=useCallback(async(input:any)=>{
+ const api=useCallback(async(input:Record<string,unknown>)=>{
   if(input.action==='private_plans')return {plans:plansRef.current,hasMore:false,cursor:null};
-  if(input.action==='private_plan_create'){const plan:PrivatePlan={id:'fictional-plan-'+plansRef.current.length,creator:sampleMe.id,kind:input.kind,description:input.description,timing:input.timing,startsAt:input.startsAt,status:'proposed',revision:0,created:new Date().toISOString(),mine:true};plansRef.current=[plan,...plansRef.current];return {ok:true,plan};}
-  if(input.action==='private_plan_update'){const plan=plansRef.current.find(plan=>plan.id===input.plan);if(!plan)throw Error('Plan unavailable');const next=privatePlanNext(plan.status,plan.mine,input.decision);if(!next||plan.revision!==input.revision)throw Error('Plan changed');plansRef.current=plansRef.current.map(p=>p.id===plan.id?{...p,status:next,revision:p.revision+1}:p);return {ok:true};}
+  if(input.action==='private_plan_create'){const plan:PrivatePlan={id:'fictional-plan-'+plansRef.current.length,creator:sampleMe.id,kind:input.kind as PrivatePlan['kind'],description:input.description as string,timing:input.timing as string,startsAt:input.startsAt as string,status:'proposed',revision:0,created:new Date().toISOString(),mine:true};plansRef.current=[plan,...plansRef.current];return {ok:true,plan};}
+  if(input.action==='private_plan_update'){const plan=plansRef.current.find(plan=>plan.id===input.plan);if(!plan)throw Error('Plan unavailable');const next=privatePlanNext(plan.status,plan.mine,input.decision as string);if(!next||plan.revision!==input.revision)throw Error('Plan changed');plansRef.current=plansRef.current.map(p=>p.id===plan.id?{...p,status:next,revision:p.revision+1}:p);return {ok:true};}
   if(input.action==='messages'){
    const known=String(revision.current);
    if(input.knownRevision===known)return {unchanged:true,revision:known};
@@ -42,7 +42,7 @@ export default function ChatPreviewSession(){
    return {revision:known,cursor:list.length||null,hasMore:false,messages:list};
   }
   if(input.action==='message'){
-   const message:ChatMessage={id:'qa-message-'+(revision.current+4),body:input.text||'',created:new Date().toISOString(),mine:true,reactions:[]};
+   const message:ChatMessage={id:'qa-message-'+(revision.current+4),body:(input.text as string)||'',created:new Date().toISOString(),mine:true,reactions:[]};
    messagesRef.current=[...messagesRef.current,message];revision.current++;return {ok:true};
   }
   return {ok:true};

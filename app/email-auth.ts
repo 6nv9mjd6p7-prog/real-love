@@ -1,6 +1,7 @@
 import {env} from 'cloudflare:workers';
 import {headers} from 'next/headers';
 import {SafetyError,db} from './safety';
+type ProviderResponse={access_token?:unknown;email?:string;id?:unknown;email_confirmed_at?:unknown};
 export const SESSION_COOKIE='__Host-real-love-session';
 const SESSION_SECONDS=7*86400;
 export function emailAuthConfig(){
@@ -18,7 +19,7 @@ export function sessionCookie(token:string,maxAge=SESSION_SECONDS){return `${SES
 export async function getEmailUser(){
  const config=emailAuthConfig();if(!config)return null;
  const token=readSessionToken((await headers()).get('cookie'));if(!token)return null;
- const row=await db().prepare('SELECT member,email FROM auth_sessions WHERE token_hash=? AND provider=? AND expires>?').bind(await digest(token),config.origin,new Date().toISOString()).first<any>();
+ const row=await db().prepare('SELECT member,email FROM auth_sessions WHERE token_hash=? AND provider=? AND expires>?').bind(await digest(token),config.origin,new Date().toISOString()).first<{member:string;email:string}>();
  return row?{userId:row.member,email:row.email,displayName:row.email,fullName:null}:null;
 }
 export async function providerRequest(path:string,body?:unknown,accessToken?:string){
@@ -26,20 +27,20 @@ export async function providerRequest(path:string,body?:unknown,accessToken?:str
  let response:Response;
  try{response=await fetch(config.origin+'/auth/v1/'+path,{method:body===undefined?'GET':'POST',headers:{apikey:config.key,...(accessToken?{Authorization:'Bearer '+accessToken}:{}),...(body===undefined?{}:{'Content-Type':'application/json'})},...(body===undefined?{}:{body:JSON.stringify(body)}),redirect:'manual',signal:AbortSignal.timeout(10000)});}catch{throw new SafetyError('The sign-in service could not be reached. Please try again.',503);}
  if(!response.ok){await response.body?.cancel();throw new SafetyError(response.status===429?'Please wait before requesting or entering another code.':path==='verify'?'That code is invalid or expired. Request a new code.':'Email sign-in is unavailable. Please try again later.',response.status===429?429:path==='verify'?400:503);}
- return response.status===204?{}:await response.json() as any;
+ return response.status===204?{}:await response.json() as ProviderResponse;
 }
-export async function createEmailSession(user:any,legacy:{userId:string;email:string}|null){
+export async function createEmailSession(user:ProviderResponse|null|undefined,legacy:{userId:string;email:string}|null){
  const config=emailAuthConfig();if(!config)throw new SafetyError('Email sign-in is unavailable.',503);
  if(!user?.email_confirmed_at||typeof user.email!=='string'||typeof user.id!=='string'||!/^[a-f0-9-]{36}$/i.test(user.id))throw new SafetyError('A verified email account is required.',401);
  const email=user.email.toLowerCase(),identity=config.origin+':'+user.id;
  if(legacy&&legacy.email.toLowerCase()!==email)throw new SafetyError('Use the same email as your existing account to keep its profile and conversations.',409);
- const existing=await db().prepare('SELECT member FROM auth_identities WHERE provider_id=?').bind(identity).first<any>();
+ const existing=await db().prepare('SELECT member FROM auth_identities WHERE provider_id=?').bind(identity).first<{member:string}>();
  const member=legacy?.userId||existing?.member||'email:'+await digest(identity);
  if(existing&&existing.member!==member)throw new SafetyError('This email sign-in is already linked to a different member.',409);
- const memberIdentity=await db().prepare('SELECT provider_id FROM auth_identities WHERE member=?').bind(member).first<any>();
+ const memberIdentity=await db().prepare('SELECT provider_id FROM auth_identities WHERE member=?').bind(member).first<{provider_id:string}>();
  if(memberIdentity&&memberIdentity.provider_id!==identity)throw new SafetyError('This member already has a different email sign-in.',409);
  await db().prepare('INSERT OR IGNORE INTO auth_identities (provider_id,member,created) VALUES (?,?,?)').bind(identity,member,new Date().toISOString()).run();
- const mapped=await db().prepare('SELECT member FROM auth_identities WHERE provider_id=?').bind(identity).first<any>();
+ const mapped=await db().prepare('SELECT member FROM auth_identities WHERE provider_id=?').bind(identity).first<{member:string}>();
  if(mapped?.member!==member)throw new SafetyError('Account linking changed. Please try again.',409);
  const bytes=crypto.getRandomValues(new Uint8Array(32));const token=Array.from(bytes).map(x=>x.toString(16).padStart(2,'0')).join('');
  await db().batch([db().prepare('DELETE FROM auth_sessions WHERE expires<=?').bind(new Date().toISOString()),db().prepare('INSERT INTO auth_sessions (token_hash,member,email,provider,expires) VALUES (?,?,?,?,?)').bind(await digest(token),member,email,config.origin,new Date(Date.now()+SESSION_SECONDS*1000).toISOString())]);
