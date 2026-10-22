@@ -1,15 +1,20 @@
 'use client';
-import {useEffect,useRef,useState} from 'react';
+import {useEffect,useRef,useState,useSyncExternalStore} from 'react';
 import {Mic, Square, Send, Trash2} from 'lucide-react';
+const subscribeCapabilities=()=>()=>{};
+const recordingSupported=()=>!!navigator.mediaDevices?.getUserMedia&&typeof MediaRecorder!=='undefined';
+// Preserve the existing server markup until browser capabilities are available.
+const serverSupported=()=>true;
 export default function VoiceRecorder({accountId,kind,scope,replyTo='',disabled=false,compact=false,onBusyChange,onSent}:{accountId:string;kind:'direct'|'circle';scope:string;replyTo?:string;disabled?:boolean;compact?:boolean;onBusyChange?:(busy:boolean)=>void;onSent:()=>Promise<void>}){
- const [state,setState]=useState<'idle'|'requesting'|'recording'|'finishing'|'preview'|'sending'>('idle'),[error,setError]=useState(''),[seconds,setSeconds]=useState(0),[preview,setPreview]=useState(''),[supported,setSupported]=useState(true),[previewFailed,setPreviewFailed]=useState(false),[previewReady,setPreviewReady]=useState(false),[level,setLevel]=useState(0);
+ const [state,setState]=useState<'idle'|'requesting'|'recording'|'finishing'|'preview'|'sending'>('idle'),[error,setError]=useState(''),[seconds,setSeconds]=useState(0),[preview,setPreview]=useState(''),[previewFailed,setPreviewFailed]=useState(false),[previewReady,setPreviewReady]=useState(false),[level,setLevel]=useState(0);
+ const supported=useSyncExternalStore(subscribeCapabilities,recordingSupported,serverSupported);
  const audioContext=useRef<AudioContext|null>(null),meterFrame=useRef<number|null>(null),previewAudio=useRef<HTMLAudioElement|null>(null);
  const recorder=useRef<MediaRecorder|null>(null),stream=useRef<MediaStream|null>(null),pieces=useRef<Blob[]>([]),blob=useRef<Blob|null>(null),started=useRef(0),duration=useRef(0),attempt=useRef(''),reply=useRef(''),url=useRef(''),timer=useRef<ReturnType<typeof setInterval>|null>(null),recordingWanted=useRef(false),discard=useRef(false),alive=useRef(true),epoch=useRef(0),upload=useRef<AbortController|null>(null),mode=useRef(state);
  function transition(next:typeof state){mode.current=next;setState(next);}
  useEffect(()=>{onBusyChange?.(state!=='idle');},[state,onBusyChange]);
  function cleanup(){if(meterFrame.current!==null)cancelAnimationFrame(meterFrame.current);meterFrame.current=null;audioContext.current?.close().catch(()=>{});audioContext.current=null;if(alive.current)setLevel(0);if(timer.current)clearInterval(timer.current);timer.current=null;stream.current?.getTracks().forEach(t=>t.stop());stream.current=null;}
  function clearPreview(){if(url.current)URL.revokeObjectURL(url.current);url.current='';blob.current=null;setPreview('');setPreviewFailed(false);setPreviewReady(false);}
- useEffect(()=>{alive.current=true;const epochRef=epoch;setSupported(!!navigator.mediaDevices?.getUserMedia&&typeof MediaRecorder!=='undefined');return()=>{alive.current=false;upload.current?.abort();epochRef.current++;recordingWanted.current=false;discard.current=true;if(recorder.current?.state==='recording')recorder.current.stop();cleanup();if(url.current)URL.revokeObjectURL(url.current);};},[]);
+ useEffect(()=>{alive.current=true;const epochRef=epoch;return()=>{alive.current=false;upload.current?.abort();epochRef.current++;recordingWanted.current=false;discard.current=true;if(recorder.current?.state==='recording')recorder.current.stop();cleanup();if(url.current)URL.revokeObjectURL(url.current);};},[]);
  useEffect(()=>{if(!preview||previewReady||previewFailed)return;const timeout=setTimeout(()=>{setPreviewFailed(true);setError('The preview is taking too long to load. Retry preview or record again.');},10000);return()=>clearTimeout(timeout);},[preview,previewReady,previewFailed]);
  function stop(cancel=false){epoch.current++;recordingWanted.current=false;discard.current=cancel;if(cancel)setError('');if(recorder.current?.state==='recording'){duration.current=Math.min(60000,Math.max(1,Date.now()-started.current));transition('finishing');recorder.current.stop();if(timer.current)clearInterval(timer.current);timer.current=null;}else if(mode.current==='requesting'){discard.current=true;transition('idle');}}
  async function start(){if(disabled||recordingWanted.current||mode.current!=='idle')return;const ticket=++epoch.current;mode.current='requesting';recordingWanted.current=true;discard.current=false;setError('');transition('requesting');try{
