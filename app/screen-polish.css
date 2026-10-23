@@ -779,6 +779,16 @@ body{font-family:Arial,Helvetica,sans-serif;color:var(--ink);background:var(--bg
  .app-shell .content>.inbox-screen .inbox-heading>details.inbox-guide>summary{font-size:.8125rem}
 }
 
+/* Keep the signed-out Chats filter legible on its dark glass field. */
+.app-shell .content .inbox-screen .inbox-filter>select{
+ color:#f8f7ff!important;
+ -webkit-text-fill-color:#f8f7ff!important;
+ background:#171629!important;
+ border-color:#ffffff80!important;
+ opacity:1!important;
+}
+.app-shell .content .inbox-screen .inbox-filter>select option{color:#25243b;background:#fff}
+
 /* In a mobile browser, keep the public practice-chat composer in the viewport.
    The conversation history absorbs the height change and remains scrollable. */
 @media(max-width:760px){
