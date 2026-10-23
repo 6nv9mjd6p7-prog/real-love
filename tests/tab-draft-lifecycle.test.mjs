@@ -45,30 +45,38 @@ const require=createRequire(import.meta.url),serverSource=readFileSync('app/use-
 const {default:Probe}=await import(compile(serverSource));const beforeServer=storageCalls;assert.equal(renderToStaticMarkup(React.createElement(Probe)),'pending:');assert.equal(storageCalls,beforeServer);
 console.log('Draft snapshots defer reads/expiry until commit, isolate captured keys, preserve memory fallback, release subscriptions and keep SSR empty.');
 
-// Run the actual card-opening effect with both real draft hooks.
+// Run the actual card-opening state transition and committed draft update with both real draft hooks.
+let cardDirty=false;
+globalThis.__draftHooks.useState=initial=>{const i=index++;if(!(i in slots))slots[i]={value:initial};return [slots[i].value,next=>{const value=typeof next==='function'?next(slots[i].value):next;if(!Object.is(value,slots[i].value)){slots[i].value=value;cardDirty=true;}}];};
+globalThis.__draftHooks.useEffectEvent=fn=>{const i=index++;slots[i]??={current:fn};slots[i].current=fn;return (...args)=>slots[i].current(...args);};
 const appSource=readFileSync('app/love-app.tsx','utf8');
-const start=appSource.indexOf(' const canOpenCardInvitation='),end=appSource.indexOf(' function askFromCard',start);assert(start>=0&&end>start);
+const start=appSource.indexOf(' const [openingContext,'),end=appSource.indexOf(' function askFromCard',start);assert(start>=0&&end>start);
 const modelUrl=compile(readFileSync('app/model.ts','utf8'));
 const invitationsUrl=compile(readFileSync('app/invitations.ts','utf8').replace("from './model'",`from '${modelUrl}'`));
 const {default:cardView}=await import(compile(`import {useTabDraft} from '${compile(source)}';import {invitationOpening} from '${invitationsUrl}';
-const {useEffect}=globalThis.__draftHooks;
-export default function cardView({accountId,selected,existing,canConnect,route,openingContext,setInvitationOpen}){
+const {useState,useEffect,useEffectEvent}=globalThis.__draftHooks;
+export default function cardView({accountId,selected,existing,canConnect,route,setInvitationOpen}){
 const [proposal,setProposal,proposalReady]=useTabDraft(accountId,'invitation',selected?.id||'');
 const [contextDraft,setContextDraft,contextReady]=useTabDraft(accountId,'invitation-context',selected?.id||'');
 ${appSource.slice(start,end)}
-return {proposal,contextDraft,proposalReady,contextReady};}`));
-slots=[];pending=new Map();const card={key:'question',label:'A question',text:'What matters?'};let opened=0;
-const props={accountId:'member',selected:{id:'eli',demo:false},existing:null,canConnect:true,route:'person/eli',openingContext:{current:{person:'eli',account:'member',context:card}},setInvitationOpen:value=>{if(value)opened++;}};
-function cardRender(changes={}){Object.assign(props,changes);index=0;return cardView(props);}
+return {proposal,setProposal,contextDraft,proposalReady,contextReady,openingContext,setOpeningContext};}`));
+slots=[];pending=new Map();const card={key:'question',label:'A question',text:'What matters?'};let opened=0,view;
+const props={accountId:'member',selected:{id:'eli',demo:false},existing:null,canConnect:true,route:'person/eli',setInvitationOpen:value=>{if(value)opened++;}};
+function cardRender(changes={}){Object.assign(props,changes);let passes=0;do{assert(++passes<10);index=0;cardDirty=false;view=cardView(props);}while(cardDirty);return view;}
 function settleCard(){for(let i=0;i<3;i++){cardRender();commit();}return cardRender();}
-cardRender();commit();assert(props.openingContext.current,'context waits while both destination drafts restore');assert.equal(opened,0);
-const draft=settleCard();assert.equal(opened,1);assert.equal(draft.proposal,'My unfinished opening','card shortcut never replaces restored opening text');assert.deepEqual(JSON.parse(draft.contextDraft),card);assert.equal(props.openingContext.current,null,'pending card context is consumed once');
-settleCard();assert.equal(opened,1,'background renders never reopen the invitation');
-props.openingContext.current={person:'new',account:'member',context:card};cardRender({selected:{id:'new',demo:false},route:'person/new'});commit();assert.equal(opened,1);assert(props.openingContext.current,'new destination waits for its own draft restoration');
+cardRender();view.setOpeningContext({person:'eli',account:'member',context:card});cardRender();commit();assert(view.openingContext,'context waits while both destination drafts restore');assert.equal(opened,0);
+const beforeApplication=storageCalls;cardRender();assert.equal(opened,1,'ready destination opens before effects');assert.equal(storageCalls,beforeApplication,'rendering a ready opening does not write drafts');assert.equal(view.openingContext,null,'pending request is consumed once');commit();
+const draft=settleCard();assert.equal(opened,1);assert.equal(draft.proposal,'My unfinished opening','card shortcut never replaces restored opening text');assert.deepEqual(JSON.parse(draft.contextDraft),card);
+// Ordinary edits and rerenders must never reapply the suggested opening or context.
+view.setProposal('My later edit');settleCard();assert.equal(opened,1);assert.equal(view.proposal,'My later edit');
+view.setOpeningContext({person:'new',account:'member',context:card});cardRender({selected:{id:'new',demo:false},route:'person/new'});commit();assert.equal(opened,1);assert(view.openingContext,'new destination waits for its own draft restoration');
 const fresh=settleCard();assert.equal(fresh.proposal,'What makes that question interesting to you?');assert.equal(opened,2,'empty destination gets one suggested opening');
 for(const changes of [{selected:{id:'demo',demo:true}},{selected:{id:'connected',demo:false},existing:{id:'connection'}},{selected:{id:'paused',demo:false},existing:null,canConnect:false}]){
- props.openingContext.current={person:changes.selected.id,account:'member',context:card};cardRender({...changes,route:'person/'+changes.selected.id});commit();settleCard();assert.equal(opened,2,'ineligible card does not open invitation');assert.equal(props.openingContext.current,null);
+ view.setOpeningContext({person:changes.selected.id,account:'member',context:card});cardRender({...changes,route:'person/'+changes.selected.id});commit();settleCard();assert.equal(opened,2,'ineligible card does not open invitation');assert.equal(view.openingContext,null);
 }
-props.openingContext.current={person:'other',account:'member',context:card};cardRender({selected:{id:'new',demo:false},route:'person/new',existing:null,canConnect:true});commit();settleCard();assert(props.openingContext.current,'different profile never consumes another card context');assert.equal(opened,2);
-cardRender({accountId:'other-account'});commit();settleCard();assert.equal(props.openingContext.current,null,'account switch discards the previous account context');assert.equal(opened,2);
-console.log('Card invitations wait for draft restoration, preserve openings, consume context once, and honor eligibility/account boundaries.');
+view.setOpeningContext({person:'other',account:'member',context:card});cardRender({selected:{id:'new',demo:false},route:'person/new',existing:null,canConnect:true});commit();settleCard();assert(view.openingContext,'different profile never consumes another card request');assert.equal(opened,2);
+cardRender({accountId:'other-account'});commit();settleCard();assert.equal(view.openingContext,null,'account switch discards the previous account request');assert.equal(opened,2);
+// A destination/account change between the opening render and commit must not write another account's draft.
+cardRender({accountId:'member',selected:{id:'guarded',demo:false},route:'person/guarded'});commit();cardRender();view.setOpeningContext({person:'guarded',account:'member',context:card});cardRender();cardRender({accountId:'switched'});commit();settleCard();assert.equal(readDraft(storage,draftKey('switched','invitation-context','guarded'),''),'');assert.equal(readDraft(storage,draftKey('member','invitation-context','guarded'),''),'');
+slots.forEach(slot=>slot?.cleanup?.());
+console.log('Card invitations wait for draft readiness, preserve restored and edited openings, write only after commit, consume requests once and honor destination/account eligibility.');
