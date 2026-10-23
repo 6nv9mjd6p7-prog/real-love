@@ -964,19 +964,20 @@ body{font-family:Arial,Helvetica,sans-serif;color:var(--ink);background:var(--bg
 .app-shell .content .location-results span{color:#e3deef!important}
 .app-shell .content .location-results button:hover,.app-shell .content .location-results button:focus-visible{color:#fff!important;background:#3b3757!important}
 
-/* Text fields keep dark ink on their light entry surface, including when focused. */
+/* Keep text and placeholders readable on the dark entry surfaces used in the app. */
 .app-shell .content :is(input:not([type=checkbox]):not([type=radio]):not([type=range]):not([type=hidden]),textarea,select){
- color:#25243b!important;caret-color:#332766
+ color:#f8f7ff!important;-webkit-text-fill-color:#f8f7ff!important;caret-color:#fff;background-color:#151629!important
 }
 .app-shell .content :is(input:not([type=checkbox]):not([type=radio]):not([type=range]):not([type=hidden]),textarea,select):focus{
- color:#25243b!important;background:#fff!important;outline:3px solid #8c78d8!important;outline-offset:2px
+ color:#f8f7ff!important;-webkit-text-fill-color:#f8f7ff!important;caret-color:#fff;background-color:#151629!important;outline:3px solid #8c78d8!important;outline-offset:2px
 }
-.app-shell .content :is(input,textarea)::placeholder{color:#57536c!important;opacity:1}
+.app-shell .content :is(input,textarea)::placeholder{color:#d8d3e8!important;opacity:1}
+.app-shell .content select option{color:#25243b;background:#fff}
 .app-shell ::selection{color:#171426!important;background:#e4ff9a!important}
 .app-shell .content :is(input,textarea,select):focus-visible{outline:3px solid #8c78d8!important;outline-offset:2px}
 .app-shell .content .message-search input{color:#fff!important;caret-color:#fff;background:#151629!important}
 .app-shell .content .message-search input::placeholder{color:#d8d3e8!important}
-.app-shell .content .message-search input:focus::placeholder{color:#57536c!important}
+.app-shell .content .message-search input:focus::placeholder{color:#d8d3e8!important}
 
 /* Chat bubbles and context prompts have pale reading surfaces, so their copy uses dark ink. */
 .app-shell .content :is(.direct-chat,.circle-workspace) .conversation-messages .message :is(.message-body,.message-quote,.message-meta),
