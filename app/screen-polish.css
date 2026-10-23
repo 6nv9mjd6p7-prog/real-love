@@ -946,3 +946,50 @@ body{font-family:Arial,Helvetica,sans-serif;color:var(--ink);background:var(--bg
  .app-shell :is(.direct-chat,.circle-workspace) :is(.conversation-heading,.chat-context-area,.conversation-messages,.direct-compose-dock,.circle-compose-dock,.circle-workspace-heading,.circle-activity-strip,.chat-help,.connection-context-card,.private-chat-tabs,.circle-section-tabs,.private-chat-tabs::before,.circle-section-tabs::before,.chat-composer,.suggestion-panel){color:CanvasText!important;background:Canvas!important;border:1px solid CanvasText!important;box-shadow:none!important;-webkit-backdrop-filter:none!important;backdrop-filter:none!important}
  .app-shell :is(.direct-chat,.circle-workspace) :is(.private-chat-tabs,.circle-section-tabs)>button[aria-selected="true"]{color:HighlightText!important;background:Highlight!important;outline:2px solid Highlight!important}
 }
+
+.app-shell .content .circle-discovery-row:hover{color:#fff!important;background:#3b3757!important}
+.app-shell .content .circles-overview>.section-tabs>button:hover{color:#fff!important;background:#3b3757!important}
+.app-shell .content .discovery-question-list>article>button:hover{color:#fff!important;background:#ffffff18!important}
+.app-shell .content .location-results{color:#f8f7ff!important;background:#25233df5!important;border-color:#ffffff70!important}
+.app-shell .content .location-results span{color:#e3deef!important}
+.app-shell .content .location-results button:hover,.app-shell .content .location-results button:focus-visible{color:#fff!important;background:#3b3757!important}
+
+/* Text fields keep dark ink on their light entry surface, including when focused. */
+.app-shell .content :is(input:not([type=checkbox]):not([type=radio]):not([type=range]):not([type=hidden]),textarea,select){
+ color:#25243b!important;caret-color:#332766
+}
+.app-shell .content :is(input:not([type=checkbox]):not([type=radio]):not([type=range]):not([type=hidden]),textarea,select):focus{
+ color:#25243b!important;background:#fff!important;outline:3px solid #8c78d8!important;outline-offset:2px
+}
+.app-shell .content :is(input,textarea)::placeholder{color:#57536c!important;opacity:1}
+.app-shell ::selection{color:#171426!important;background:#e4ff9a!important}
+.app-shell .content :is(input,textarea,select):focus-visible{outline:3px solid #8c78d8!important;outline-offset:2px}
+.app-shell .content .message-search input{color:#fff!important;caret-color:#fff;background:#151629!important}
+.app-shell .content .message-search input::placeholder{color:#d8d3e8!important}
+.app-shell .content .message-search input:focus::placeholder{color:#57536c!important}
+
+/* Chat bubbles and context prompts have pale reading surfaces, so their copy uses dark ink. */
+.app-shell .content :is(.direct-chat,.circle-workspace) .conversation-messages .message :is(.message-body,.message-quote,.message-meta),
+.app-shell .content :is(.direct-chat,.circle-workspace) .conversation-messages .message :is(.message-body,.message-quote,.message-meta) *{color:#25243b!important}
+.app-shell .content :is(.direct-chat,.circle-workspace) .conversation-messages .message .message-reactions button{color:#25243b!important;background:#e7e1ff!important;border-color:#7566a8!important}
+.app-shell .content :is(.direct-chat,.circle-workspace) .conversation-context :is(.chat-starter,.context-starter-card),
+.app-shell .content :is(.direct-chat,.circle-workspace) .connection-context-card :is(.chat-starter,.context-starter-card){color:#25243b!important;background:#f2efff!important;border-color:#8a829f!important}
+.app-shell .content :is(.direct-chat,.circle-workspace) :is(.chat-starter,.context-starter-card) :is(p,span,strong,small,time,blockquote){color:#25243b!important}
+.app-shell .content :is(.direct-chat,.circle-workspace) .context-starter-card button{color:#25243b!important;background:transparent!important}
+.app-shell .content :is(.direct-chat,.circle-workspace) .context-starter-card button:hover{color:#fff!important;background:#3b3757!important}
+.app-shell .content :is(.direct-chat,.circle-workspace) .message-search{color:#f8f7ff!important;background:#302d49!important;border-color:#ffffff58!important}
+.app-shell .content :is(.direct-chat,.circle-workspace) .message-search>summary{color:#fff!important}
+.app-shell .content :is(.direct-chat,.circle-workspace) .message-search form>label{color:#e3deef!important}
+.app-shell .content :is(.direct-chat,.circle-workspace) .message-search-controls button{color:#f8f7ff!important;background:#3b3757!important;border-color:#ffffff70!important}
+.app-shell .content :is(.direct-chat,.circle-workspace) .conversation-details .communication-card,
+.app-shell .content :is(.direct-chat,.circle-workspace) .conversation-details .circle-next-activity{color:#f8f7ff!important;background:#302d49!important;border-color:#ffffff58!important}
+.app-shell .content :is(.direct-chat,.circle-workspace) .conversation-details .communication-card :is(summary,p,li,.field-help),
+.app-shell .content :is(.direct-chat,.circle-workspace) .conversation-details .circle-next-activity :is(summary,p,li,.field-help){color:#e3deef!important}
+.app-shell .content .action-menu[open]{color:#f8f7ff!important;background:#29253ff5!important;border:1px solid #ffffff70!important;box-shadow:0 12px 32px #05071355!important}
+.app-shell .content .action-menu[open]>summary{color:#fff!important;background:transparent!important}
+.app-shell .content .action-menu[open]>button:not(.danger){color:#f8f7ff!important;background:#38334f!important;border:1px solid #ffffff58!important}
+.app-shell .content .action-menu[open]>button:not(.danger):is(:hover,:focus-visible){color:#fff!important;background:#514973!important;border-color:#ffffffa0!important}
+.app-shell .content .action-menu[open] .notification-toggle{color:#f8f7ff!important;background:transparent!important}
+.app-shell .content .action-menu[open] .notification-toggle .field-help{color:#e3deef!important}
+.app-shell .content .sample-chat-screen .sample-message,
+.app-shell .content .sample-chat-screen .sample-message :is(p,span,strong,small,time,blockquote){color:#25243b!important}
