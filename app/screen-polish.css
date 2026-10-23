@@ -900,3 +900,49 @@ body{font-family:Arial,Helvetica,sans-serif;color:var(--ink);background:var(--bg
  .app-shell>.sidebar nav,.app-shell .direct-chat .private-chat-tabs,.app-shell .direct-chat .private-chat-tabs::before,.app-shell .circle-workspace .circle-section-tabs,.app-shell .circle-workspace .circle-section-tabs::before{forced-color-adjust:auto;color:CanvasText!important;background:Canvas!important;border-color:CanvasText!important}
  .app-shell .direct-chat .private-chat-tabs>button[aria-selected=true],.app-shell .circle-workspace .circle-section-tabs>button[aria-selected=true]{color:HighlightText!important;background:Highlight!important}
 }
+
+/* Keep Direct and Circle conversations readable in iOS WKWebView as well as browsers. */
+.app-shell :is(.direct-chat,.circle-workspace){color:#f8f7ff!important;background:#1c1a2e!important}
+.app-shell :is(.direct-chat,.circle-workspace) :is(.conversation-heading,.chat-context-area,.conversation-messages,.direct-compose-dock,.circle-compose-dock,.circle-workspace-heading,.circle-activity-strip,.chat-help,.connection-context-card,.private-chat-tabs,.circle-section-tabs){color:#f8f7ff!important;background:#29253ff2!important;border-color:#ffffff52!important}
+.app-shell :is(.direct-chat,.circle-workspace) :is(.conversation-messages,.direct-compose-dock,.circle-compose-dock,.connection-context-card){box-shadow:0 12px 32px #05071340,0 1px 0 #ffffff20 inset;-webkit-backdrop-filter:blur(18px) saturate(145%);backdrop-filter:blur(18px) saturate(145%)}
+.app-shell :is(.direct-chat,.circle-workspace) .conversation-messages{border:1px solid #ffffff45!important;border-radius:16px!important}
+.app-shell :is(.direct-chat,.circle-workspace) .conversation-messages :is(.message-day,.field-help){color:#e4dfef!important}
+.app-shell :is(.direct-chat,.circle-workspace) .circle-message-heading{color:#f7f4ff!important}
+.app-shell :is(.direct-chat,.circle-workspace) .circle-message-heading time{color:#e0dced!important}
+.app-shell :is(.direct-chat,.circle-workspace) .conversation-messages .message{color:#25243b!important;background:#f2efff!important}
+.app-shell :is(.direct-chat,.circle-workspace) .conversation-messages .message.mine{color:#25243b!important;background:#d8ceff!important}
+.app-shell :is(.direct-chat,.circle-workspace) :is(.chat-composer,.composer-controls){color:#f8f7ff!important;background:transparent!important}
+.app-shell :is(.direct-chat,.circle-workspace) .chat-composer{background:#29253ff2!important;border:1px solid #ffffff52!important;border-radius:16px!important}
+.app-shell :is(.direct-chat,.circle-workspace) .chat-composer .composer-controls>textarea,
+:root body .app-shell:has(.direct-chat) .direct-chat .chat-composer .composer-controls>textarea,
+:root body .app-shell:has(.circle-workspace) .circle-workspace .chat-composer .composer-controls>textarea{color:#fff!important;background:#17182bee!important;border:1px solid #ffffff70!important}
+.app-shell :is(.direct-chat,.circle-workspace) .chat-composer textarea::placeholder{color:#d8d3e8!important;opacity:1}
+.app-shell :is(.direct-chat,.circle-workspace) :is(.composer-icon,.voice-inline .voice-record-button){color:#f8f7ff!important;background:#38334f!important;border:1px solid #ffffff70!important}
+.app-shell :is(.direct-chat,.circle-workspace) .composer-send{color:#fff!important;background:#5a4c91!important;border:1px solid #ffffff70!important}
+.app-shell :is(.direct-chat,.circle-workspace) .composer-send:disabled{color:#25243b!important;background:#e2deef!important;border-color:#e2deef!important;opacity:1}
+.app-shell :is(.direct-chat,.circle-workspace) :is(.private-chat-tabs,.circle-section-tabs)>button{color:#eeeaf7!important;background:transparent!important;border-color:transparent!important}
+.app-shell :is(.direct-chat,.circle-workspace) :is(.private-chat-tabs,.circle-section-tabs)>button[aria-selected="true"]{color:#fff!important;background:#5a4c91!important;border:1px solid #ffffff70!important;box-shadow:0 1px 0 #ffffff25 inset!important}
+.app-shell :is(.direct-chat,.circle-workspace) :is(.private-chat-tabs,.circle-section-tabs)>button:hover:not(:disabled),
+.app-shell :is(.direct-chat,.circle-workspace) :is(.private-chat-tabs,.circle-section-tabs)>button:focus-visible{color:#fff!important;background:#3b3757!important;border-color:#ffffff90!important}
+.app-shell :is(.direct-chat,.circle-workspace) .suggestion-panel{color:#f8f7ff!important;background:#29253ff2!important;border-color:#ffffff52!important}
+.app-shell :is(.direct-chat,.circle-workspace) .suggestion-panel>summary{color:#fff!important;background:#3b3757!important;border:1px solid #ffffff58!important;border-radius:14px!important}
+.app-shell :is(.direct-chat,.circle-workspace) .suggestion-panel .field-help{color:#e4dfef!important}
+.app-shell :is(.direct-chat,.circle-workspace) :is(.chat-help,.connection-context-card)>summary{color:#f8f7ff!important}
+.app-shell :is(.direct-chat,.circle-workspace) :is(.chat-composer,.private-chat-tabs,.circle-section-tabs) :is(button,a,summary,input,textarea):focus-visible{outline:3px solid #fff29a!important;outline-offset:2px!important}
+@media(max-width:720px){
+ .app-shell:has(.direct-chat) .direct-chat{padding-bottom:calc(155px + env(safe-area-inset-bottom));background:#1c1a2e!important}
+ .app-shell:has(.direct-chat) .direct-chat .private-chat-tabs{background:transparent!important;border:0!important}
+ .app-shell:has(.direct-chat) .direct-chat .private-chat-tabs::before{background:#29253ff2!important;border-color:#ffffff58!important}
+ .app-shell:has(.direct-chat) .direct-chat .direct-compose-dock{background:#29253ff2!important;border-color:#ffffff58!important}
+ .app-shell:has(.direct-chat) .direct-chat .suggestion-panel>summary{background:#3b3757!important;color:#fff!important}
+}
+@media(prefers-reduced-transparency:reduce){
+ .app-shell :is(.direct-chat,.circle-workspace) :is(.conversation-heading,.chat-context-area,.conversation-messages,.direct-compose-dock,.circle-compose-dock,.circle-workspace-heading,.circle-activity-strip,.chat-help,.connection-context-card,.private-chat-tabs,.circle-section-tabs,.private-chat-tabs::before,.circle-section-tabs::before,.chat-composer,.suggestion-panel){background:#29253f!important;-webkit-backdrop-filter:none!important;backdrop-filter:none!important}
+}
+@media(prefers-contrast:more){
+ .app-shell :is(.direct-chat,.circle-workspace) :is(.conversation-messages,.direct-compose-dock,.circle-compose-dock,.chat-composer,.private-chat-tabs,.circle-section-tabs,.private-chat-tabs::before,.circle-section-tabs::before,.suggestion-panel){color:#fff!important;background:#29253f!important;border:2px solid #fff!important;box-shadow:none!important}
+}
+@media(forced-colors:active){
+ .app-shell :is(.direct-chat,.circle-workspace) :is(.conversation-heading,.chat-context-area,.conversation-messages,.direct-compose-dock,.circle-compose-dock,.circle-workspace-heading,.circle-activity-strip,.chat-help,.connection-context-card,.private-chat-tabs,.circle-section-tabs,.private-chat-tabs::before,.circle-section-tabs::before,.chat-composer,.suggestion-panel){color:CanvasText!important;background:Canvas!important;border:1px solid CanvasText!important;box-shadow:none!important;-webkit-backdrop-filter:none!important;backdrop-filter:none!important}
+ .app-shell :is(.direct-chat,.circle-workspace) :is(.private-chat-tabs,.circle-section-tabs)>button[aria-selected="true"]{color:HighlightText!important;background:Highlight!important;outline:2px solid Highlight!important}
+}
