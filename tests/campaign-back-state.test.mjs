@@ -11,10 +11,10 @@ const text=readFileSync('app/collective-action.tsx','utf8'),source=ts.createSour
 const app=source.statements.find(node=>ts.isFunctionDeclaration(node)&&node.name?.text==='CollectiveAction');
 const statements=[];for(const node of app.body.statements){statements.push(node.getText(source));if(ts.isExpressionStatement(node)&&node.expression.expression?.getText(source)==='useEffect')break;}
 let back;function visit(node){if(ts.isJsxElement(node)&&node.openingElement.attributes.properties.some(p=>p.name?.getText(source)==='className'&&p.initializer?.text==='secondary workflow-back'))back=node.getText(source);ts.forEachChild(node,visit);}visit(app);assert(back);
-const dependencies=['useState','useRef','useEffect','window','appBackDestination','backWithinApp','routeBackLabel','readCampaignView','readDraft','tabStorage','draftKey'];
+const dependencies=['useCallback','useState','useRef','useEffect','window','appBackDestination','backWithinApp','routeBackLabel','readCampaignView','readDraft','tabStorage','draftKey'];
 const {default:view}=await import(compile(`export default function renderCampaign({accountId},{${dependencies.join(',')}}){const empty={};${statements.join('\n')}return ${back};}`));
 function harness(){const slots=[];let index,pending=[];
- const hooks={useState(initial){const i=index++;if(!(i in slots))slots[i]=initial;return [slots[i],next=>slots[i]=typeof next==='function'?next(slots[i]):next];},useRef(initial){const i=index++;return slots[i]??(slots[i]={current:initial});},useEffect(fn,deps){const i=index++,old=slots[i];if(!old||deps.some((value,j)=>!Object.is(value,old.deps[j]))){slots[i]={deps,cleanup:old?.cleanup};pending.push(()=>{slots[i].cleanup?.();slots[i].cleanup=fn();});}}};
+ const hooks={useCallback:fn=>fn,useState(initial){const i=index++;if(!(i in slots))slots[i]=initial;return [slots[i],next=>slots[i]=typeof next==='function'?next(slots[i]):next];},useRef(initial){const i=index++;return slots[i]??(slots[i]={current:initial});},useEffect(fn,deps){const i=index++,old=slots[i];if(!old||deps.some((value,j)=>!Object.is(value,old.deps[j]))){slots[i]={deps,cleanup:old?.cleanup};pending.push(()=>{slots[i].cleanup?.();slots[i].cleanup=fn();});}}};
  return {render(props,deps){index=0;return view(props,{...deps,...hooks});},commit(){const tasks=pending;pending=[];tasks.forEach(fn=>fn());},dispose(){slots.forEach(slot=>slot?.cleanup?.());}};
 }
 const originalHistory=Object.getOwnPropertyDescriptor(globalThis,'history');
