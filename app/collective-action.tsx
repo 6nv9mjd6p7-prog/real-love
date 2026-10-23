@@ -1,9 +1,10 @@
 'use client';
-import {appBackDestination,backWithinApp,routeBackLabel} from './native-links';
+import {backWithinApp,routeBackLabel} from './native-links';
 import {readCampaignView,saveCampaignView} from './campaign-navigation';
-import {readDraft,writeDraft,removeDraft,draftKey,tabStorage} from './draft-storage';
+import {writeDraft,removeDraft,draftKey,tabStorage} from './draft-storage';
 import {useCallback,useEffect,useState,useRef,useLayoutEffect} from 'react';
-import CampaignProposal,{type CampaignDraft} from './campaign-proposal';
+import {useCampaignRestoration} from './use-campaign-restoration';
+import CampaignProposal from './campaign-proposal';
 
 type Campaign={id:string;title:string;company:string;summary:string;demand:string;uncertainty:string;alternatives:string;sources:{url:string;claim:string}[];reviewDate:string;status:string;version:number;mine:boolean;participating:boolean;canReview:boolean;updates:{id:string;body:string;kind:string;created:string}[];feedback:{id:string;kind:string;body:string;status:string}[]};
 type CampaignPage={accountId:string;campaigns:Campaign[];nextCursor:string|null;reviewer:boolean;active:boolean;error?:string};
@@ -18,19 +19,16 @@ export default function CollectiveAction({accountId}:{accountId:string}){
  const {campaigns,reviewer,active,loading,error,nextCursor,pageBusy}=loadState,scope=loadState.scope;
  const updateLoad=useCallback((change:Partial<CampaignLoadState>|((previous:CampaignLoadState)=>Partial<CampaignLoadState>))=>{setLoadState(previous=>previous.scope===scope?{...previous,...(typeof change==='function'?change(previous):change)}:previous);},[scope]);
  function setError(error:string){updateLoad({error});}
- const [returnArea,setReturnArea]=useState('circles');
- const restoreScroll=useRef<number|null>(null),draftReady=useRef(false),alive=useRef(true);
+ const alive=useRef(true),scrolledRestoration=useRef<unknown>(null);
  const proposalKey=draftKey(accountId,'campaign-proposal');
+ const restoration=useCampaignRestoration(accountId,proposalKey),[appliedRestoration,setAppliedRestoration]=useState(restoration);
+ const {returnArea}=restoration;
+ if(appliedRestoration!==restoration){setAppliedRestoration(restoration);if(restoration.view){setTab(restoration.view.tab);setSelected(restoration.view.selected);setCompose(restoration.view.compose);setConsent(false);}if(!appliedRestoration.ready&&restoration.draft){setDraft(restoration.draft);setConsent(false);}}
  function view(next:{tab?:string;selected?:string;compose?:boolean},replace=false){const destination={tab:next.tab??tab,selected:next.selected??selected,compose:next.compose??compose,scroll:0};saveCampaignView(accountId,destination,replace);setTab(destination.tab);setSelected(destination.selected);setCompose(destination.compose);if(destination.compose)setConsent(false);window.scrollTo({top:0});}
  function backToList(){if(readCampaignView(accountId).depth>0)history.back();else view({selected:'',compose:false},true);}
- useEffect(()=>{
-  alive.current=true;setReturnArea(appBackDestination('circles',accountId));
-  const restore=()=>{if(window.location.hash!=='#circles/action')return;const saved=readCampaignView(accountId);setTab(saved.tab);setSelected(saved.selected);setCompose(saved.compose);setConsent(false);restoreScroll.current=saved.scroll;};restore();
-  const recovered=readDraft<{draft:CampaignDraft}|null>(tabStorage(),proposalKey,null);if(recovered?.draft){setDraft(recovered.draft);setConsent(false);}draftReady.current=true;
-  window.addEventListener('popstate',restore);return()=>{alive.current=false;window.removeEventListener('popstate',restore);};
- },[accountId,proposalKey]);
- useEffect(()=>{if(draftReady.current)writeDraft(tabStorage(),proposalKey,{draft});},[draft,proposalKey]);
- useEffect(()=>{if(!loading&&restoreScroll.current!==null){const top=restoreScroll.current;restoreScroll.current=null;requestAnimationFrame(()=>requestAnimationFrame(()=>window.scrollTo({top})));}},[loading,selected,compose]);
+ useEffect(()=>{alive.current=true;return()=>{alive.current=false;};},[]);
+ useEffect(()=>{if(restoration.ready)writeDraft(tabStorage(),proposalKey,{draft});},[draft,proposalKey,restoration.ready]);
+ useEffect(()=>{if(!loading&&restoration.view&&scrolledRestoration.current!==restoration){scrolledRestoration.current=restoration;const top=restoration.view.scroll;requestAnimationFrame(()=>requestAnimationFrame(()=>window.scrollTo({top})));}},[loading,selected,compose,restoration]);
  const requestVersion=useRef(0),selectedRef=useRef(selected);
  useLayoutEffect(()=>{selectedRef.current=selected;},[selected]);
  const load=useCallback((signal?:AbortSignal,cursor?:string)=>{
