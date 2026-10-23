@@ -1078,20 +1078,12 @@ html,body{max-width:100%;overflow-x:clip}
 }
 /* Keep content surfaces stable; float one calm surface around navigation controls. */
 :root{--nav-glass-bg:rgba(255,255,255,.94);--nav-glass-border:rgba(255,255,255,.9);--nav-glass-shadow:0 8px 28px rgba(37,40,68,.12),inset 0 1px 0 rgba(255,255,255,.9);--nav-glass-blur:16px}
-.appearance-setting{display:grid;grid-template-columns:minmax(0,1fr) minmax(220px,auto);align-items:center;gap:16px;padding:16px;margin:0 0 12px;border:1px solid var(--border);border-radius:var(--card-radius);background:var(--surface)}
-.appearance-setting h2{font-size:1rem}
-.appearance-setting .field-help{margin:4px 0 0}
-.appearance-options{display:grid;gap:8px;margin:0;padding:0;border:0}
-.appearance-options label{display:flex;align-items:center;gap:9px;min-height:44px;padding:8px 12px;border:1px solid var(--border-strong);border-radius:var(--control-radius);background:var(--surface);font-size:.875rem;cursor:pointer}
-.appearance-options input{width:18px;height:18px;margin:0;accent-color:var(--accent)}
-@media(max-width:720px){.appearance-setting{grid-template-columns:1fr;gap:10px;padding:14px}.appearance-options{grid-template-columns:1fr 1fr}.appearance-options label{padding:8px;line-height:1.25}}
 @media(max-width:720px){
  .app-shell:not(:has(.conversation-screen,.circle-conversation))>.sidebar nav{left:12px;right:12px;bottom:calc(8px + env(safe-area-inset-bottom));width:auto;padding:5px 6px calc(5px + env(safe-area-inset-bottom));border:1px solid var(--nav-glass-border);border-radius:20px;background:var(--nav-glass-bg);box-shadow:var(--nav-glass-shadow);backdrop-filter:blur(var(--nav-glass-blur)) saturate(115%);-webkit-backdrop-filter:blur(var(--nav-glass-blur)) saturate(115%)}
  .app-shell:not(:has(.conversation-screen,.circle-conversation))>.sidebar nav .nav-item{border-radius:14px;transition:background-color 150ms ease,color 150ms ease}
  .app-shell:not(:has(.conversation-screen,.circle-conversation))>.sidebar nav .nav-item.active{background:var(--accent-soft);color:var(--accent);box-shadow:none}
 }
 .app-shell>.sidebar nav{padding:6px;border:1px solid var(--nav-glass-border);border-radius:18px;background:var(--nav-glass-bg);box-shadow:var(--nav-glass-shadow);backdrop-filter:blur(var(--nav-glass-blur)) saturate(115%);-webkit-backdrop-filter:blur(var(--nav-glass-blur)) saturate(115%)}
-html[data-appearance="solid"] .app-shell>.sidebar nav{--nav-glass-bg:#fff;--nav-glass-border:var(--border);--nav-glass-shadow:0 3px 14px rgba(37,40,68,.08);--nav-glass-blur:0px}
 @supports not ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))){.app-shell>.sidebar nav{background:#fff}}
 @media(prefers-reduced-transparency:reduce){.app-shell>.sidebar nav{background:#fff;backdrop-filter:none;-webkit-backdrop-filter:none}}
 @media(prefers-contrast:more){.app-shell>.sidebar nav{background:#fff;border-color:#56596c;box-shadow:none}}
@@ -1112,7 +1104,6 @@ html[data-appearance="solid"] .app-shell>.sidebar nav{--nav-glass-bg:#fff;--nav-
 .direct-chat .private-chat-tabs>button[aria-selected=true]{border:0;border-radius:13px;background:var(--accent-soft);color:var(--accent);box-shadow:none}
 .direct-chat .private-chat-tabs>button[aria-selected=true]>span{border:0}
 .direct-chat .private-chat-tabs>button[aria-selected=true]>svg{fill:none;stroke:currentColor}
-html[data-appearance="solid"] .direct-chat .private-chat-tabs{--nav-glass-bg:#fff;--nav-glass-border:var(--border);--nav-glass-shadow:0 3px 14px rgba(37,40,68,.08);--nav-glass-blur:0px}
 @supports not ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))){.app-shell>.sidebar nav,.direct-chat .private-chat-tabs,.direct-chat .private-chat-tabs::before{background:#fff}}
 @media(prefers-reduced-transparency:reduce){.app-shell>.sidebar nav,.direct-chat .private-chat-tabs{background:#fff;backdrop-filter:none;-webkit-backdrop-filter:none}}
 @media(prefers-contrast:more){.app-shell>.sidebar nav,.direct-chat .private-chat-tabs{background:#fff;border-color:#56596c;box-shadow:none}}
@@ -1123,7 +1114,6 @@ html[data-appearance="solid"] .direct-chat .private-chat-tabs{--nav-glass-bg:#ff
  .direct-chat .private-chat-tabs::before{position:absolute;z-index:-1;content:"";inset:auto 12px calc(8px + env(safe-area-inset-bottom));height:60px;border:1px solid var(--nav-glass-border);border-radius:20px;background:var(--nav-glass-bg);box-shadow:var(--nav-glass-shadow);backdrop-filter:blur(var(--nav-glass-blur)) saturate(115%);-webkit-backdrop-filter:blur(var(--nav-glass-blur)) saturate(115%)}
  .direct-chat .private-chat-tabs>button{min-height:56px;border-radius:14px}
 }
-html[data-appearance="solid"] .direct-chat .private-chat-tabs::before{--nav-glass-bg:#fff;--nav-glass-border:var(--border);--nav-glass-shadow:0 3px 14px rgba(37,40,68,.08);--nav-glass-blur:0px}
 @media(prefers-reduced-transparency:reduce){.direct-chat .private-chat-tabs::before{background:#fff;backdrop-filter:none;-webkit-backdrop-filter:none}}
 /* Circle Chat / Plan / Members uses the same control surface and selected state. */
 .circle-workspace .circle-section-tabs{position:relative;width:min(100%,420px);padding:5px;margin:0 0 12px;border:1px solid var(--nav-glass-border);border-radius:18px;background:var(--nav-glass-bg);box-shadow:var(--nav-glass-shadow);backdrop-filter:blur(var(--nav-glass-blur)) saturate(115%);-webkit-backdrop-filter:blur(var(--nav-glass-blur)) saturate(115%)}
@@ -1131,7 +1121,6 @@ html[data-appearance="solid"] .direct-chat .private-chat-tabs::before{--nav-glas
 .circle-workspace .circle-section-tabs>button[aria-selected=true]{border:0;border-radius:13px;background:var(--accent-soft);color:var(--accent);box-shadow:none}
 .circle-workspace .circle-section-tabs>button[aria-selected=true]>span{border:0}
 .circle-workspace .circle-section-tabs>button[aria-selected=true]>svg{fill:none;stroke:currentColor}
-html[data-appearance="solid"] .circle-workspace .circle-section-tabs{--nav-glass-bg:#fff;--nav-glass-border:var(--border);--nav-glass-shadow:0 3px 14px rgba(37,40,68,.08);--nav-glass-blur:0px}
 @supports not ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))){.circle-workspace .circle-section-tabs,.circle-workspace .circle-section-tabs::before{background:#fff}}
 @media(prefers-reduced-transparency:reduce){.circle-workspace .circle-section-tabs,.circle-workspace .circle-section-tabs::before{background:#fff;backdrop-filter:none;-webkit-backdrop-filter:none}}
 @media(prefers-contrast:more){.circle-workspace .circle-section-tabs,.circle-workspace .circle-section-tabs::before{background:#fff;border-color:#56596c;box-shadow:none}}
@@ -1142,7 +1131,6 @@ html[data-appearance="solid"] .circle-workspace .circle-section-tabs{--nav-glass
  .circle-workspace .circle-section-tabs::before{position:absolute;z-index:-1;content:"";inset:auto 12px calc(8px + env(safe-area-inset-bottom));height:60px;border:1px solid var(--nav-glass-border);border-radius:20px;background:var(--nav-glass-bg);box-shadow:var(--nav-glass-shadow);backdrop-filter:blur(var(--nav-glass-blur)) saturate(115%);-webkit-backdrop-filter:blur(var(--nav-glass-blur)) saturate(115%)}
  .circle-workspace .circle-section-tabs>button{min-height:56px;border-radius:14px}
 }
-html[data-appearance="solid"] .circle-workspace .circle-section-tabs::before{--nav-glass-bg:#fff;--nav-glass-border:var(--border);--nav-glass-shadow:0 3px 14px rgba(37,40,68,.08);--nav-glass-blur:0px}
 @media(prefers-reduced-transparency:reduce){.circle-workspace .circle-section-tabs::before{background:#fff;backdrop-filter:none;-webkit-backdrop-filter:none}}
 /* Reassert solid fallbacks after mobile pseudo-surfaces are defined. */
 @supports not ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))){.direct-chat .private-chat-tabs::before,.circle-workspace .circle-section-tabs::before{background:#fff}}
@@ -1151,13 +1139,4 @@ html[data-appearance="solid"] .circle-workspace .circle-section-tabs::before{--n
 @media(forced-colors:active){.app-shell>.sidebar nav,.direct-chat .private-chat-tabs,.direct-chat .private-chat-tabs::before,.circle-workspace .circle-section-tabs,.circle-workspace .circle-section-tabs::before{background:Canvas;border:1px solid CanvasText;box-shadow:none;backdrop-filter:none}.app-shell .nav-item.active,.direct-chat .private-chat-tabs>button[aria-selected=true],.circle-workspace .circle-section-tabs>button[aria-selected=true]{outline:2px solid Highlight;outline-offset:-2px}}
 
 /* Keep the explicit Solid choice free of the original material blur. */
-html[data-appearance="solid"] .app-shell>.sidebar nav,
-html[data-appearance="solid"] .direct-chat .private-chat-tabs,
-html[data-appearance="solid"] .circle-workspace .circle-section-tabs,
-html[data-appearance="solid"] .direct-chat .private-chat-tabs::before,
-html[data-appearance="solid"] .circle-workspace .circle-section-tabs::before{
- -webkit-backdrop-filter:none;
- backdrop-filter:none;
-}
-/* Compact discovery chips retain a 44px touch target at phone widths. */
 @media(max-width:720px){.app-shell .discovery-screen .profile-grid>.compact-person .card-interests .interest-action{min-height:44px}}
