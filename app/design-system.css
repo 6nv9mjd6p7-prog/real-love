@@ -1077,7 +1077,7 @@ html,body{max-width:100%;overflow-x:clip}
  .app-shell .inbox-screen .inbox-toolbar{gap:8px}
 }
 /* Keep content surfaces stable; float one calm surface around navigation controls. */
-:root{--nav-glass-bg:rgba(255,255,255,.94);--nav-glass-border:rgba(255,255,255,.9);--nav-glass-shadow:0 8px 28px rgba(37,40,68,.12),inset 0 1px 0 rgba(255,255,255,.9);--nav-glass-blur:18px}
+:root{--nav-glass-bg:rgba(255,255,255,.94);--nav-glass-border:rgba(255,255,255,.9);--nav-glass-shadow:0 8px 28px rgba(37,40,68,.12),inset 0 1px 0 rgba(255,255,255,.9);--nav-glass-blur:16px}
 .appearance-setting{display:grid;grid-template-columns:minmax(0,1fr) minmax(220px,auto);align-items:center;gap:16px;padding:16px;margin:0 0 12px;border:1px solid var(--border);border-radius:var(--card-radius);background:var(--surface)}
 .appearance-setting h2{font-size:1rem}
 .appearance-setting .field-help{margin:4px 0 0}
@@ -1086,11 +1086,11 @@ html,body{max-width:100%;overflow-x:clip}
 .appearance-options input{width:18px;height:18px;margin:0;accent-color:var(--accent)}
 @media(max-width:720px){.appearance-setting{grid-template-columns:1fr;gap:10px;padding:14px}.appearance-options{grid-template-columns:1fr 1fr}.appearance-options label{padding:8px;line-height:1.25}}
 @media(max-width:720px){
- .app-shell:not(:has(.conversation-screen,.circle-conversation))>.sidebar nav{left:12px;right:12px;bottom:calc(8px + env(safe-area-inset-bottom));width:auto;padding:5px 6px calc(5px + env(safe-area-inset-bottom));border:1px solid var(--nav-glass-border);border-radius:20px;background:var(--nav-glass-bg);box-shadow:var(--nav-glass-shadow);backdrop-filter:blur(var(--nav-glass-blur));-webkit-backdrop-filter:blur(var(--nav-glass-blur))}
+ .app-shell:not(:has(.conversation-screen,.circle-conversation))>.sidebar nav{left:12px;right:12px;bottom:calc(8px + env(safe-area-inset-bottom));width:auto;padding:5px 6px calc(5px + env(safe-area-inset-bottom));border:1px solid var(--nav-glass-border);border-radius:20px;background:var(--nav-glass-bg);box-shadow:var(--nav-glass-shadow);backdrop-filter:blur(var(--nav-glass-blur)) saturate(115%);-webkit-backdrop-filter:blur(var(--nav-glass-blur)) saturate(115%)}
  .app-shell:not(:has(.conversation-screen,.circle-conversation))>.sidebar nav .nav-item{border-radius:14px;transition:background-color 150ms ease,color 150ms ease}
  .app-shell:not(:has(.conversation-screen,.circle-conversation))>.sidebar nav .nav-item.active{background:var(--accent-soft);color:var(--accent);box-shadow:none}
 }
-.app-shell>.sidebar nav{padding:6px;border:1px solid var(--nav-glass-border);border-radius:18px;background:var(--nav-glass-bg);box-shadow:var(--nav-glass-shadow);backdrop-filter:blur(var(--nav-glass-blur));-webkit-backdrop-filter:blur(var(--nav-glass-blur))}
+.app-shell>.sidebar nav{padding:6px;border:1px solid var(--nav-glass-border);border-radius:18px;background:var(--nav-glass-bg);box-shadow:var(--nav-glass-shadow);backdrop-filter:blur(var(--nav-glass-blur)) saturate(115%);-webkit-backdrop-filter:blur(var(--nav-glass-blur)) saturate(115%)}
 html[data-appearance="solid"] .app-shell>.sidebar nav{--nav-glass-bg:#fff;--nav-glass-border:var(--border);--nav-glass-shadow:0 3px 14px rgba(37,40,68,.08);--nav-glass-blur:0px}
 @supports not ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))){.app-shell>.sidebar nav{background:#fff}}
 @media(prefers-reduced-transparency:reduce){.app-shell>.sidebar nav{background:#fff;backdrop-filter:none;-webkit-backdrop-filter:none}}
@@ -1107,7 +1107,7 @@ html[data-appearance="solid"] .app-shell>.sidebar nav{--nav-glass-bg:#fff;--nav-
 .profile-entry-state>.inline-actions{margin-top:16px}
 .profile-entry-state>.inline-actions>.primary,.profile-entry-state>.inline-actions>.secondary{min-height:44px}
 @media(max-width:720px){.app-shell .profile-entry-state{padding:18px;margin:16px 0}.profile-entry-state>.inline-actions{align-items:stretch}.profile-entry-state>.inline-actions>a,.profile-entry-state>.inline-actions>button{flex:1 1 100%;justify-content:center}}
-.direct-chat .private-chat-tabs{width:min(100%,360px);padding:5px;margin:0 0 12px;border:1px solid var(--nav-glass-border);border-radius:18px;background:var(--nav-glass-bg);box-shadow:var(--nav-glass-shadow);backdrop-filter:blur(var(--nav-glass-blur));-webkit-backdrop-filter:blur(var(--nav-glass-blur))}
+.direct-chat .private-chat-tabs{width:min(100%,360px);padding:5px;margin:0 0 12px;border:1px solid var(--nav-glass-border);border-radius:18px;background:var(--nav-glass-bg);box-shadow:var(--nav-glass-shadow);backdrop-filter:blur(var(--nav-glass-blur)) saturate(115%);-webkit-backdrop-filter:blur(var(--nav-glass-blur)) saturate(115%)}
 .direct-chat .private-chat-tabs>button{min-height:44px;border:0;border-radius:13px;color:var(--muted);transition:background-color 150ms ease,color 150ms ease}
 .direct-chat .private-chat-tabs>button[aria-selected=true]{border:0;border-radius:13px;background:var(--accent-soft);color:var(--accent);box-shadow:none}
 .direct-chat .private-chat-tabs>button[aria-selected=true]>span{border:0}
@@ -1120,13 +1120,13 @@ html[data-appearance="solid"] .direct-chat .private-chat-tabs{--nav-glass-bg:#ff
 @media(prefers-reduced-motion:reduce){.app-shell>.sidebar nav .nav-item,.direct-chat .private-chat-tabs>button{transition:none}}
 @media(max-width:720px){
  .direct-chat .private-chat-tabs{width:auto;left:0;right:0;max-width:none;padding:6px 12px calc(6px + env(safe-area-inset-bottom));border:0;border-radius:0;background:transparent;box-shadow:none;backdrop-filter:none;-webkit-backdrop-filter:none;isolation:isolate}
- .direct-chat .private-chat-tabs::before{position:absolute;z-index:-1;content:"";inset:auto 12px calc(8px + env(safe-area-inset-bottom));height:60px;border:1px solid var(--nav-glass-border);border-radius:20px;background:var(--nav-glass-bg);box-shadow:var(--nav-glass-shadow);backdrop-filter:blur(var(--nav-glass-blur));-webkit-backdrop-filter:blur(var(--nav-glass-blur))}
+ .direct-chat .private-chat-tabs::before{position:absolute;z-index:-1;content:"";inset:auto 12px calc(8px + env(safe-area-inset-bottom));height:60px;border:1px solid var(--nav-glass-border);border-radius:20px;background:var(--nav-glass-bg);box-shadow:var(--nav-glass-shadow);backdrop-filter:blur(var(--nav-glass-blur)) saturate(115%);-webkit-backdrop-filter:blur(var(--nav-glass-blur)) saturate(115%)}
  .direct-chat .private-chat-tabs>button{min-height:56px;border-radius:14px}
 }
 html[data-appearance="solid"] .direct-chat .private-chat-tabs::before{--nav-glass-bg:#fff;--nav-glass-border:var(--border);--nav-glass-shadow:0 3px 14px rgba(37,40,68,.08);--nav-glass-blur:0px}
 @media(prefers-reduced-transparency:reduce){.direct-chat .private-chat-tabs::before{background:#fff;backdrop-filter:none;-webkit-backdrop-filter:none}}
 /* Circle Chat / Plan / Members uses the same control surface and selected state. */
-.circle-workspace .circle-section-tabs{position:relative;width:min(100%,420px);padding:5px;margin:0 0 12px;border:1px solid var(--nav-glass-border);border-radius:18px;background:var(--nav-glass-bg);box-shadow:var(--nav-glass-shadow);backdrop-filter:blur(var(--nav-glass-blur));-webkit-backdrop-filter:blur(var(--nav-glass-blur))}
+.circle-workspace .circle-section-tabs{position:relative;width:min(100%,420px);padding:5px;margin:0 0 12px;border:1px solid var(--nav-glass-border);border-radius:18px;background:var(--nav-glass-bg);box-shadow:var(--nav-glass-shadow);backdrop-filter:blur(var(--nav-glass-blur)) saturate(115%);-webkit-backdrop-filter:blur(var(--nav-glass-blur)) saturate(115%)}
 .circle-workspace .circle-section-tabs>button{min-height:44px;border:0;border-radius:13px;color:var(--muted);transition:background-color 150ms ease,color 150ms ease}
 .circle-workspace .circle-section-tabs>button[aria-selected=true]{border:0;border-radius:13px;background:var(--accent-soft);color:var(--accent);box-shadow:none}
 .circle-workspace .circle-section-tabs>button[aria-selected=true]>span{border:0}
@@ -1139,7 +1139,7 @@ html[data-appearance="solid"] .circle-workspace .circle-section-tabs{--nav-glass
 @media(prefers-reduced-motion:reduce){.circle-workspace .circle-section-tabs>button{transition:none}}
 @media(max-width:720px){
  .circle-workspace .circle-section-tabs{left:0;right:0;max-width:none;padding:6px 12px calc(6px + env(safe-area-inset-bottom));border:0;border-radius:0;background:transparent;box-shadow:none;backdrop-filter:none;-webkit-backdrop-filter:none;isolation:isolate}
- .circle-workspace .circle-section-tabs::before{position:absolute;z-index:-1;content:"";inset:auto 12px calc(8px + env(safe-area-inset-bottom));height:60px;border:1px solid var(--nav-glass-border);border-radius:20px;background:var(--nav-glass-bg);box-shadow:var(--nav-glass-shadow);backdrop-filter:blur(var(--nav-glass-blur));-webkit-backdrop-filter:blur(var(--nav-glass-blur))}
+ .circle-workspace .circle-section-tabs::before{position:absolute;z-index:-1;content:"";inset:auto 12px calc(8px + env(safe-area-inset-bottom));height:60px;border:1px solid var(--nav-glass-border);border-radius:20px;background:var(--nav-glass-bg);box-shadow:var(--nav-glass-shadow);backdrop-filter:blur(var(--nav-glass-blur)) saturate(115%);-webkit-backdrop-filter:blur(var(--nav-glass-blur)) saturate(115%)}
  .circle-workspace .circle-section-tabs>button{min-height:56px;border-radius:14px}
 }
 html[data-appearance="solid"] .circle-workspace .circle-section-tabs::before{--nav-glass-bg:#fff;--nav-glass-border:var(--border);--nav-glass-shadow:0 3px 14px rgba(37,40,68,.08);--nav-glass-blur:0px}
