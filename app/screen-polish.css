@@ -723,3 +723,58 @@ body{font-family:Arial,Helvetica,sans-serif;color:var(--ink);background:var(--bg
 .support-banner>a,.install-app>button,.sidebar>.brand{min-height:44px}
 .public-nav nav>a{display:inline-flex;align-items:center;min-height:44px}
 .discovery-concept-switcher>button{min-height:44px}
+
+/* Compact the legacy Chats help disclosure while keeping its help content available. */
+.app-shell .inbox-screen .inbox-heading:has(>details.inbox-guide){
+ display:grid;
+ grid-template-columns:minmax(0,1fr) auto;
+ align-items:start;
+ gap:8px 16px;
+ margin:0 0 12px;
+}
+.app-shell .inbox-screen .inbox-heading:has(>details.inbox-guide)>h1{
+ grid-column:1;
+ grid-row:1;
+ margin:6px 0 0;
+}
+.app-shell .content>.inbox-screen .inbox-heading>details.inbox-guide{
+ grid-column:2;
+ grid-row:1;
+ justify-self:end;
+ align-self:start;
+ width:fit-content;
+ max-width:100%;
+ margin:0;
+ padding:0;
+ border:0;
+ border-radius:0;
+ background:transparent;
+ box-shadow:none;
+}
+.app-shell .content>.inbox-screen .inbox-heading>details.inbox-guide>summary{
+ display:flex;
+ align-items:center;
+ justify-content:flex-end;
+ min-height:44px;
+ width:fit-content;
+ max-width:100%;
+ margin:0;
+ padding:0 4px;
+ border:0;
+ border-radius:0;
+ background:transparent;
+ color:var(--accent);
+ font-size:.875rem;
+ font-weight:600;
+ text-align:right;
+}
+.app-shell .content>.inbox-screen .inbox-heading>details.inbox-guide[open]{
+ grid-column:1/-1;
+ grid-row:2;
+ justify-self:stretch;
+ width:100%;
+ margin-top:8px;
+}
+@media(max-width:420px){
+ .app-shell .content>.inbox-screen .inbox-heading>details.inbox-guide>summary{font-size:.8125rem}
+}
