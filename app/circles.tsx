@@ -88,7 +88,9 @@ if(appliedRestoration!==restoration){setAppliedRestoration(restoration);if(resto
 useEffect(()=>{if(!restoration.ready)return;try{sessionStorage.setItem('real-love-circle-view:'+accountId+':'+workerArea,JSON.stringify({query,section}));}catch{}},[query,section,accountId,workerArea,restoration.ready]);
 useEffect(()=>{load();const update=()=>{if(!document.hidden)load();};const timer=setInterval(update,30000);return()=>clearInterval(timer);},[active,load]);
 // Apply the shortcut once per requested ID; refreshes must preserve manual choices.
-const applyInitialConnection=useEffectEvent(()=>{if(initialConnection&&connections.some(c=>c.id===initialConnection&&c.status==='accepted'&&c.available!==false)){setConnection(initialConnection);setCompose(true);if(!initialCompose&&!organizing)replaceAppRoute(workerArea?'circles/work/new':'circles/new',accountId,true);}});
+const [connectionRequest,setConnectionRequest]=useState<string|null>(null);
+if(connectionRequest!==initialConnection){setConnectionRequest(initialConnection);if(initialConnection&&connections.some(c=>c.id===initialConnection&&c.status==='accepted'&&c.available!==false))setCompose(true);}
+const applyInitialConnection=useEffectEvent(()=>{if(initialConnection&&connections.some(c=>c.id===initialConnection&&c.status==='accepted'&&c.available!==false)){setConnection(initialConnection);if(!initialCompose&&!organizing)replaceAppRoute(workerArea?'circles/work/new':'circles/new',accountId,true);}});
 useEffect(()=>{applyInitialConnection();},[initialConnection]);
 const openRouteCircle=useEffectEvent(()=>{if(!initialCircle||!active){setSelected(null);return;}const c=circles.find(x=>x.id===initialCircle);if(c&&c.membership==='accepted'&&c.id!==selected?.id)conversation(c);});
 useEffect(()=>{openRouteCircle();},[initialCircle,circles.length,active]);
