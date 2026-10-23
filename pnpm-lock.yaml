@@ -9991,6 +9991,10 @@ snapshots:
     dependencies:
       zod: 4.6.6
 
+  zod-validation-error@4.0.2(zod@3.25.76):
+    dependencies:
+      zod: 3.25.76
+
   zod@3.25.76: {}
 
   zod@4.6.6: {}
