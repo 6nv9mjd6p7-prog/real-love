@@ -1145,7 +1145,7 @@ html,body{max-width:100%;overflow-x:clip}
 .app-shell{--hover-surface:#3b3757}
 .app-shell :is(button,a,summary):is(:hover,:focus-visible):not(:disabled):not(.primary):not(.danger):not(.danger-link):not(.active):not(.is-active):not(.selected):not(.is-selected):not([aria-pressed="true"]):not([aria-selected="true"]){color:#fff!important;background:var(--hover-surface)!important;border-color:#ffffff90!important;box-shadow:0 1px 0 #ffffff20 inset}
 .app-shell>.sidebar .nav-item:hover:not(.active){color:#fff!important;background:var(--hover-surface)!important;border-color:#ffffff70;box-shadow:0 1px 0 #ffffff20 inset}
-.app-shell>.sidebar .nav-item.active:hover{color:#fff!important;background:#4b446b!important;border-color:#ffffff70}
+.app-shell>.sidebar .nav-item.active:hover{color:#fff!important;background:var(--hover-surface)!important;border-color:#ffffff70}
 .app-shell .profile-screen .profile-section-card>strong,
 .app-shell .profile-screen .profile-section-card>.profile-section-action{color:#f8f7ff!important}
 .app-shell .profile-screen .profile-section-card:hover{color:#fff;background:var(--hover-surface)!important;box-shadow:0 1px 0 #ffffff20 inset}
@@ -1153,7 +1153,7 @@ html,body{max-width:100%;overflow-x:clip}
 .app-shell .profile-screen .profile-section-card:focus-visible{color:#fff;background:var(--hover-surface)!important;box-shadow:0 1px 0 #ffffff20 inset}
 .app-shell .profile-screen .profile-section-card:focus-visible :is(strong,.profile-section-summary,.field-help,.profile-section-action){color:#fff!important}
 .app-shell .discovery-quick-buttons button:hover:not(:disabled):not([aria-pressed="true"]){color:#fff!important;background:var(--hover-surface)!important;border-color:#ffffff90!important}
-.app-shell .discovery-quick-buttons button[aria-pressed="true"]:hover:not(:disabled){color:#fff!important;background:#4b446b!important;border-color:#ffffff90!important}
+.app-shell .discovery-quick-buttons button[aria-pressed="true"]:hover:not(:disabled){color:#fff!important;background:var(--hover-surface)!important;border-color:#ffffff90!important}
 .app-shell :is(.discovery-section-tabs,.inbox-screen>.section-tabs) :is(button,a):hover{color:#fff!important;background:var(--hover-surface)!important;border-color:#ffffff70}
 .app-shell .circles-overview>.section-tabs>button:hover{color:#fff!important;background:var(--hover-surface)!important;box-shadow:0 1px 0 #ffffff20 inset}
 .app-shell .circle-active-filters .filter-chip:hover{color:#fff!important;background:var(--hover-surface)!important;border-color:#ffffff90!important}
@@ -1173,6 +1173,8 @@ html,body{max-width:100%;overflow-x:clip}
  box-shadow:0 0 0 8px #17152b!important;
 }
 .app-shell .profile-screen .profile-section-card:focus-visible{z-index:1}
+.app-shell :is(button,a,summary):hover:not(:disabled):is(.active,.is-active,.selected,.is-selected,[aria-pressed="true"],[aria-selected="true"]):not(.primary):not(.danger):not(.danger-link){color:#fff!important;background:var(--hover-surface)!important;border-color:#ffffff90!important;box-shadow:0 1px 0 #ffffff20 inset}
+.app-shell :is(button,a,summary):hover:not(:disabled):not(.primary):not(.danger):not(.danger-link) :is(span,strong,em,small,time):not(.count):not(.request-count):not(.unread):not(.notification-count){color:#fff!important}
 @media(forced-colors:active){
  .app-shell :is(button,a,summary,select,[role=tab],[role=radio]):focus-visible{
   outline:2px solid Highlight!important;
