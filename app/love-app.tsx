@@ -16,7 +16,7 @@ import {clearSupportPrompts,supportStorage} from './support-prompt';
 import {manageDialogFocus} from './modal-focus';
 import {LatestRequest} from './request-gate';
 import {invitationContexts,invitationOpening,invitationStatus,type InvitationContext} from './invitations';
-import {useState,useEffect,useCallback,useRef,useLayoutEffect} from 'react';
+import {useState,useEffect,useCallback,useRef,useLayoutEffect,useEffectEvent} from 'react';
 import {Heart,Compass,MessageCircle,Bell,UserRound,Bookmark,X,EyeOff,Search} from 'lucide-react';
 import LoadingSpace from './loading-space';
 import PublicLanding from './public-landing';
@@ -44,6 +44,7 @@ import {profileDraftChanged,profileDraftError} from './profile-draft';
 import {RULES_VERSION,reportReasons} from './rules';
 import {type Profile,newDiscoveryPeople,examples,genders,interestGroups,normalizeProfile,orderedProfileInterests,profileInterests,interestOverlap,matchesDiscovery,compareDiscovery,activityOptions,availabilityOptions,profileHasInterest,profileGender,profileLocation,matchesProfileFilters,profileSearchText,discoverySearchRelevance,discoverySearchSuggestions,profileFilterLabels,removeProfileFilter} from './model';
 type Connection={id:string;status:string;available?:boolean;created?:string;closure_kind?:string;context?:InvitationContext|null;proposal?:string;incoming:boolean;person:Profile;photoMine?:boolean;photoOther?:boolean;photoState?:string;photosShared?:boolean;canReconnect?:boolean;reconnectAllowed?:boolean;unread?:number;lastMessage?:{body:string;created:string;mine:boolean}|null};
+type CardOpening={person:string;account:string;context:InvitationContext};
 type AppAction={action:string;target?:string;connection?:string;[key:string]:unknown};
 type AppSnapshot={accountId:string;error?:string;invitationLimit?:{remaining:number;resetAt:string|null};circleAlerts?:{proposals:number;joinRequests:number};account:AccountStatus;canConnect:boolean;reviewAlerts?:number;isModerator:boolean;reports?:ReportReceipt[];me:OwnProfile|null;people:Profile[];connections:Connection[];blocks:string[];bookmarks?:string[]};
 async function requestAppSnapshot(){const response=await fetch('/api/app',{cache:'no-store'});const data:AppSnapshot=await response.json();return {ok:response.ok,data};}
@@ -110,14 +111,17 @@ export default function LoveApp({signedIn,accountId,emailSignIn=false,legacySign
  const [contextDraft,setContextDraft,contextReady]=useTabDraft(accountId,'invitation-context',selected?.id||'');
  let selectedContext:InvitationContext|null=null;try{selectedContext=contextDraft?JSON.parse(contextDraft):null;}catch{}
  const contextChoices=selected?invitationContexts(selected):[];
- const openingContext=useRef<{person:string;account:string;context:InvitationContext}|null>(null);
+ const [openingContext,setOpeningContext]=useState<CardOpening|null>(null),[cardOpening,setCardOpening]=useState<CardOpening|null>(null);
  const canOpenCardInvitation=!!selected&&!selected.demo&&!existing&&canConnect;
- useEffect(()=>{const opening=openingContext.current;if(!opening)return;if(opening.account!==accountId){openingContext.current=null;return;}if(opening.person!==selected?.id||!proposalReady||!contextReady)return;openingContext.current=null;if(canOpenCardInvitation){setContextDraft(JSON.stringify(opening.context));if(!proposal.trim())setProposal(invitationOpening(opening.context));setInvitationOpen(true);}},[route,selected?.id,accountId,proposalReady,contextReady,proposal,canOpenCardInvitation,setContextDraft,setProposal]);
+ if(cardOpening&&cardOpening.account!==accountId)setCardOpening(null);
+ if(openingContext){if(openingContext.account!==accountId)setOpeningContext(null);else if(openingContext.person===selected?.id&&proposalReady&&contextReady){setOpeningContext(null);if(canOpenCardInvitation){setCardOpening(openingContext);setInvitationOpen(true);}}}
+ const applyCardOpening=useEffectEvent(()=>{if(!cardOpening||cardOpening.account!==accountId||cardOpening.person!==selected?.id||!canOpenCardInvitation)return;setContextDraft(JSON.stringify(cardOpening.context));if(!proposal.trim())setProposal(invitationOpening(cardOpening.context));});
+ useEffect(()=>{applyCardOpening();},[cardOpening]);
  function askFromCard(person:Profile,key:string){
   if(busy||!canConnect||person.demo||connections.some(c=>c.person.id===person.id&&c.status!=='closed'))return;
   const context=invitationContexts(person).find(choice=>choice.key===key);if(!context)return;
   // Wait for destination drafts to restore before selecting context; never replace the opening.
-  openingContext.current={person:person.id,account:accountId,context};nav('person/'+encodeURIComponent(person.id));
+  setOpeningContext({person:person.id,account:accountId,context});nav('person/'+encodeURIComponent(person.id));
  }
  function chooseContext(key:string){const choice=contextChoices.find(x=>x.key===key);setContextDraft(choice?JSON.stringify(choice):'');setInvitationOpen(true);}
  async function act(data:AppAction,success:string){setBusy(true);try{await api(data);if(data.action==='block'){removeDraft(tabStorage(),draftKey(accountId,'invitation',data.target));removeDraft(tabStorage(),draftKey(accountId,'invitation-context',data.target));connections.filter(c=>c.person.id===data.target).forEach(c=>{removeDraft(tabStorage(),draftKey(accountId,'message',c.id));removeDraft(tabStorage(),draftKey(accountId,'message-reply',c.id));removeDraft(tabStorage(),draftKey(accountId,'message-attempt',c.id));});}if(data.action==='close'){removeDraft(tabStorage(),draftKey(accountId,'message',data.connection));removeDraft(tabStorage(),draftKey(accountId,'message-reply',data.connection));removeDraft(tabStorage(),draftKey(accountId,'message-attempt',data.connection));}setNotice(success);await load(data.action==='profile');return true;}catch(e:unknown){setNotice((e as Error).message);return false;}finally{setBusy(false);}}
