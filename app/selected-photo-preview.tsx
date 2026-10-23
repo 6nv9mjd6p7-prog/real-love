@@ -9,5 +9,6 @@ export default function SelectedPhotoPreview({photo,alt}:{photo:Blob;alt:string}
   const url=URL.createObjectURL(photo);element.src=url;
   return()=>{element.removeAttribute('src');URL.revokeObjectURL(url);};
  },[photo]);
+ // eslint-disable-next-line @next/next/no-img-element -- This browser-owned blob preview keeps its explicit URL allocation and cleanup.
  return <img ref={image} alt={alt}/>;
 }
