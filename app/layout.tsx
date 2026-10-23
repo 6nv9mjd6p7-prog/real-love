@@ -4,6 +4,7 @@ import SupportBanner from "./support-banner";
 import NativeRuntime from "./native-runtime";
 import "./globals.css";
 import "./design-system.css";
+import "./screen-polish.css";
 
 export const metadata: Metadata = {
   title: "Real Love — Begin together",
@@ -25,7 +26,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className="antialiased"><div className="site-utility" aria-label="Real Love options"><SupportBanner /><InstallApp /></div>{children}<NativeRuntime /></body>
+      <body className="antialiased"><a className="skip-link" href="#main-content">Skip to content</a><div className="site-utility" aria-label="Real Love options"><SupportBanner /><InstallApp /></div>{children}<NativeRuntime /></body>
     </html>
   );
 }
