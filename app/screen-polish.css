@@ -849,3 +849,54 @@ body{font-family:Arial,Helvetica,sans-serif;color:var(--ink);background:var(--bg
  .sample-chat-composer .field-help{font-size:.6rem}
  .sample-chat-composer .primary{flex:0 0 auto;min-height:44px;padding:6px 10px;font-size:.72rem;white-space:nowrap}
 }
+/* v417: keep conversation controls readable when transparency is reduced. */
+:root{
+ --nav-glass-bg:rgba(40,36,63,.96);
+ --nav-glass-border:rgba(255,255,255,.52);
+ --nav-glass-shadow:0 8px 28px rgba(5,7,19,.42),inset 0 1px 0 rgba(255,255,255,.18);
+ --nav-glass-blur:18px;
+}
+.app-shell .direct-chat .private-chat-tabs,
+.app-shell .direct-chat .private-chat-tabs::before,
+.app-shell .circle-workspace .circle-section-tabs,
+.app-shell .circle-workspace .circle-section-tabs::before{
+ color:#f8f7ff!important;
+ background:#29253f!important;
+ border-color:#ffffff75!important;
+}
+.app-shell .direct-chat .private-chat-tabs>button,
+.app-shell .circle-workspace .circle-section-tabs>button{color:#f8f7ff!important}
+.app-shell .direct-chat .private-chat-tabs>button[aria-selected=true],
+.app-shell .circle-workspace .circle-section-tabs>button[aria-selected=true]{color:#fff!important;background:#5a4c91!important;border-color:#ffffff90!important}
+.app-shell .direct-chat .direct-compose-dock,
+.app-shell .circle-workspace .circle-compose-dock,
+.app-shell .direct-chat .chat-composer,
+.app-shell .circle-workspace .chat-composer{
+ color:#f8f7ff!important;
+ background:#29253f!important;
+ border-color:#ffffff60!important;
+}
+.app-shell :is(.direct-chat,.circle-workspace) .chat-composer .composer-controls,
+.app-shell :is(.direct-chat,.circle-workspace) .chat-composer .composer-controls>textarea{color:#fff!important;background:#17182b!important;border-color:#ffffff75!important}
+.app-shell :is(.direct-chat,.circle-workspace) .chat-composer .composer-controls>textarea::placeholder{color:#e3deef!important;opacity:1}
+.app-shell :is(.direct-chat,.circle-workspace) :is(.composer-icon,.voice-inline .voice-record-button){color:#f8f7ff!important;background:#302d49!important;border-color:#ffffff65!important}
+.app-shell :is(.direct-chat,.circle-workspace) .suggestion-panel>summary{color:#f8f7ff!important;background:#302d49!important;border-color:#ffffff70!important}
+.app-shell :is(.direct-chat,.circle-workspace) .chat-composer :is(button,a,summary):disabled{opacity:1;color:#e3deef!important;background:#3b3757!important;border-color:#ffffff50!important}
+.app-shell :is(.direct-chat,.circle-workspace) .chat-help,
+.app-shell :is(.direct-chat,.circle-workspace) .chat-help summary{color:#f8f7ff!important}
+.app-shell :is(.direct-chat,.circle-workspace) .chat-help summary{background:#29253f!important;border-color:#ffffff55!important}
+
+@supports not ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))){
+ .app-shell>.sidebar nav,.app-shell .direct-chat .private-chat-tabs,.app-shell .direct-chat .private-chat-tabs::before,.app-shell .circle-workspace .circle-section-tabs,.app-shell .circle-workspace .circle-section-tabs::before{color:#f8f7ff!important;background:#29253f!important}
+}
+@media(prefers-reduced-transparency:reduce){
+ .app-shell>.sidebar nav,.app-shell .direct-chat .private-chat-tabs,.app-shell .direct-chat .private-chat-tabs::before,.app-shell .circle-workspace .circle-section-tabs,.app-shell .circle-workspace .circle-section-tabs::before{color:#f8f7ff!important;background:#29253f!important;border-color:#ffffff75!important;-webkit-backdrop-filter:none!important;backdrop-filter:none!important}
+}
+@media(prefers-contrast:more){
+ .app-shell>.sidebar nav,.app-shell .direct-chat .private-chat-tabs,.app-shell .direct-chat .private-chat-tabs::before,.app-shell .circle-workspace .circle-section-tabs,.app-shell .circle-workspace .circle-section-tabs::before{color:#fff!important;background:#17152b!important;border-color:#fff!important;box-shadow:none!important}
+ .app-shell>.sidebar .nav-item,.app-shell .direct-chat .private-chat-tabs>button,.app-shell .circle-workspace .circle-section-tabs>button{color:#fff!important}
+}
+@media(forced-colors:active){
+ .app-shell>.sidebar nav,.app-shell .direct-chat .private-chat-tabs,.app-shell .direct-chat .private-chat-tabs::before,.app-shell .circle-workspace .circle-section-tabs,.app-shell .circle-workspace .circle-section-tabs::before{forced-color-adjust:auto;color:CanvasText!important;background:Canvas!important;border-color:CanvasText!important}
+ .app-shell .direct-chat .private-chat-tabs>button[aria-selected=true],.app-shell .circle-workspace .circle-section-tabs>button[aria-selected=true]{color:HighlightText!important;background:Highlight!important}
+}
