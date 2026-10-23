@@ -26,6 +26,7 @@ import CircleCard from './circle-card';
 import {circleGroups,circleFounderConnection,type CircleSection,type CircleSummary as Circle} from './circle-experience';
 import {messageAttempt,clearMessageAttempt,clearDrafts,clearDraftKind,draftKey,removeDraft,tabStorage} from './draft-storage';
 import {useTabDraft} from './use-tab-draft';
+import {useCircleViewRestoration} from './use-circle-view-restoration';
 import {deliverMessage} from './message-delivery';
 type CircleListResponse={accountId:string;error?:string;circles:Circle[];myArea?:BroadLocation|null;canNearby?:boolean};
 // Co-founder selection uses stable connection IDs in a native dropdown; tabs remain navigation.
@@ -81,10 +82,9 @@ useEffect(()=>{if(!conversationLoading&&!busy&&!historyBusy)acknowledgeLatest.cu
 useEffect(()=>{const check=()=>acknowledge();document.addEventListener('visibilitychange',check);window.addEventListener('focus',check);window.addEventListener('online',check);return()=>{document.removeEventListener('visibilitychange',check);window.removeEventListener('focus',check);window.removeEventListener('online',check);};},[acknowledge]);
 const load=useCallback(async()=>{const ticket=loadGate.current.begin();try{const r=await fetch(workerArea?'/api/circles?scope=worker':'/api/circles');const d:CircleListResponse=await r.json();if(!loadGate.current.current(ticket))return;if(!r.ok)throw Error(d.error);if(d.accountId!==accountId){clearDrafts(tabStorage());window.location.reload();return;}setLoadError('');setMyArea(d.myArea??null);setCanNearby(d.canNearby===true);setCircles(d.circles);setSelected(s=>s?d.circles.find((c:Circle)=>c.id===s.id)??null:null);return d.circles as Circle[];}catch(e:unknown){if(loadGate.current.current(ticket)){setLoadError((e as Error).message||'Circles could not load. Please retry.');setMyArea(null);setCanNearby(false);setShareArea(false);setShareNearby(false);}}finally{if(loadGate.current.current(ticket))setLoaded(true);}},[workerArea,accountId]);
 // Account-scoped tab state survives leaving the worker/general branch without exposing it on profiles.
-const restoreCircleView=useEffectEvent(()=>{const stored=readCircleView();if(stored.query)setQuery(stored.query);if(!initialSection&&stored.section)setSection(stored.section);});
-useEffect(()=>{restoreCircleView();},[accountId,workerArea]);
-function readCircleView(){try{return JSON.parse(sessionStorage.getItem('real-love-circle-view:'+accountId+':'+workerArea)||'{}');}catch{return {};}}
-useEffect(()=>{try{sessionStorage.setItem('real-love-circle-view:'+accountId+':'+workerArea,JSON.stringify({query,section}));}catch{}},[query,section,accountId,workerArea]);
+const restoration=useCircleViewRestoration(accountId,workerArea),[appliedRestoration,setAppliedRestoration]=useState(restoration);
+if(appliedRestoration!==restoration){setAppliedRestoration(restoration);if(restoration.ready){const stored=restoration.stored;if(stored.query)setQuery(stored.query);if(!initialSection&&stored.section)setSection(stored.section);}}
+useEffect(()=>{if(!restoration.ready)return;try{sessionStorage.setItem('real-love-circle-view:'+accountId+':'+workerArea,JSON.stringify({query,section}));}catch{}},[query,section,accountId,workerArea,restoration.ready]);
 useEffect(()=>{load();const update=()=>{if(!document.hidden)load();};const timer=setInterval(update,30000);return()=>clearInterval(timer);},[active,load]);
 // Apply the shortcut once per requested ID; refreshes must preserve manual choices.
 const applyInitialConnection=useEffectEvent(()=>{if(initialConnection&&connections.some(c=>c.id===initialConnection&&c.status==='accepted'&&c.available!==false)){setConnection(initialConnection);setCompose(true);if(!initialCompose&&!organizing)replaceAppRoute(workerArea?'circles/work/new':'circles/new',accountId,true);}});
