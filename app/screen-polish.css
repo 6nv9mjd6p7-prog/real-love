@@ -1338,3 +1338,24 @@ body:has(.app-shell)>.site-utility,body:has(.public-landing)>.site-utility{backg
 @media(forced-colors:active){
  .public-landing .public-conversation-card blockquote,.public-landing .public-message-preview span{color:CanvasText!important}
 }
+
+/* Keep the native direct chat fixed to the keyboard-reduced screen area. */
+@media(max-width:720px){
+ html[data-native-platform][data-keyboard-open] body:has(.app-shell .direct-chat){height:var(--app-viewport,100dvh);min-height:0;overflow:hidden}
+ html[data-native-platform][data-keyboard-open] .app-shell:has(.direct-chat .private-chat-panel:not([hidden])){position:fixed;inset:0 auto auto 0;display:flex;width:100%;height:var(--app-viewport,100dvh);min-height:0;margin:0;padding:0;overflow:hidden;flex-direction:column}
+ html[data-native-platform][data-keyboard-open] .app-shell:has(.direct-chat .private-chat-panel:not([hidden]))>main{display:flex;flex:1;height:100%;min-height:0;overflow:hidden;flex-direction:column}
+ html[data-native-platform][data-keyboard-open] .app-shell:has(.direct-chat .private-chat-panel:not([hidden])) .content{display:flex;flex:1;height:100%;min-height:0;margin:0;padding:0;overflow:hidden}
+ html[data-native-platform][data-keyboard-open] .app-shell .direct-chat{display:flex;flex:1;width:100%;height:100%;min-height:0;max-width:none;margin:0;padding:6px max(10px,env(safe-area-inset-left)) 0;overflow:hidden;flex-direction:column}
+ html[data-native-platform][data-keyboard-open] .app-shell .direct-chat .chat-context-area{flex:0 0 auto;max-height:48px;overflow:hidden}
+ html[data-native-platform][data-keyboard-open] .app-shell .direct-chat .chat-context-area>:not(.conversation-heading){display:none!important}
+ html[data-native-platform][data-keyboard-open] .app-shell .direct-chat .conversation-workspace{display:flex;flex:1;min-height:0;overflow:hidden;flex-direction:column}
+ html[data-native-platform][data-keyboard-open] .app-shell .direct-chat .conversation-main{display:flex;flex:1;min-height:0;overflow:hidden;flex-direction:column}
+ html[data-native-platform][data-keyboard-open] .app-shell .direct-chat .private-chat-tabs{display:none!important}
+ html[data-native-platform][data-keyboard-open] .app-shell .direct-chat .private-chat-panel:not([hidden]){display:flex;flex:1;min-height:0;overflow:hidden;flex-direction:column}
+ html[data-native-platform][data-keyboard-open] .app-shell .direct-chat .conversation-messages{flex:1 1 auto;height:auto;min-height:0;max-height:none;margin:0;padding:8px 2px;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch}
+ html[data-native-platform][data-keyboard-open] .app-shell .direct-chat .conversation-context-rail,
+ html[data-native-platform][data-keyboard-open] .app-shell .direct-chat .chat-help,
+ html[data-native-platform][data-keyboard-open] .app-shell .direct-chat .direct-compose-dock>.conversation-guidance{display:none!important}
+ html[data-native-platform][data-keyboard-open] .app-shell .direct-chat .direct-compose-dock{position:relative;inset:auto;z-index:auto;flex:0 0 auto;min-height:0;margin:0;padding:4px 0 0;background:transparent}
+ html[data-native-platform][data-keyboard-open] .app-shell .direct-chat .chat-composer{flex:none;margin:0;padding:4px 0 max(4px,env(safe-area-inset-bottom))}
+}
