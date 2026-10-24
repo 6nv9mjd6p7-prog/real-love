@@ -22,7 +22,16 @@ export default function NativeRuntime() {
   const [diagnosticCopyState, setDiagnosticCopyState] = useState('');
 
   useEffect(() => {
-    if (!Capacitor.isNativePlatform()) return;
+    setDiagnosticMode(new URLSearchParams(window.location.search).get('keyboardDebug') === '1' || sessionStorage.getItem('real-love-keyboard-diagnostics') === '1');
+  }, []);
+
+  useEffect(() => {
+    if (!Capacitor.isNativePlatform()) {
+      if (new URLSearchParams(window.location.search).get('keyboardDebug') === '1') {
+        setDiagnosticRows([{ event: 'Native Capacitor bridge unavailable in this browser.' }]);
+      }
+      return;
+    }
 
     document.documentElement.dataset.nativePlatform = Capacitor.getPlatform();
     const handles: PluginListenerHandle[] = [];
