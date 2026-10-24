@@ -18,7 +18,7 @@ async function target(access:MediaAccess,scope:string,message:string,id:string){
 }
 async function audio(req:Request,key:string,type:string){
  const bucket=env.BUCKET,meta=await bucket?.head(key);if(!bucket||!meta)throw new SafetyError('Voice note unavailable.',404);
- const headers=new Headers({'Content-Type':types.includes(type)?type:'audio/webm','Cache-Control':'private, no-store','Vary':'Cookie','X-Content-Type-Options':'nosniff','Accept-Ranges':'bytes','ETag':meta.httpEtag});
+ const headers=new Headers({'Content-Type':types.includes(type)?type:'audio/webm','Cache-Control':'private, no-store','Vary':'Cookie','X-Content-Type-Options':'nosniff','Content-Security-Policy':"default-src 'none'; sandbox",'Accept-Ranges':'bytes','ETag':meta.httpEtag});
  const range=req.headers.get('range');let offset=0,length=meta.size,status=200;
  // Single byte ranges cover Safari's initial probe and subsequent seeking.
  if(range&&(!req.headers.has('if-range')||req.headers.get('if-range')===meta.httpEtag)){
