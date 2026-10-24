@@ -1153,3 +1153,28 @@ assert(!JSON.stringify(ownerRoles.reviewerInvitations).includes('authority'),'ow
 assert(sql.prepare("SELECT id FROM moderation_audit WHERE action='accept_reviewer_invitation' AND actor='role-accept'").get());
 assert(sql.prepare("SELECT id FROM moderation_audit WHERE action='decline_reviewer_invitation' AND actor='role-decline'").get());
 console.log('Reviewer invitation consent, membership privacy, expiry, cancellation, owner change, account mismatch, replay, race guards and deletion passed.');
+
+// Moderation hides stick until review, and reviewers cannot lock out the owner or each other.
+sql.prepare("DELETE FROM safety_events WHERE actor='referee'").run();
+for(const who of ['guard-mod-a','guard-mod-b','hidden-target','hidden-reporter']){assert.equal((await post(who,{action:'profile',profile:draft(who)})).status,200);assert.equal((await review({action:'admit',target:who,reason:'Reviewed adult eligibility for moderation guard test',adultReviewed:true})).status,200);}
+for(const who of ['guard-mod-a','guard-mod-b']){assert.equal((await review({action:'grant_moderator',target:who,reason:'Appoint reviewer for moderation guard test'})).status,200);assert.equal((await notificationPost(who,{action:'respond_reviewer_invitation',invitation:sql.prepare('SELECT id FROM reviewer_invitations WHERE member=?').get(who).id,accept:true})).status,200);}
+const reportOn=async target=>{assert.equal((await post('hidden-reporter',{action:'block',target})).status,200);const r=await post('hidden-reporter',{action:'report',target,reason:'Other',details:'Moderation guard regression test.'});assert.equal(r.status,200);return r.data.receipt;};
+const hiddenCase=await reportOn('hidden-target');
+assert.equal((await review({action:'hide_profile',report:hiddenCase,target:'hidden-target',reason:'Hide while the report is reviewed'},'guard-mod-a')).status,200);
+assert.equal((await get('hidden-target')).data.me.active,false);
+assert.equal((await post('hidden-target',{action:'visibility',active:true})).status,403,'a member cannot resume a profile a reviewer hid');
+assert.equal((await post('hidden-target',{action:'delete'})).status,200);assert.equal((await post('hidden-target',{action:'profile',profile:{...draft('hidden-target'),active:true}})).status,200);
+assert.equal((await get('hidden-target')).data.me.active,false,'deleting and recreating a profile does not clear a moderation hide');
+assert.equal((await review({action:'restore',report:hiddenCase,target:'hidden-target',reason:'Review complete; profile may be shown again'},'guard-mod-a')).status,200);
+assert.equal((await post('hidden-target',{action:'visibility',active:true})).status,200,'restore lets the member resume');assert.equal((await get('hidden-target')).data.me.active,true);
+assert.equal((await review({action:'restore',report:hiddenCase,target:'hidden-target',reason:'Nothing left to restore here'},'guard-mod-a')).status,403,'restore requires a restriction or hide');
+const reviewerCase=await reportOn('guard-mod-b');
+for(const action of ['restrict','suspend','ban','hide_profile'])assert.equal((await review({action,report:reviewerCase,target:'guard-mod-b',reason:'Reviewer acting against a peer'},'guard-mod-a')).status,403,`a reviewer cannot ${action} another reviewer`);
+assert.equal((await review({action:'suspend',report:reviewerCase,target:'guard-mod-b',reason:'Owner suspends a reviewer'})).status,200,'the owner can still act on reviewers');
+assert.equal((await review({action:'restore',report:reviewerCase,target:'guard-mod-b',reason:'Owner restores the reviewer'})).status,200);
+const ownerCase=await reportOn('referee');
+assert.equal((await review({action:'ban',report:ownerCase,target:'referee',reason:'Reviewer bans the configured owner'},'guard-mod-a')).status,200);
+as('referee');assert.equal((await moderation.GET()).status,200,'a banned owner keeps review access');
+assert.equal((await review({action:'restore',report:ownerCase,target:'referee',reason:'Owner reverses the ban on their account'})).status,200);
+assert.equal(sql.prepare("SELECT status FROM safety_accounts WHERE id='referee'").get().status,'admitted');
+console.log('Sticky moderation hides and reviewer lockout guards passed.');
