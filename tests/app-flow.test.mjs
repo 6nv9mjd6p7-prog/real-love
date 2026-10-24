@@ -1191,3 +1191,16 @@ assert.notEqual(await longRevision(),latestOnly,'a quoted message outside the wi
 const beforeNew=await longRevision();insertLong.run('long-251','long-chat','long-b','Newest',new Date().toISOString(),'');
 assert.notEqual(await longRevision(),beforeNew,'new messages change the revision');
 console.log('Bounded conversation revision windows passed.');
+
+// Retention cleanup, current push roles and private caching for report responses.
+const {cleanup:retentionCleanup}=await import(safetyUrl);
+sql.prepare('INSERT INTO location_selections (token,member,place,expires) VALUES (?,?,?,?)').run('stale-token','location-idle','{}',new Date(Date.now()-60000).toISOString());
+sql.prepare('INSERT INTO location_selections (token,member,place,expires) VALUES (?,?,?,?)').run('live-token','location-idle','{}',new Date(Date.now()+600000).toISOString());
+await retentionCleanup();
+assert.deepEqual(sql.prepare("SELECT token FROM location_selections WHERE member='location-idle'").all().map(r=>r.token),['live-token'],'scheduled cleanup removes expired location tokens for members who never search again');
+const pushRole=async(who,stored)=>{sql.prepare('INSERT OR REPLACE INTO push_subscriptions (endpoint,member,updated,reviewer) VALUES (?,?,?,?)').run('https://fcm.googleapis.com/fcm/send/'+who,who,new Date().toISOString(),stored);sql.prepare('DELETE FROM safety_events WHERE actor=?').run(who);as(who);assert.equal((await notificationsApi.GET()).status,200);return sql.prepare('SELECT reviewer FROM push_subscriptions WHERE member=?').get(who).reviewer;};
+assert.equal(await pushRole('alice',2),0,'a former owner stops receiving owner review alerts once their role is re-read');
+assert.equal(await pushRole('referee',0),2,'the configured owner is flagged for owner review alerts');
+as(null);const anonymousReport=await reports.POST(request({action:'report',target:'alice',reason:'Other',details:'Signed out.'}));
+assert.equal(anonymousReport.status,401);assert.equal(anonymousReport.headers.get('Cache-Control'),'no-store','report errors are never cached');
+console.log('Retention cleanup, push role refresh and report caching headers passed.');
