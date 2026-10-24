@@ -1016,3 +1016,14 @@ body{font-family:Arial,Helvetica,sans-serif;color:var(--ink);background:var(--bg
 
 /* Match the canonical Site's readable default profile action color. */
 .app-shell .content .profile-screen .profile-section-card .profile-section-action{color:#e3dcff!important}
+
+
+/* Keep the public practice-chat Send action visible on short phone viewports.
+   Retain the join action and keep the connection context available to scroll. */
+@media(max-width:760px) and (max-height:620px){
+ html:not([data-native-platform]) .app-shell:has(.sample-chat-screen) .entry-sign-in{min-height:40px;margin:0 0 2px;padding:0}
+ html:not([data-native-platform]) .app-shell:has(.sample-chat-screen) .entry-sign-in>span{display:none}
+ html:not([data-native-platform]) .app-shell:has(.sample-chat-screen) .entry-sign-in>a{min-height:40px;padding:6px 8px;font-size:.7rem}
+ html:not([data-native-platform]) .sample-chat-context{max-height:72px;padding:4px 8px}
+ html:not([data-native-platform]) .sample-chat-composer{padding-block:5px}
+}
