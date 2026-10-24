@@ -1,0 +1,1 @@
+ALTER TABLE `safety_accounts` ADD `hidden` integer DEFAULT 0 NOT NULL;

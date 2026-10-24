@@ -1,5 +1,5 @@
 import ts from 'typescript';
-import {readFileSync} from 'node:fs';
+import {readFileSync,readdirSync} from 'node:fs';
 import {runInNewContext} from 'node:vm';
 import assert from 'node:assert/strict';
 import {createHash} from 'node:crypto';
@@ -79,3 +79,7 @@ historyVersion='two';const changedWindow=await readMessageWindow(historyApi,{act
 
 let notificationCursor=4;const circleWindowApi=async input=>input.knownRevision?{unchanged:true,revision:'same',readCursor:notificationCursor}:{messages:[{id:'circle-note'}],hasMore:false,cursor:1,revision:'same',readCursor:notificationCursor};
 const circleWindow=await readMessageWindow(circleWindowApi,{action:'conversation',circle:'circle-scope'},null);notificationCursor=5;const refreshedCircleWindow=await readMessageWindow(circleWindowApi,{action:'conversation',circle:'circle-scope'},null);assert.equal(refreshedCircleWindow.readCursor,5,'fresh circle notification cursor survives unchanged-message caching');assert.equal(refreshedCircleWindow.messages,circleWindow.messages,'unchanged messages retain their existing history');
+// Server queries must bind RULES_VERSION; a copied literal silently diverges when the rules change.
+const rulesVersion=readFileSync('app/rules.ts','utf8').match(/RULES_VERSION='([^']+)'/)[1];
+const appSources=readdirSync('app',{recursive:true}).filter(f=>/\.tsx?$/.test(f)&&f!=='rules.ts');
+for(const file of appSources)assert(!readFileSync('app/'+file,'utf8').includes(rulesVersion),`app/${file} must use RULES_VERSION instead of the literal ${rulesVersion}`);
