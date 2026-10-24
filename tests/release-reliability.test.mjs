@@ -83,3 +83,6 @@ const circleWindow=await readMessageWindow(circleWindowApi,{action:'conversation
 const rulesVersion=readFileSync('app/rules.ts','utf8').match(/RULES_VERSION='([^']+)'/)[1];
 const appSources=readdirSync('app',{recursive:true}).filter(f=>/\.tsx?$/.test(f)&&f!=='rules.ts');
 for(const file of appSources)assert(!readFileSync('app/'+file,'utf8').includes(rulesVersion),`app/${file} must use RULES_VERSION instead of the literal ${rulesVersion}`);
+// The client reports its oldest loaded message so the server can bound the revision to that window.
+const floorInputs=[];await readMessageWindow(async input=>{floorInputs.push(input);return {messages:[],cursor:null,hasMore:false,revision:'r'};},{action:'messages',connection:'floor-scope'},7);
+assert.equal(floorInputs[0].revisionFloor,7,'refreshes send the loaded history floor');

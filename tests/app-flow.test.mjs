@@ -1173,3 +1173,21 @@ as('referee');assert.equal((await moderation.GET()).status,200,'a banned owner k
 assert.equal((await review({action:'restore',report:ownerCase,target:'referee',reason:'Owner reverses the ban on their account'})).status,200);
 assert.equal(sql.prepare("SELECT status FROM safety_accounts WHERE id='referee'").get().status,'admitted');
 console.log('Sticky moderation hides and reviewer lockout guards passed.');
+
+// Conversation revisions cover only the window a client can display, so polling cost stays bounded.
+const {messageRevision}=await import(revisionUrl);
+const insertLong=sql.prepare("INSERT INTO messages (id,connection,sender,body,created,reply_to) VALUES (?,?,?,?,?,?)");
+for(let i=1;i<=250;i++)insertLong.run('long-'+i,'long-chat',i%2?'long-a':'long-b','Message '+i,new Date(Date.UTC(2026,0,1,0,0,i)).toISOString(),i===249?'long-3':'');
+const longRows=sql.prepare("SELECT rowid,id FROM messages WHERE connection='long-chat' ORDER BY rowid").all(),rowOf=id=>longRows.find(r=>r.id===id).rowid;
+const longRevision=(floor=0)=>messageRevision(DB,'direct','long-chat','long-a',0,false,floor);
+const latestOnly=await longRevision();
+sql.prepare("UPDATE messages SET edit_count=1 WHERE id='long-10'").run();
+assert.equal(await longRevision(),latestOnly,'changes older than the displayed window do not invalidate the latest page');
+assert.notEqual(await longRevision(rowOf('long-1')),latestOnly,'a client that loaded older pages still sees their changes');
+const withFloor=await longRevision(rowOf('long-1'));sql.prepare("INSERT INTO message_reactions (kind,scope,message,member,emoji) VALUES ('direct','long-chat','long-20','long-b',?)").run('👍');
+assert.notEqual(await longRevision(rowOf('long-1')),withFloor,'reactions on loaded older messages change the revision');assert.equal(await longRevision(),latestOnly,'reactions outside the window are not hashed');
+sql.prepare("UPDATE messages SET deleted_at='2026-01-02T00:00:00.000Z' WHERE id='long-3'").run();
+assert.notEqual(await longRevision(),latestOnly,'a quoted message outside the window still invalidates replies that show it');
+const beforeNew=await longRevision();insertLong.run('long-251','long-chat','long-b','Newest',new Date().toISOString(),'');
+assert.notEqual(await longRevision(),beforeNew,'new messages change the revision');
+console.log('Bounded conversation revision windows passed.');
