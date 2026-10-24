@@ -5,8 +5,9 @@ import { Browser } from '@capacitor/browser';
 import { Capacitor, type PluginListenerHandle } from '@capacitor/core';
 import { Keyboard, KeyboardResize, KeyboardStyle } from '@capacitor/keyboard';
 import { StatusBar, Style } from '@capacitor/status-bar';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useSyncExternalStore } from 'react';
 import { nativeDestination } from './native-links';
+import { keyboardDiagnosticsEnabled, keyboardDiagnosticsServerSnapshot, subscribeKeyboardDiagnostics } from './keyboard-diagnostics-store';
 
 function openDeepLink(value: string) {
   const destination = nativeDestination(value);
@@ -15,22 +16,13 @@ function openDeepLink(value: string) {
 }
 
 export default function NativeRuntime() {
-  const [diagnosticMode, setDiagnosticMode] = useState(false);
+  const diagnosticMode = useSyncExternalStore(subscribeKeyboardDiagnostics, keyboardDiagnosticsEnabled, keyboardDiagnosticsServerSnapshot);
   const [diagnosticOpen, setDiagnosticOpen] = useState(false);
   const [diagnosticRows, setDiagnosticRows] = useState<Array<Record<string, unknown>>>([]);
   const [diagnosticCopyState, setDiagnosticCopyState] = useState('');
 
   useEffect(() => {
-    setDiagnosticMode(new URLSearchParams(window.location.search).get('keyboardDebug') === '1' || sessionStorage.getItem('real-love-keyboard-diagnostics') === '1');
-  }, []);
-
-  useEffect(() => {
-    if (!Capacitor.isNativePlatform()) {
-      if (new URLSearchParams(window.location.search).get('keyboardDebug') === '1') {
-        setDiagnosticRows([{ event: 'Native Capacitor bridge unavailable in this browser.' }]);
-      }
-      return;
-    }
+    if (!Capacitor.isNativePlatform()) return;
 
     document.documentElement.dataset.nativePlatform = Capacitor.getPlatform();
     const handles: PluginListenerHandle[] = [];
@@ -41,7 +33,7 @@ export default function NativeRuntime() {
     let viewportFrame = 0;
     let settleTimer = 0;
     let blurTimer = 0;
-    let diagnosticsEnabled = new URLSearchParams(window.location.search).get('keyboardDebug') === '1' || sessionStorage.getItem('real-love-keyboard-diagnostics') === '1';
+    let diagnosticsEnabled = keyboardDiagnosticsEnabled();
     const diagnosticStartedAt = performance.now();
     const rectMetrics = (element: Element | null) => {
       if (!element) return null;
@@ -78,7 +70,6 @@ export default function NativeRuntime() {
     const onDiagnosticsToggle = (event: Event) => {
       const enabled = (event as CustomEvent<{ enabled: boolean }>).detail.enabled;
       diagnosticsEnabled = enabled;
-      setDiagnosticMode(enabled);
       if (enabled) recordDiagnostic('diagnostics started');
       else setDiagnosticRows([]);
     };
@@ -298,9 +289,13 @@ export default function NativeRuntime() {
 
   if (!diagnosticMode) return null;
 
+  const visibleDiagnosticRows = Capacitor.isNativePlatform()
+    ? diagnosticRows
+    : [{ event: 'Native Capacitor bridge unavailable in this browser.' }];
+
   const copyDiagnostics = async () => {
     try {
-      await navigator.clipboard.writeText(JSON.stringify(diagnosticRows, null, 2));
+      await navigator.clipboard.writeText(JSON.stringify(visibleDiagnosticRows, null, 2));
       setDiagnosticCopyState('Copied');
     } catch {
       setDiagnosticCopyState('Copy unavailable; take a screenshot of Details.');
@@ -314,6 +309,6 @@ export default function NativeRuntime() {
       <button type="button" onClick={() => void copyDiagnostics()}>Copy</button>
     </div>
     {diagnosticCopyState && <p role="status">{diagnosticCopyState}</p>}
-    {diagnosticOpen && <><p>No message text is recorded. Reproduce the issue, then use Copy or take a screenshot.</p><ol className="keyboard-diagnostics-list">{diagnosticRows.map((row, index) => <li key={index}><strong>{String(row.time || '')} {String(row.event || '')}</strong><pre>{JSON.stringify(row, null, 2)}</pre></li>)}</ol></>}
+    {diagnosticOpen && <><p>No message text is recorded. Reproduce the issue, then use Copy or take a screenshot.</p><ol className="keyboard-diagnostics-list">{visibleDiagnosticRows.map((row: Record<string, unknown>, index) => <li key={index}><strong>{String(row.time || '')} {String(row.event || '')}</strong><pre>{JSON.stringify(row, null, 2)}</pre></li>)}</ol></>}
   </aside>;
 }
