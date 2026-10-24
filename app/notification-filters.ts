@@ -23,6 +23,11 @@ export function unreadNotificationCount<T extends {kind:string;read:number}>(ite
  return filterNotifications(items,filter).filter(item=>!item.read).length;
 }
 
+export function notificationFilterAnnouncement(filter:NotificationFilter,count:number):string{
+ const label=notificationFilterOptions.find(option=>option.key===filter)?.label||'All';
+ return `${label} activity: ${count} notification${count===1?'':'s'}.`;
+}
+
 // Compact message activity only; preserve each event and keep consent/safety alerts separate.
 export function groupMessageNotifications<T extends {id:string;kind:string;url:string;available?:boolean}>(items:T[]):{key:string;items:T[]}[]{
  const groups:{key:string;items:T[]}[]=[],byConversation=new Map<string,{key:string;items:T[]}>();

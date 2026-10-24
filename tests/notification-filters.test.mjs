@@ -3,7 +3,7 @@ import {readFileSync} from 'node:fs';
 import assert from 'node:assert/strict';
 
 const code=ts.transpileModule(readFileSync('app/notification-filters.ts','utf8'),{compilerOptions:{module:ts.ModuleKind.ESNext}}).outputText;
-const {groupMessageNotifications,filterNotifications,notificationCategory,notificationFilterOptions,unreadNotificationCount}=await import('data:text/javascript;base64,'+Buffer.from(code).toString('base64'));
+const {groupMessageNotifications,filterNotifications,notificationCategory,notificationFilterAnnouncement,notificationFilterOptions,unreadNotificationCount}=await import('data:text/javascript;base64,'+Buffer.from(code).toString('base64'));
 const items=[
  {kind:'message',read:0,id:'m1'},
  {kind:'reaction',read:1,id:'r1'},
@@ -23,6 +23,8 @@ assert.deepEqual(filterNotifications(items,'account').map(x=>x.id),['a1','a2']);
 assert.equal(unreadNotificationCount(items,'chats'),1);
 assert.equal(unreadNotificationCount(items,'circles'),1);
 assert.equal(notificationCategory('new_future_kind'),'account','new kinds remain visible in the account filter');
+assert.equal(notificationFilterAnnouncement('all',8),'All activity: 8 notifications.');
+assert.equal(notificationFilterAnnouncement('account',1),'Account activity: 1 notification.');
 console.log('Notification quick filters preserve all items and count unread activity by category');
 
 const alerts=[

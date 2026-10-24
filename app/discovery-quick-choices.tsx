@@ -1,5 +1,6 @@
 'use client';
 import type {ReactNode} from 'react';
+import {Check} from 'lucide-react';
 
 // Quick choices narrow the same preferences as Filters; unrelated rules stay intact.
 export default function DiscoveryQuickChoices({shared,location,onlineAvailable,onShared,onLocation,children}:{
@@ -8,9 +9,9 @@ export default function DiscoveryQuickChoices({shared,location,onlineAvailable,o
 }){
  return <div className="discovery-quick-choices">
   <div className="discovery-quick-buttons" role="group" aria-label="Quick discovery choices">
-   <button type="button" aria-pressed={shared} onClick={onShared}>Shared interests</button>
-   <button type="button" aria-pressed={location==='local'} onClick={()=>onLocation(location==='local'?'any':'local')}>Nearby</button>
-   <button type="button" aria-pressed={location==='online'} disabled={!onlineAvailable} onClick={()=>onLocation(location==='online'?'any':'online')}>Online-friendly</button>
+   <button type="button" aria-pressed={shared} onClick={onShared}>{shared&&<Check size={15} aria-hidden="true"/>}Shared interests</button>
+   <button type="button" aria-pressed={location==='local'} onClick={()=>onLocation(location==='local'?'any':'local')}>{location==='local'&&<Check size={15} aria-hidden="true"/>}Nearby</button>
+   <button type="button" aria-pressed={location==='online'} disabled={!onlineAvailable} onClick={()=>onLocation(location==='online'?'any':'online')}>{location==='online'&&<Check size={15} aria-hidden="true"/>}Online-friendly</button>
   </div>
   {!onlineAvailable&&<p className="field-help">To discover online-friendly people, enable online connections in My profile.</p>}
   <details className="discovery-topic-choices"><summary>Explore your interests</summary>{children}</details>

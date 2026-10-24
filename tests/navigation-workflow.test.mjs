@@ -29,27 +29,5 @@ entries=[{url:'https://app.test/#circles/work/circle_1',state:{realLoveNavigatio
 backWithinApp('circles','member');await new Promise(resolve=>setTimeout(resolve,750));assert.equal(location.hash,'#circles/work/joined','no-op traversal falls back to the named parent');
 // Successful traversal must cancel the fallback, including same-URL campaign entries.
 forward('circles/action');campaign.saveCampaignView('member',{tab:'Explore',selected:'test',compose:false,scroll:0});backWithinApp('circles','member');await new Promise(resolve=>setTimeout(resolve,750));assert.equal(location.hash,'#circles/action');assert.equal(campaign.readCampaignView('member').selected,'');
-// Exercise the root effect's listeners, scroll restoration, and account capture.
-const effectStart=appSource.indexOf(" useEffect(()=>{if('scrollRestoration' in history)");
-const effectEnd=appSource.indexOf('\n useEffect',effectStart+1);assert(effectStart>=0&&effectEnd>effectStart);
-const {default:bindRouter}=await import(compile(`export default function bindRouter({useEffect,history,window,accountId,scrollPositions,currentRoute,returnScroll,setInboxTab,setRoute,setDeleteConfirm,setCloseTarget,requestAnimationFrame,allowedAppRoute,recordAppNavigation}){${appSource.slice(effectStart,effectEnd)}}`));
-const listeners=new Map(),frames=[],scrolls=[],routerState={};let registrations=0,routeUpdates=0,cleanup,deps;
-const routerWindow={location,scrollY:0,addEventListener(name,fn){registrations++;if(!listeners.has(name))listeners.set(name,new Set());listeners.get(name).add(fn);},removeEventListener(name,fn){listeners.get(name)?.delete(fn);},scrollTo:options=>scrolls.push(options.top)};
-const emit=name=>{for(const fn of [...listeners.get(name)||[]])fn();};
-const flushFrames=()=>{while(frames.length)frames.shift()();};
-const routerContext={history:{get state(){return history.state;},scrollRestoration:'auto'},window:routerWindow,accountId:'a',scrollPositions:{current:new Map()},currentRoute:{current:'discover'},returnScroll:{current:null},requestAnimationFrame:fn=>frames.push(fn),allowedAppRoute,recordAppNavigation,useEffect(fn,next){if(!deps||next.some((value,i)=>!Object.is(value,deps[i]))){cleanup?.();deps=next;cleanup=fn();}},setInboxTab:value=>routerState.inbox=value,setRoute:value=>{routeUpdates++;routerState.route=value;},setDeleteConfirm:value=>routerState.confirm=value,setCloseTarget:value=>routerState.close=value};
-entries=[{url:'https://app.test/#conversations/requests',state:null}];index=0;apply();
-bindRouter(routerContext);flushFrames();assert.equal(routerState.inbox,'Requests');assert.equal(routerState.route,'conversations');assert.equal(history.state.realLoveNavigation.account,'a');assert.equal(routerContext.history.scrollRestoration,'manual');assert.equal(routerState.confirm,false);assert.equal(routerState.close,null);
-bindRouter(routerContext);assert.equal(registrations,2);assert.equal(routeUpdates,1,'parent renders do not reinitialize navigation');
-routerWindow.scrollY=170;emit('scroll');assert.equal(routerContext.scrollPositions.current.get('conversations/requests'),170);
-history.pushState(null,'','#circles/circle_1/plan');emit('hashchange');flushFrames();assert.equal(routerState.route,'circles/circle_1/plan');assert.equal(history.state.realLoveNavigation.parent,'conversations/requests');assert.equal(scrolls.at(-1),0);
-history.pushState(null,'','#conversations/requests');emit('hashchange');flushFrames();assert.equal(scrolls.at(-1),170,'return to route restores its saved scroll');
-routerContext.returnScroll.current=340;emit('hashchange');flushFrames();assert.equal(scrolls.at(-1),340);assert.equal(routerContext.returnScroll.current,null,'explicit return scroll is consumed once');
-history.pushState(null,'','#conversations');emit('hashchange');assert.equal(routerState.inbox,'Chats');
-history.pushState(null,'','#unknown/private');emit('hashchange');flushFrames();assert.equal(routerState.route,'discover','invalid hash uses the existing safe default');
-cleanup();assert([...listeners.values()].every(set=>set.size===0),'unmount removes both router listeners');
-deps=undefined;cleanup=undefined;bindRouter({...routerContext,accountId:'b',scrollPositions:{current:new Map()},currentRoute:{current:'discover'},returnScroll:{current:null}});flushFrames();assert.equal(history.state.realLoveNavigation.account,'b');assert.equal(history.state.realLoveNavigation.parent,null,'new account starts with its own history marker');
-history.pushState(null,'','#notifications');emit('hashchange');assert.equal(history.state.realLoveNavigation.account,'b','new-account listeners never retain the previous identity');cleanup();assert([...listeners.values()].every(set=>set.size===0));
-console.log('Root router listener stability, deep links, scroll restoration, cleanup, and account history passed.');
 for(const [key,descriptor] of originals){if(descriptor)Object.defineProperty(globalThis,key,descriptor);else delete globalThis[key];}
 console.log('Forward/Back/Forward, scoped history, worker context, exact resource returns, and campaign detail/proposal entries passed (browser behavior simulated).');

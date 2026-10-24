@@ -1,41 +1,29 @@
 'use client';
 import { Capacitor } from '@capacitor/core';
-import { useEffect, useState, useSyncExternalStore } from 'react';
+import { useEffect, useState } from 'react';
 import { useNativeApp } from './use-native-app';
 type InstallEvent = Event & { prompt: () => Promise<void>; userChoice: Promise<{ outcome: string }> };
-const subscribeCapabilities = () => () => {};
-const iosSnapshot = () => /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
-const installedSnapshot = () => window.matchMedia('(display-mode: standalone)').matches || Boolean((navigator as Navigator & { standalone?: boolean }).standalone);
-const serverInstalled = () => true;
-const serverIos = () => false;
-function subscribeDisplayMode(onChange: () => void) {
-  if (Capacitor.isNativePlatform()) return () => {};
-  const display = window.matchMedia('(display-mode: standalone)');
-  display.addEventListener('change', onChange);
-  return () => display.removeEventListener('change', onChange);
-}
 export default function InstallApp() {
   const nativeApp = useNativeApp();
   const [prompt, setPrompt] = useState<InstallEvent | null>(null);
-  // The install event may arrive before the browser's standalone flags update.
-  const [installed, setInstalled] = useState(false);
+  const [installed, setInstalled] = useState(true);
   const [open, setOpen] = useState(false);
-  const ios = useSyncExternalStore(subscribeCapabilities, iosSnapshot, serverIos);
-  const standalone = useSyncExternalStore(subscribeDisplayMode, installedSnapshot, serverInstalled);
+  const [ios, setIos] = useState(false);
   const [notice, setNotice] = useState('');
   const [busy, setBusy] = useState(false);
   useEffect(() => {
     if (Capacitor.isNativePlatform()) return;
     const display = window.matchMedia('(display-mode: standalone)');
-    // Later display changes make the browser snapshot authoritative again.
-    const displayChanged = () => setInstalled(false);
+    const check = () => setInstalled(display.matches || Boolean((navigator as Navigator & { standalone?: boolean }).standalone));
+    check();
+    setIos(/iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1));
     const capture = (event: Event) => { event.preventDefault(); setPrompt(event as InstallEvent); };
     const done = () => { setInstalled(true); setPrompt(null); setOpen(false); };
     window.addEventListener('beforeinstallprompt', capture);
     window.addEventListener('appinstalled', done);
-    display.addEventListener('change', displayChanged);
+    display.addEventListener('change', check);
     if ('serviceWorker' in navigator && window.isSecureContext) navigator.serviceWorker.register('/sw.js', { scope: '/', updateViaCache: 'none' }).catch(() => {});
-    return () => { window.removeEventListener('beforeinstallprompt', capture); window.removeEventListener('appinstalled', done); display.removeEventListener('change', displayChanged); };
+    return () => { window.removeEventListener('beforeinstallprompt', capture); window.removeEventListener('appinstalled', done); display.removeEventListener('change', check); };
   }, [nativeApp]);
   async function install() {
     if (!prompt || busy) return;
@@ -46,7 +34,7 @@ export default function InstallApp() {
   }
   // Installation is discoverable immediately; never depend on a one-time engagement event.
   // Installed web apps and the native shell already have a home-screen entry.
-  if (nativeApp || installed || standalone) return null;
+  if (nativeApp || installed) return null;
   return <section className="install-app" aria-label="Install Real Love">
     <button className="secondary" aria-label={open ? 'Close install guide' : 'Add Real Love to your phone'} aria-controls="real-love-install-guide" aria-expanded={open} onClick={() => setOpen(!open)}><span className="utility-label-full">{open ? 'Close install guide' : 'Add Real Love to your phone'}</span><span className="utility-label-short" aria-hidden="true">{open ? 'Close guide' : 'Add to phone'}</span></button>
     {open && <div className="install-guide" id="real-love-install-guide">

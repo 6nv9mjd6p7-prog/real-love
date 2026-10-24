@@ -1,6 +1,6 @@
 import {readFileSync} from 'node:fs';
 import assert from 'node:assert/strict';
-const layout=readFileSync('app/layout.tsx','utf8'),css=readFileSync('app/design-system.css','utf8'),globalCss=readFileSync('app/globals.css','utf8'),composer=readFileSync('app/chat-composer.tsx','utf8'),nativeRuntime=readFileSync('app/native-runtime.tsx','utf8'),capacitorConfig=readFileSync('capacitor.config.ts','utf8'),app=readFileSync('app/love-app.tsx','utf8'),nav=readFileSync('app/main-navigation.tsx','utf8'),loading=readFileSync('app/loading-space.tsx','utf8');
+const layout=readFileSync('app/layout.tsx','utf8'),css=readFileSync('app/design-system.css','utf8'),globalCss=readFileSync('app/globals.css','utf8'),screenPolish=readFileSync('app/screen-polish.css','utf8'),composer=readFileSync('app/chat-composer.tsx','utf8'),nativeRuntime=readFileSync('app/native-runtime.tsx','utf8'),capacitorConfig=readFileSync('capacitor.config.ts','utf8'),app=readFileSync('app/love-app.tsx','utf8'),nav=readFileSync('app/main-navigation.tsx','utf8'),loading=readFileSync('app/loading-space.tsx','utf8');
 import ts from 'typescript';
 assert(layout.indexOf('<div className="site-utility"')<layout.indexOf('{children}'),'site actions precede app content');
 assert(css.includes('repeat(5,minmax(0,1fr))'),'mobile navigation reserves equal space for five destinations');
@@ -30,6 +30,19 @@ assert(composer.includes("root.hasAttribute('data-native-platform')")&&composer.
 assert(capacitorConfig.includes('resize: KeyboardResize.Native')&&nativeRuntime.includes('Keyboard.setResizeMode({ mode: KeyboardResize.Native })')&&nativeRuntime.includes("Keyboard.addListener('keyboardWillShow'")&&nativeRuntime.includes("Keyboard.addListener('keyboardDidHide'"),'native chat uses Capacitor keyboard resizing and native keyboard visibility events');
 assert(globalCss.includes('html[data-native-platform] .app-shell:has(.conversation-screen,.circle-conversation){display:flex;height:auto;min-height:100dvh;padding-top:0;padding-bottom:0;position:static;overflow:visible}')&&globalCss.includes('html[data-native-platform] .app-shell:has(.conversation-screen,.circle-conversation)>.sidebar{display:none!important}'),'native chat stays in document flow and keeps its focused navigation');
 assert(css.includes('prefers-reduced-motion:reduce'),'loading motion respects reduced-motion preference');
+assert(globalCss.includes('forced-colors:active')&&globalCss.includes('.app-shell [role=radio][aria-checked=true]{outline:2px solid Highlight'),'custom selected radio states remain visible in forced-colors mode');
+assert(globalCss.includes('#main-content:focus-visible{outline:3px solid var(--focus-ring);outline-offset:3px')&&!globalCss.includes('#main-content:focus{outline:none}')&&!globalCss.includes('.content:focus{outline:0}'),'keyboard focus remains visible after navigation reaches the main content');
+assert(screenPolish.includes('.eyebrow,.nav-label{color:var(--muted)}'),'small screen headings and navigation labels use the accessible muted text token');
+assert(css.includes('.app-shell .circle-search-field>input::placeholder{color:var(--muted);opacity:1}'),'circle search placeholder uses the accessible muted text token');
+assert(screenPolish.includes('.suggestion-panel>summary:focus-visible{outline:3px solid var(--focus-ring);outline-offset:2px}')&&screenPolish.includes('.circle-preview-dialog :is(button,[role=tab],.circle-preview-close):focus-visible{outline:3px solid var(--focus-ring);outline-offset:2px}')&&screenPolish.includes('.app-shell :is(.circles-overview,.circle-workspace) :is(button,a,input,select,textarea,summary):focus-visible{outline:3px solid var(--focus-ring);outline-offset:2px}'),'Circles keyboard focus indicators use a solid, high-contrast focus color');
+const mutedHex=globalCss.match(/--muted:(#[0-9a-f]{6})/i)?.[1],bgHex=globalCss.match(/--bg:(#[0-9a-f]{6})/i)?.[1];
+const focusHex=css.match(/--focus-ring:(#[0-9a-f]{6})/i)?.[1];
+const luminance=hex=>{const rgb=hex.slice(1).match(/../g).map(value=>parseInt(value,16)/255).map(value=>value<=.04045?value/12.92:((value+.055)/1.055)**2.4);return .2126*rgb[0]+.7152*rgb[1]+.0722*rgb[2]};
+for(const background of ['#ffffff',bgHex]){const values=[luminance(mutedHex),luminance(background)].sort((a,b)=>b-a);assert((values[0]+.05)/(values[1]+.05)>=4.5,`muted text has 4.5:1 contrast against ${background}`)}
+for(const background of ['#ffffff','#f5f6fb']){const values=[luminance(focusHex),luminance(background)].sort((a,b)=>b-a);assert((values[0]+.05)/(values[1]+.05)>=3,`keyboard focus indicators have 3:1 contrast against ${background}`)}
+assert(css.includes('--border-strong:#8a8c9e')&&screenPolish.includes('--border-strong:#8a8c9e'),'interactive control borders use the stronger accessible boundary token');
+const controlBorder=screenPolish.match(/--border-strong:(#[0-9a-f]{6})/i)?.[1],appBg=screenPolish.match(/--bg:(#[0-9a-f]{6})/i)?.[1];
+for(const background of ['#ffffff',appBg]){const values=[luminance(controlBorder),luminance(background)].sort((a,b)=>b-a);assert((values[0]+.05)/(values[1]+.05)>=3,`control borders have 3:1 contrast against ${background}`)}
 assert(nav.includes("label:'Settings'"),'privacy settings share the main navigation across layouts');
 assert(!app.includes('support-link'),'support is not duplicated in a second navigation location');
 assert(!app.includes('support-section'),'support is not repeated as a settings panel');

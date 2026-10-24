@@ -7,7 +7,6 @@ export async function messageRevision(
   viewer: string,
   historyAfter = 0,
   includeRequests = false,
-  windowFloor = 0,
 ) {
   // These identifiers come only from the closed kind union, never from request data.
   const table = kind === "direct" ? "messages" : "circle_messages";
@@ -16,27 +15,14 @@ export async function messageRevision(
   const visibleHistory = isCircle
     ? "AND m.rowid>? AND NOT EXISTS (SELECT 1 FROM blocks b WHERE (b.actor=? AND b.target=m.sender) OR (b.actor=m.sender AND b.target=?))"
     : "";
-
-  // Hash only what the client can display: the latest 200-row page (matching the
-  // routes' page queries) or the older pages it already loaded, whichever reaches
-  // further back. Long histories then cost one page per poll, not every message.
-  const pageEdge = await store
-    .prepare(
-      isCircle
-        ? "SELECT m.rowid FROM circle_messages m JOIN profiles p ON p.id=m.sender WHERE m.circle=? AND m.rowid>? ORDER BY m.rowid DESC LIMIT 1 OFFSET 199"
-        : "SELECT rowid FROM messages WHERE connection=? AND sender<>'' ORDER BY rowid DESC LIMIT 1 OFFSET 199",
-    )
-    .bind(...(isCircle ? [scope, historyAfter] : [scope]))
-    .first<{ rowid: number }>();
-  const windowStart = Math.min(pageEdge?.rowid ?? 0, windowFloor || Infinity);
   const messageBindings = isCircle
-    ? [scope, historyAfter, viewer, viewer, windowStart, scope, windowStart]
-    : [scope, windowStart, scope, windowStart];
+    ? [scope, historyAfter, viewer, viewer]
+    : [scope];
 
   // A later join must not reveal edits to messages posted before that member arrived.
   const rows = await store
     .prepare(
-      `SELECT m.rowid,m.id,m.sender,m.edit_count,m.deleted_at,m.reply_to,${isCircle ? 'm.cooperation_status' : "''"} AS cooperation_status,p.active AS sender_active,(SELECT status FROM safety_accounts WHERE id=m.sender) AS sender_status,(m.audio_key<>'' OR m.attachment_key<>'') AS media,json_extract(p.data,'$.name') AS name FROM ${table} m LEFT JOIN profiles p ON p.id=m.sender WHERE m.${column}=? ${visibleHistory} AND (m.rowid>=? OR m.id IN (SELECT q.reply_to FROM ${table} q WHERE q.${column}=? AND q.rowid>=? AND q.reply_to<>'')) ORDER BY m.rowid`,
+      `SELECT m.rowid,m.id,m.sender,m.edit_count,m.deleted_at,m.reply_to,${isCircle ? 'm.cooperation_status' : "''"} AS cooperation_status,p.active AS sender_active,(SELECT status FROM safety_accounts WHERE id=m.sender) AS sender_status,(m.audio_key<>'' OR m.attachment_key<>'') AS media,json_extract(p.data,'$.name') AS name FROM ${table} m LEFT JOIN profiles p ON p.id=m.sender WHERE m.${column}=? ${visibleHistory} ORDER BY m.rowid`,
     )
     .bind(...messageBindings)
     .all();
@@ -45,15 +31,15 @@ export async function messageRevision(
   const visibleReactions = isCircle
     ? await store
         .prepare(
-          `SELECT r.message,r.member,r.emoji FROM message_reactions r WHERE r.kind=? AND r.scope=? AND EXISTS (SELECT 1 FROM circle_messages m WHERE m.id=r.message AND m.circle=? AND m.rowid>? AND m.rowid>=? AND NOT EXISTS (SELECT 1 FROM blocks b WHERE (b.actor=? AND b.target=m.sender) OR (b.actor=m.sender AND b.target=?))) AND NOT EXISTS (SELECT 1 FROM blocks b WHERE (b.actor=? AND b.target=r.member) OR (b.actor=r.member AND b.target=?)) ORDER BY r.message,r.member`,
+          `SELECT r.message,r.member,r.emoji FROM message_reactions r WHERE r.kind=? AND r.scope=? AND EXISTS (SELECT 1 FROM circle_messages m WHERE m.id=r.message AND m.circle=? AND m.rowid>? AND NOT EXISTS (SELECT 1 FROM blocks b WHERE (b.actor=? AND b.target=m.sender) OR (b.actor=m.sender AND b.target=?))) AND NOT EXISTS (SELECT 1 FROM blocks b WHERE (b.actor=? AND b.target=r.member) OR (b.actor=r.member AND b.target=?)) ORDER BY r.message,r.member`,
         )
-        .bind(kind, scope, scope, historyAfter, windowStart, viewer, viewer, viewer, viewer)
+        .bind(kind, scope, scope, historyAfter, viewer, viewer, viewer, viewer)
         .all()
     : await store
         .prepare(
-          "SELECT message,member,emoji FROM message_reactions WHERE kind=? AND scope=? AND message IN (SELECT id FROM messages WHERE connection=? AND rowid>=?) ORDER BY message,member",
+          "SELECT message,member,emoji FROM message_reactions WHERE kind=? AND scope=? ORDER BY message,member",
         )
-        .bind(kind, scope, scope, windowStart)
+        .bind(kind, scope)
         .all();
 
   // Viewer block relationships are part of the view because they hide people and messages.
@@ -75,7 +61,7 @@ export async function messageRevision(
     : { results: [] };
 
   // Activity responses are visible only with the post's admission history and block boundaries.
-  const activityResponses = isCircle ? await store.prepare("SELECT ap.message,ap.member,ap.created,json_extract(p.data,'$.name') AS name FROM circle_activity_participants ap JOIN circle_messages m ON m.id=ap.message JOIN circle_members cm ON cm.circle=m.circle AND cm.member=ap.member JOIN profiles p ON p.id=ap.member JOIN safety_accounts a ON a.id=p.id WHERE m.circle=? AND m.rowid>? AND m.rowid>=? AND m.deleted_at='' AND m.sender<>'' AND cm.status='accepted' AND m.rowid>cm.history_after AND p.active=1 AND a.status='admitted' AND NOT EXISTS (SELECT 1 FROM blocks b WHERE (b.actor=? AND b.target=m.sender) OR (b.actor=m.sender AND b.target=?) OR (b.actor=? AND b.target=ap.member) OR (b.actor=ap.member AND b.target=?)) ORDER BY ap.message,ap.member").bind(scope,historyAfter,windowStart,viewer,viewer,viewer,viewer).all() : {results:[]};
+  const activityResponses = isCircle ? await store.prepare("SELECT ap.message,ap.member,ap.created,json_extract(p.data,'$.name') AS name FROM circle_activity_participants ap JOIN circle_messages m ON m.id=ap.message JOIN circle_members cm ON cm.circle=m.circle AND cm.member=ap.member JOIN profiles p ON p.id=ap.member JOIN safety_accounts a ON a.id=p.id WHERE m.circle=? AND m.rowid>? AND m.deleted_at='' AND m.sender<>'' AND cm.status='accepted' AND m.rowid>cm.history_after AND p.active=1 AND a.status='admitted' AND NOT EXISTS (SELECT 1 FROM blocks b WHERE (b.actor=? AND b.target=m.sender) OR (b.actor=m.sender AND b.target=?) OR (b.actor=? AND b.target=ap.member) OR (b.actor=ap.member AND b.target=?)) ORDER BY ap.message,ap.member").bind(scope,historyAfter,viewer,viewer,viewer,viewer).all() : {results:[]};
 
   // Hash structured, ordered data; callers receive no conversation text or roster details here.
   const bytes = new TextEncoder().encode(

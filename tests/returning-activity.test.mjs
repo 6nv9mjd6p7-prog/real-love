@@ -24,3 +24,8 @@ assert.equal(render({connections:[chat('unavailable','2026-10-11',{available:fal
 const circles=render({circleRequests:2,circleUpdates:3});
 assert.match(circles,/Circle requests/);
 assert(!circles.includes('Circle activity'), 'Prioritize circle decisions without duplicate circle shortcuts');
+
+const appSource=readFileSync('app/love-app.tsx','utf8');
+const discoverTitle=appSource.indexOf('<h1>{exampleMode?');
+const returningSection=appSource.indexOf('<ReturningActivity connections=');
+assert(discoverTitle>=0&&returningSection>discoverTitle,'the Discover page title comes before the Continue connecting section for a clear heading hierarchy');

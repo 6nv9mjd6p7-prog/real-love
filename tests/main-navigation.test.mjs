@@ -20,9 +20,9 @@ assert.deepEqual(buttons.map(b=>b.props.children[1].props.children),['Discover',
 assert.equal(buttons[2].props['aria-current'],'page');assert(buttons.filter(b=>b.props['aria-current']).length===1);
 buttons[2].props.onClick();assert.equal(destination,'circles');
 assert.equal(buttons[0].props.children[0].props.children[1],false,'Discover no longer carries circle requests');
-assert.equal(buttons[2].props['aria-label'],'Circles, 3 Circle requests');
+assert.equal(buttons[2].props['aria-label'],'Circles, 3 circle requests');
 const html=renderToStaticMarkup(React.createElement(Navigation,{current:'circles',onNavigate:()=>{},circleRequests:3}));
-assert(html.includes('aria-label="Main navigation"'));assert(html.includes('aria-label="Circles, 3 Circle requests"'));
+assert(html.includes('aria-label="Main navigation"'));assert(html.includes('aria-label="Circles, 3 circle requests"'));
 assert(html.includes('Settings'),'settings is available in the shared navigation');
 const app=readFileSync('app/love-app.tsx','utf8');
 assert(app.includes("nav('Privacy & settings')"),'settings remains reachable');
@@ -39,3 +39,6 @@ assert(!special.includes('Profiles awaiting approval'),'reviewer badges stay out
 const busyNavigation=renderToStaticMarkup(React.createElement(Navigation,{current:'discover',onNavigate:()=>{},requests:123,unread:101}));
 assert(busyNavigation.includes('>99+</span>'),'large counts do not expand the navigation');
 assert(busyNavigation.includes('Chats, 101 unread messages, 123 connection requests'),'visual capping never truncates the accessible count');
+const singularCounts=renderToStaticMarkup(React.createElement(Navigation,{current:'discover',onNavigate:()=>{},circleRequests:1,requests:1,unread:1}));
+assert(singularCounts.includes('aria-label="Chats, 1 unread message, 1 connection request"'),'single chat counts use singular wording for screen readers');
+assert(singularCounts.includes('aria-label="Circles, 1 circle request"'),'a single circle request is announced with singular wording');

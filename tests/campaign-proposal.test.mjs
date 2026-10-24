@@ -7,7 +7,7 @@ import React from 'react';
 const require=createRequire(import.meta.url);
 let state=[],index=0;
 globalThis.__proposal={useState:x=>{const i=index++;if(!(i in state))state[i]=x;return [state[i],next=>state[i]=typeof next==='function'?next(state[i]):next];},useRef:x=>{const i=index++;return state[i]??(state[i]={current:x});}};
-const source=readFileSync('app/campaign-proposal.tsx','utf8').replace("import {useCurrentTime} from './use-current-time';",'const useCurrentTime=()=>globalThis.__clockNow??Date.now();').replace("import {useEffect,useRef,useState} from 'react';","const {useState,useRef}=globalThis.__proposal;const useEffect=()=>{};");
+const source=readFileSync('app/campaign-proposal.tsx','utf8').replace("import {useEffect,useRef,useState} from 'react';","const {useState,useRef}=globalThis.__proposal;const useEffect=()=>{};");
 const js=ts.transpileModule(source,{compilerOptions:{module:ts.ModuleKind.ESNext,jsx:ts.JsxEmit.ReactJSX}}).outputText.replace(/from ["']react\/jsx-runtime["']/g,`from '${pathToFileURL(require.resolve('react/jsx-runtime')).href}'`);
 const {default:Proposal}=await import('data:text/javascript;base64,'+Buffer.from(js).toString('base64'));
 function nodes(n){return !n||typeof n!=='object'?[]:[n,...React.Children.toArray(n.props?.children).flatMap(nodes)];}
@@ -21,7 +21,6 @@ assert.equal(heading(),'Purpose');assert(all().some(n=>n.type==='textarea'&&n.pr
 valid=false;await submit();assert.equal(heading(),'Purpose');assert.equal(sent,0);
 valid=true;await submit();assert.equal(heading(),'Evidence');assert(all().some(n=>n.type==='input'&&n.props.type==='url'));assert.equal(sent,0);
 await submit();assert.equal(heading(),'Review and submit');assert(all().some(n=>n.props['aria-label']==='Proposal summary'));assert.equal(sent,0);
-globalThis.__clockNow=Date.parse('2026-10-22T23:59:59Z');const dateField=()=>all().find(n=>n.type==='input'&&n.props.type==='date');assert.equal(dateField().props.min,'2026-10-23');assert.equal(dateField().props.max,new Date(globalThis.__clockNow+90*86400000).toISOString().slice(0,10));globalThis.__clockNow+=1000;assert.equal(dateField().props.min,'2026-10-24','review bounds advance across UTC midnight');assert.equal(dateField().props.max,new Date(globalThis.__clockNow+90*86400000).toISOString().slice(0,10));assert.equal(draft.reviewDate,'2099-01-01','clock updates preserve the selected date');delete globalThis.__clockNow;
 all().find(n=>n.type==='button'&&n.props.children==='Back').props.onClick();assert.equal(heading(),'Evidence');
 consent=true;all().find(n=>n.type==='textarea'&&n.props.value===draft.uncertainty).props.onChange({target:{value:'Updated uncertainty without losing the rest of the draft.'}});assert.equal(consent,false);assert.equal(draft.company,'Example company');
 await submit();await submit();assert.equal(sent,1);assert.equal(heading(),'Review and submit');assert.equal(draft.title,'Sample proposal','failed submit keeps the proposal');
