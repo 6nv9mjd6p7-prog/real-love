@@ -29,7 +29,7 @@ render('old',true);commit();assert(render('old',true).show);
 assert(!render('new',true).show,'account transitions never inherit a visible banner');commit();assert(!render('new',true).show);
 const source=readFileSync('app/love-app.tsx','utf8');
 const layout=readFileSync('app/layout.tsx','utf8'),banner=readFileSync('app/support-banner.tsx','utf8');
-assert(layout.indexOf('<SupportBanner />')<layout.indexOf('{children}'),'support is above page content');
+assert(layout.includes('<details className="site-utility">')&&layout.indexOf('<SupportBanner />')>layout.indexOf('{children}'),'optional support remains reachable after primary page content');
 assert(banner.includes('https://ko-fi.com/real_love')&&banner.includes('Optional support'));
 assert(!source.includes('supportPrompt.show'),'no duplicate gated banner below the page');
 assert(layout.includes('<SupportBanner />'));

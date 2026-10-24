@@ -18,6 +18,11 @@ The server validates identity, input, permissions, and access for protected acti
 
 Private chat content is **not end-to-end encrypted**. The app's privacy disclosures describe its actual limits. Worker circles are optional peer-support spaces; they are not a union, do not provide legal representation, and do not guarantee protection from retaliation.
 
+## Interface architecture
+
+The rebuilt interface uses three main destinations: Discover, Chats, and Profile.
+See [Interface foundation](./docs/INTERFACE.md) for stylesheet ownership, secondary navigation, and mobile validation.
+
 ## Develop and verify
 
 Requires Node.js `>=22.13.0` and pnpm `11.25.0`.
