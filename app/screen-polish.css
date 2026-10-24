@@ -1100,3 +1100,240 @@ body{font-family:Arial,Helvetica,sans-serif;color:var(--ink);background:var(--bg
  .app-shell .content .member-screen .profile-practical .first-step{color:CanvasText!important;background:Canvas!important;border:1px solid CanvasText!important;box-shadow:none!important;-webkit-backdrop-filter:none!important;backdrop-filter:none!important}
  .app-shell .content .member-screen .profile-practical .first-step>:is(strong,p){color:CanvasText!important}
 }
+
+/* Visual-only sync from canonical Site v433 (b1a664d5915153a47f1781347fb0a95470cc3567).
+   Site-only sample-chat sizing and Capacitor keyboard-resize rules are intentionally excluded. */
+/* Keep the shared glass palette above legacy component surface declarations. */
+body:has(.app-shell)>.site-utility{color:#f8f7ff;background:#17172acd;border-color:#ffffff38;-webkit-backdrop-filter:blur(22px) saturate(145%);backdrop-filter:blur(22px) saturate(145%)}
+body:has(.app-shell)>.site-utility .support-top p{color:#d4d0e8}
+body:has(.app-shell)>.site-utility .support-top>a,
+body:has(.app-shell)>.site-utility .install-app>.secondary{color:#f3efff;background:#ffffff13;border-color:#ffffff48}
+.app-shell .sidebar{color:#f8f7ff;background:#15152cf2!important;border-color:#ffffff38!important;-webkit-backdrop-filter:none!important;backdrop-filter:none!important}
+.app-shell .sidebar nav{background:#27233bdc!important;border:1px solid #ffffff52!important;border-radius:18px;box-shadow:0 -10px 35px #08091945,0 1px 0 #ffffff26 inset;-webkit-backdrop-filter:blur(26px) saturate(160%);backdrop-filter:blur(26px) saturate(160%)}
+.app-shell .sidebar .nav-item:not(.active){color:#e2ddf1!important}
+.app-shell .sidebar .nav-item.active{color:#fff!important;background:#ffffff1b!important;border-radius:14px;box-shadow:0 1px 0 #ffffff25 inset}
+.app-shell .content,.app-shell>main,.app-shell footer{color:#f8f7ff;background:transparent}
+.app-shell .content :is(.care-card,.form-section,.settings-group,.profile-section-grid,.profile-overview,.profile-extras,.entry-card,.admission-card,.connection-card,.chat-panel,.circle-workspace,.saved-search-hub,.inbox-section,.inbox-empty,.discovery-filters){color:#f8f7ff;background:#ffffff12!important;border-color:#ffffff38!important;box-shadow:0 12px 32px #05071326,0 1px 0 #ffffff20 inset;-webkit-backdrop-filter:blur(18px) saturate(145%);backdrop-filter:blur(18px) saturate(145%)}
+.app-shell .content .empty-state{color:#f8f7ff;background:#ffffff12!important;border:1px solid #ffffff38!important;border-radius:18px;box-shadow:0 12px 32px #05071326,0 1px 0 #ffffff20 inset;-webkit-backdrop-filter:blur(18px) saturate(145%);backdrop-filter:blur(18px) saturate(145%)}
+.app-shell .content .circle-grid>.circle-card{color:#f8f7ff;background:#ffffff12!important;border:1px solid #ffffff38!important;border-radius:18px;box-shadow:0 12px 32px #05071326,0 1px 0 #ffffff20 inset}
+.app-shell .content .inbox-screen .inbox-heading .inbox-guide{color:#e9e5f4!important;background:#ffffff12!important;border:1px solid #ffffff30;border-radius:15px;padding:12px}
+.app-shell .content .inbox-screen .inbox-toolbar>.search,
+.app-shell .content .discovery-screen .compact-discovery-toolbar>.search{color:#f8f7ff!important;background:#ffffff12!important;border:1px solid #ffffff42!important;border-radius:14px}
+.app-shell .content .inbox-screen .inbox-toolbar>.search input,
+.app-shell .content .discovery-screen .compact-discovery-toolbar>.search input,
+.app-shell .content :is(input:not([type=checkbox]),select,textarea){color:#fff!important;background:#17182bee!important;border-color:#ffffff58!important}
+.app-shell .content :is(input,select,textarea)::placeholder{color:#d8d3e8!important;opacity:1}
+.app-shell .content .inbox-screen>details.inbox-section{color:#f8f7ff;background:#ffffff12!important;border:1px solid #ffffff38!important;border-radius:16px;padding:0 14px}
+.app-shell .content .inbox-screen>details.inbox-section>summary{color:#f5f2ff!important;background:transparent!important;border-color:#ffffff30}
+.app-shell .content :is(.text-button,.muted-button,.secondary){color:#f3efff!important;background:#ffffff13!important;border-color:#ffffff48!important}
+.app-shell .content :is(.primary,.profile-link.primary,.profile-preview-action){color:#fff!important;background:#5a4c91!important;border-color:#ffffff54!important}
+.app-shell .content :is(.settings-screen,.profile-screen,.circles-overview,.circle-workspace,.moderation-screen,.member-screen,.inbox-screen,.discovery-screen) :is(p,.field-help,.bio-meta,.availability,.muted-button,.profile-section-summary){color:#ded9ed}
+.app-shell :is(.sample-chat-screen .sample-chat-main,.sample-chat-screen .sample-chat-context,.sample-chat-screen .sample-chat-disclaimer,.sample-chat-screen .sample-chat-composer){color:#f8f7ff;background:#ffffff12!important;border-color:#ffffff38}
+.app-shell .sample-chat-screen .sample-chat-composer textarea{color:#fff!important;background:#17182bee!important;border-color:#ffffff62!important}
+@media(max-width:720px){
+ .app-shell:not(:has(.conversation-screen,.circle-conversation))>.sidebar nav{position:fixed!important;inset-block-start:calc(100dvh - 74px - env(safe-area-inset-bottom))!important;inset-block-end:auto!important;left:12px!important;right:12px!important;width:auto;min-height:66px;padding:5px 6px calc(5px + env(safe-area-inset-bottom))!important;border-radius:20px!important}
+}
+@media(prefers-reduced-transparency:reduce){body:has(.app-shell)>.site-utility,.app-shell .sidebar,.app-shell .sidebar nav,.app-shell .content :is(.care-card,.form-section,.settings-group,.profile-section-grid,.profile-overview,.connection-card,.chat-panel,.circle-workspace,.inbox-section){background:#29253ff5!important;-webkit-backdrop-filter:none;backdrop-filter:none}}
+@media(forced-colors:active){body:has(.app-shell)>.site-utility,.app-shell .sidebar,.app-shell .sidebar nav,.app-shell .content :is(.care-card,.form-section,.settings-group,.profile-section-grid,.profile-overview,.connection-card,.chat-panel,.circle-workspace,.inbox-section){background:Canvas;color:CanvasText;border:1px solid CanvasText;box-shadow:none;-webkit-backdrop-filter:none;backdrop-filter:none}}
+
+/* Carry the glass system onto the public landing screen as well as the app. */
+body:has(.public-landing){color:#f8f7ff;background:#111224}
+body:has(.public-landing)>.site-utility{color:#f8f7ff;background:#17172acd;border-color:#ffffff38;-webkit-backdrop-filter:blur(22px) saturate(145%);backdrop-filter:blur(22px) saturate(145%)}
+body:has(.public-landing)>.site-utility .support-top p{color:#d4d0e8}
+body:has(.public-landing)>.site-utility .support-top>a,
+body:has(.public-landing)>.site-utility .install-app>.secondary{color:#f3efff;background:#ffffff13;border-color:#ffffff48}
+.public-landing{color:#f8f7ff!important;background:radial-gradient(ellipse at 50% -10%,#38335f 0%,#19182f 42%,#111224 78%)!important}
+.public-landing .public-nav{color:#f8f7ff;background:#22213bd9!important;border-color:#ffffff38!important;-webkit-backdrop-filter:blur(24px) saturate(155%);backdrop-filter:blur(24px) saturate(155%)}
+.public-landing .public-brand,.public-landing :is(h1,h2,h3){color:#f8f7ff!important}
+.public-landing .public-brand-icon{background:#5a4c91!important}
+.public-landing :is(.public-lede,.public-fineprint,.public-section>p,.public-feature-grid article p,.public-steps article p,.public-footer,.public-kicker){color:#d4d0e8}
+.public-landing :is(.public-eyebrow,.public-kicker){color:#ddd7f1!important}
+.public-landing :is(.public-conversation-card,.public-message-preview,.public-steps article,.public-feature-grid article,.public-final-cta){color:#f8f7ff;background:#ffffff12!important;border:1px solid #ffffff38!important;border-radius:22px;box-shadow:0 14px 36px #0507132b,0 1px 0 #ffffff20 inset;-webkit-backdrop-filter:blur(20px) saturate(150%);backdrop-filter:blur(20px) saturate(150%)}
+.public-landing .public-topic-row span{color:#eeeaff;background:#ffffff17;border:1px solid #ffffff35}
+.public-landing .public-message-preview{background:#ffffff0d!important}
+.public-landing .public-promise{color:#f8f7ff;background:#302c4ee8!important;border-block:1px solid #ffffff35;-webkit-backdrop-filter:blur(18px) saturate(145%);backdrop-filter:blur(18px) saturate(145%)}
+.public-landing .public-promise :is(h2,p){color:#f8f7ff!important}
+.public-landing .public-section.public-difference{color:#f8f7ff;background:transparent!important}
+.public-landing .public-footer{border-color:#ffffff30}
+.public-landing :is(a.primary,.public-actions .primary){color:#fff;background:#5a4c91;border:1px solid #ffffff54;box-shadow:0 8px 24px #07081745,0 1px 0 #ffffff29 inset}
+.public-landing :is(button.secondary,.public-actions .secondary){color:#f3efff;background:#ffffff13!important;border:1px solid #ffffff48!important}
+.public-landing a:focus-visible,.public-landing button:focus-visible{outline:3px solid #ffec8a;outline-offset:3px}
+@media(prefers-reduced-transparency:reduce){body:has(.public-landing)>.site-utility,.public-landing :is(.public-nav,.public-conversation-card,.public-message-preview,.public-steps article,.public-feature-grid article,.public-final-cta,.public-promise){background:#29253ff5!important;-webkit-backdrop-filter:none;backdrop-filter:none}}
+@media(forced-colors:active){body:has(.public-landing)>.site-utility,.public-landing :is(.public-nav,.public-conversation-card,.public-message-preview,.public-steps article,.public-feature-grid article,.public-final-cta,.public-promise){background:Canvas;color:CanvasText;border:1px solid CanvasText;box-shadow:none;-webkit-backdrop-filter:none;backdrop-filter:none}.public-landing :is(a,button):focus-visible{outline:2px solid Highlight}}
+.public-landing p{color:#d4d0e8!important}
+.public-landing :is(.public-eyebrow,.public-kicker){color:#ddd7f1!important}
+.public-landing .public-promise p{color:#f8f7ff!important}
+
+/* Strengthen contrast in the desktop app shell and conversation rows. */
+body:has(.app-shell)>.site-utility{color:#f8f7ff!important;background:#19182ff5!important;border-color:#ffffff40!important}
+body:has(.app-shell)>.site-utility .support-top h2{color:#f8f7ff!important}
+body:has(.app-shell)>.site-utility .support-top :is(p,span,small){color:#e0dced!important}
+.app-shell .topbar{color:#f8f7ff!important;background:#211f38f5!important;border-color:#ffffff40!important}
+.app-shell .topbar :is(a,button,span,p){color:#f3efff!important}
+.app-shell .topbar :is(button,.secondary){background:#ffffff12!important;border-color:#ffffff48!important}
+.app-shell .content .conversation-row.chat-list-row{color:#f8f7ff!important;background:transparent!important;border-color:#ffffff35!important}
+.app-shell .content .chat-row-open{color:#f8f7ff!important;background:#ffffff0a!important;border-color:transparent!important}
+.app-shell .content .chat-row-open:hover{background:#ffffff18!important}
+.app-shell .content .chat-row-title strong{color:#fff!important}
+.app-shell .content .chat-row-title time,.app-shell .content .chat-row-preview{color:#e3deef!important}
+.app-shell :is(h1,h2,h3,h4,h5,h6){color:#f8f7ff!important}
+.app-shell .content :is(p,li,dt,dd,label,small,time,.field-help,.bio-meta,.availability,.profile-section-summary){color:#e3deef!important}
+.app-shell .content a:not(.primary){color:#e0d9ff!important}
+.app-shell .content :is(button:not(.primary):not(.danger),summary,.text-button,.muted-button){color:#f3efff!important}
+body:has(.app-shell)>.site-utility h2{color:#f8f7ff!important}
+body:has(.public-landing)>.site-utility .support-top h2{color:#f8f7ff!important}
+
+/* AA readability pass: thicker glass for reading surfaces, clearer edges, and
+   a quiet monochrome text palette. Navigation keeps the lighter floating glass. */
+.app-shell .content :is(.care-card,.form-section,.settings-group,.profile-section-grid,.profile-overview,.profile-extras,.entry-card,.admission-card,.connection-card,.chat-panel,.circle-workspace,.saved-search-hub,.inbox-section,.inbox-empty,.discovery-filters,.empty-state,.circle-grid>.circle-card){color:#fbfaff!important;background:#25233df5!important;border-color:#ffffff75!important;box-shadow:0 14px 36px #0507132b,0 1px 0 #ffffff2b inset;-webkit-backdrop-filter:blur(22px) saturate(145%);backdrop-filter:blur(22px) saturate(145%)}
+.app-shell .content .inbox-chat-list .conversation-row.chat-list-row{background:#302d49f5!important;border:1px solid #ffffff70!important;border-radius:12px!important}
+.app-shell .content .chat-row-open{color:#fbfaff!important;background:#302d49f5!important;border-radius:10px!important}
+.app-shell .content .chat-row-open:hover{background:#3b3757!important}
+.app-shell .content :is(input:not([type=checkbox]),select,textarea){color:#fff!important;background:#151629!important;border-color:#ffffff80!important}
+.app-shell .content :is(input,select,textarea)::placeholder{color:#e6e2ef!important;opacity:1}
+.app-shell .content :is(button:not(.primary):not(.danger),summary,.text-button,.muted-button){border-color:#ffffff70!important}
+.app-shell .content :is(p,li,dt,dd,label,small,time,.field-help,.bio-meta,.availability,.profile-section-summary){line-height:1.5}
+.public-landing :is(.public-nav,.public-conversation-card,.public-message-preview,.public-steps article,.public-feature-grid article,.public-final-cta){background:#25233df5!important;border-color:#ffffff75!important;box-shadow:0 14px 36px #0507132b,0 1px 0 #ffffff2b inset;-webkit-backdrop-filter:blur(22px) saturate(145%);backdrop-filter:blur(22px) saturate(145%)}
+.public-landing .public-promise{background:#302d49f5!important;border-color:#ffffff70!important}
+.public-landing .public-topic-row span{background:#302d49!important;border-color:#ffffff70!important}
+body:has(.app-shell)>.site-utility,body:has(.public-landing)>.site-utility{background:#19182ff8!important;border-color:#ffffff70!important}
+@media(prefers-reduced-transparency:reduce){.app-shell .content :is(.care-card,.form-section,.settings-group,.profile-section-grid,.profile-overview,.profile-extras,.entry-card,.admission-card,.connection-card,.chat-panel,.circle-workspace,.saved-search-hub,.inbox-section,.inbox-empty,.discovery-filters,.empty-state,.circle-grid>.circle-card),.public-landing :is(.public-nav,.public-conversation-card,.public-message-preview,.public-steps article,.public-feature-grid article,.public-final-cta,.public-promise){background:#25233d!important;-webkit-backdrop-filter:none;backdrop-filter:none}}
+
+/* Discover controls need dark glass beneath the light shared text palette. */
+.app-shell .content .discovery-screen .discovery-section-tabs{background:#211f38f5!important;border:1px solid #ffffff70!important;border-radius:14px!important;padding:4px!important;box-shadow:0 1px 0 #ffffff20 inset}
+.app-shell .content .discovery-screen .discovery-section-tabs>button{background:#302d49f5!important;color:#f3efff!important;border:1px solid #ffffff50!important;border-radius:10px!important}
+.app-shell .content .discovery-screen .discovery-section-tabs>button[aria-pressed=true]{background:#5a4c91!important;color:#fff!important;border-color:#ffffff90!important;box-shadow:0 1px 0 #ffffff30 inset!important}
+.app-shell .content .discovery-screen .discovery-section-tabs>button:hover:not(:disabled){background:#403a60!important;color:#fff!important}
+.app-shell .content .discovery-screen .discovery-section-tabs>button[aria-pressed=true]:hover:not(:disabled){background:#695ba4!important}
+.app-shell .content .discovery-screen .saved-search-hub>summary{color:#fff!important;background:transparent!important;border:0!important;box-shadow:none!important}
+.app-shell .content .discovery-screen .saved-search-hub .discovery-views{color:#f8f7ff!important;background:transparent!important}
+.app-shell .content .discovery-screen .saved-search-hub :is(.saved-search-empty,.saved-search-preview){color:#f5f2ff!important;background:#302d49f5!important;border:1px solid #ffffff50!important}
+.app-shell .content .discovery-screen .saved-search-hub .discovery-view-list>li{color:#f8f7ff!important;background:#302d49f5!important;border-color:#ffffff60!important}
+.app-shell .content .discovery-screen .interest-shortcuts-list>button{color:#f8f7ff!important;background:#302d49f5!important;border-color:#ffffff70!important}
+.app-shell .content .discovery-screen .interest-shortcuts-list>button:hover:not(:disabled){color:#fff!important;background:#403a60!important;border-color:#ffffffa0!important}
+.app-shell .content .discovery-screen .interest-shortcuts-list>button.active{color:#fff!important;background:#5a4c91!important;border-color:#ffffff90!important}
+.app-shell .content .discovery-screen .discovery-quick-buttons>button{color:#f8f7ff!important;background:#302d49f5!important;border-color:#ffffff70!important}
+.app-shell .content .discovery-screen .discovery-quick-buttons>button[aria-pressed=true]{color:#fff!important;background:#5a4c91!important;border-color:#ffffff90!important}
+.app-shell .content .discovery-screen :is(.discovery-topic-choices>summary,.discovery-filter-panel :is(summary,.text-button)){color:#e5deff!important}
+.app-shell .content .discovery-screen :is(button,a,summary,input,select,textarea):focus-visible{outline:3px solid #fff29a!important;outline-offset:3px!important}
+@media(forced-colors:active){.app-shell .content .discovery-screen .discovery-section-tabs,.app-shell .content .discovery-screen .discovery-section-tabs>button,.app-shell .content .discovery-screen .interest-shortcuts-list>button,.app-shell .content .discovery-screen .discovery-quick-buttons>button{forced-color-adjust:auto;background:Canvas!important;color:CanvasText!important;border:1px solid CanvasText!important}.app-shell .content .discovery-screen .discovery-section-tabs>button[aria-pressed=true],.app-shell .content .discovery-screen .interest-shortcuts-list>button.active,.app-shell .content .discovery-screen .discovery-quick-buttons>button[aria-pressed=true]{outline:2px solid Highlight!important}}
+
+/* Keep profile section labels readable at the same contrast as other screens. */
+.app-shell .content .profile-screen .profile-section-card>strong{color:#f8f7ff!important}
+.app-shell .content .profile-screen .profile-section-card .profile-section-action{color:#e3dcff!important}
+.app-shell .content .profile-screen .profile-section-card:hover .profile-section-action{color:#fff!important}
+.app-shell .content .profile-screen .profile-section-card:focus-visible{outline:3px solid #fff29a!important;outline-offset:3px!important}
+
+/* Use a dark, readable hover surface throughout the glass app. */
+.app-shell{--hover-surface:#3b3757}
+.app-shell .content .profile-screen .profile-section-card:hover:not(:disabled){color:#fff!important;background:#3b3757!important;border-color:#ffffff90!important}
+.app-shell .content .profile-screen .profile-section-card:hover :is(strong,.profile-section-summary,.field-help,.profile-section-action){color:#fff!important}
+.app-shell .content .discovery-screen .profile-grid>.compact-person:hover{color:#fff!important;background:#ffffff18!important}
+.app-shell .content .inbox-screen .chat-row:hover{color:#fff!important;background:#3b3757!important}
+.app-shell .content .circle-discovery-row:hover{color:#fff!important;background:#3b3757!important}
+.app-shell .content .circles-overview>.section-tabs>button:hover{color:#fff!important;background:#3b3757!important}
+.app-shell .content .discovery-question-list>article>button:hover{color:#fff!important;background:#ffffff18!important}
+.app-shell .content .location-results{color:#f8f7ff!important;background:#25233df5!important;border-color:#ffffff70!important}
+.app-shell .content .location-results span{color:#e3deef!important}
+.app-shell .content .location-results button:hover,.app-shell .content .location-results button:focus-visible{color:#fff!important;background:#3b3757!important}
+
+/* Interest chips can appear on dark profile cards and light underlying panels.
+   Give every content chip the same dark glass base so the shared light text
+   palette never lands on a white fill. */
+.app-shell .content .interest-action{color:#f8f7ff!important;background:#302d49f5!important;border-color:#ffffff70!important}
+
+/* Profile accordions used to inherit a pale surface under the shared light
+   text palette. Keep their resting state on dark glass, then lift the surface
+   slightly on hover and keyboard focus. */
+.app-shell .content .member-screen .profile-sections .profile-detail-section>summary{
+ color:#f8f7ff!important;
+ background:#29253ff2!important;
+ border:1px solid #ffffff52!important;
+ border-radius:12px!important;
+ box-shadow:0 1px 0 #ffffff20 inset;
+ -webkit-backdrop-filter:blur(18px) saturate(145%);
+ backdrop-filter:blur(18px) saturate(145%);
+}
+
+/* Keep optional activities on the profile's dark glass reading surface too. */
+.app-shell .content .member-screen .profile-practical .first-step{
+ color:#f8f7ff!important;
+ background:#29253ff2!important;
+ border:1px solid #ffffff52!important;
+ border-radius:12px!important;
+ box-shadow:0 1px 0 #ffffff20 inset;
+ -webkit-backdrop-filter:blur(18px) saturate(145%);
+ backdrop-filter:blur(18px) saturate(145%);
+}
+.app-shell .content .member-screen .profile-practical .first-step>:is(strong,p){color:#f8f7ff!important}
+.app-shell .content .member-screen .profile-practical .first-step:is(:hover,:focus-within){background:#3b3757!important;border-color:#ffffff90!important}
+@media(prefers-reduced-transparency:reduce){
+ .app-shell .content .member-screen .profile-practical .first-step{background:#29253f!important;-webkit-backdrop-filter:none!important;backdrop-filter:none!important}
+}
+@media(prefers-contrast:more){
+ .app-shell .content .member-screen .profile-practical .first-step{color:#fff!important;border:2px solid #fff!important;box-shadow:none!important}
+ .app-shell .content .member-screen .profile-practical .first-step>:is(strong,p){color:#fff!important}
+}
+@media(forced-colors:active){
+ .app-shell .content .member-screen .profile-practical .first-step{color:CanvasText!important;background:Canvas!important;border:1px solid CanvasText!important;box-shadow:none!important;-webkit-backdrop-filter:none!important;backdrop-filter:none!important}
+ .app-shell .content .member-screen .profile-practical .first-step>:is(strong,p){color:CanvasText!important}
+}
+.app-shell .content .member-screen .profile-sections .profile-detail-section>summary:is(:hover,:focus-visible){
+ color:#fff!important;
+ background:#3b3757!important;
+ border-color:#ffffff90!important;
+}
+@media(prefers-reduced-transparency:reduce){
+ .app-shell .content .member-screen .profile-sections .profile-detail-section>summary{
+  background:#29253f!important;
+  -webkit-backdrop-filter:none!important;
+  backdrop-filter:none!important;
+ }
+}
+@media(prefers-contrast:more){
+ .app-shell .content .member-screen .profile-sections .profile-detail-section>summary{
+  color:#fff!important;
+  border:2px solid #fff!important;
+  box-shadow:none!important;
+ }
+}
+@media(forced-colors:active){
+ .app-shell .content .member-screen .profile-sections .profile-detail-section>summary{
+  color:CanvasText!important;
+  background:Canvas!important;
+  border:1px solid CanvasText!important;
+  box-shadow:none!important;
+  -webkit-backdrop-filter:none!important;
+  backdrop-filter:none!important;
+ }
+}
+.app-shell .content .interest-action:hover:not(:disabled),
+.app-shell .content .interest-action:focus-visible{color:#fff!important;background:#3b3757!important;border-color:#ffffffa0!important;box-shadow:0 1px 0 #ffffff30 inset,0 0 0 1px #ffffff20!important}
+.app-shell .content .interest-label{color:#f8f7ff!important;background:#302d49f5!important;border:1px solid #ffffff70!important}
+
+/* Keep text and placeholders readable on the dark entry surfaces used in the app. */
+.app-shell .content :is(input:not([type=checkbox]):not([type=radio]):not([type=range]):not([type=hidden]),textarea,select){
+ color:#f8f7ff!important;-webkit-text-fill-color:#f8f7ff!important;caret-color:#fff;background-color:#151629!important
+}
+.app-shell .content :is(input:not([type=checkbox]):not([type=radio]):not([type=range]):not([type=hidden]),textarea,select):focus{
+ color:#f8f7ff!important;-webkit-text-fill-color:#f8f7ff!important;caret-color:#fff;background-color:#151629!important;outline:3px solid #8c78d8!important;outline-offset:2px
+}
+.app-shell .content :is(input,textarea)::placeholder{color:#d8d3e8!important;opacity:1}
+.app-shell .content select option{color:#25243b;background:#fff}
+.app-shell ::selection{color:#171426!important;background:#e4ff9a!important}
+.app-shell .content :is(input,textarea,select):focus-visible{outline:3px solid #8c78d8!important;outline-offset:2px}
+
+/* Keep Discover reading text on dark surfaces in the glass app theme. */
+.app-shell .content .discovery-screen .demo-sharing-guide>summary{color:#f8f7ff!important;background:#302d49f5!important;border:1px solid #ffffff70!important;border-radius:10px}
+.app-shell .content .discovery-screen .demo-sharing-guide>summary:hover,
+.app-shell .content .discovery-screen .demo-sharing-guide>summary:focus-visible{color:#fff!important;background:#3b3757!important}
+.app-shell .content .discovery-screen .compact-person .discovery-thought{color:#f8f7ff!important;background:#302d49f5!important;border:1px solid #ffffff60!important;border-radius:12px;box-shadow:0 1px 0 #ffffff1f inset!important}
+.app-shell .content .discovery-screen .compact-person .discovery-thought>strong{color:#e3deef!important}
+.app-shell .content .discovery-screen .compact-person .discovery-thought>.discovery-question{color:#fff!important}
+
+/* The public hero example uses dark glass, so its question and supporting note need light ink. */
+.public-landing .public-conversation-card blockquote{color:#f8f7ff!important}
+.public-landing .public-message-preview span{color:#d4d0e8!important}
+@media(forced-colors:active){
+ .public-landing .public-conversation-card blockquote,.public-landing .public-message-preview span{color:CanvasText!important}
+}
