@@ -4,6 +4,7 @@ import SupportBanner from "./support-banner";
 import NativeRuntime from "./native-runtime";
 import "./globals.css";
 import "./design-system.css";
+import "./chat-layout.css";
 
 export const metadata: Metadata = {
   title: "Real Love — Begin together",

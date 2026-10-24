@@ -22,13 +22,21 @@ export default function ChatComposer({accountId,kind,scope,value,onChange,textar
   const viewport=window.visualViewport;
   let layoutHeight=Math.max(window.innerHeight,viewport?.height??0);
   let frame=0;
+  let keyboardWasOpen=false;
   const updateViewport=()=>{
    cancelAnimationFrame(frame);
    frame=requestAnimationFrame(()=>{
-      const state=chatViewportState(layoutHeight,window.innerHeight,viewport?.height??null,viewport?.offsetTop??null,document.activeElement===textareaRef.current);
+      const active=document.activeElement;
+      const editing=!!active&&chat.contains(active)&&active.matches('input,textarea,[contenteditable="true"]');
+      const state=chatViewportState(layoutHeight,window.innerHeight,viewport?.height??null,viewport?.offsetTop??null,editing||keyboardWasOpen);
+      keyboardWasOpen=state.keyboardOpen;
       layoutHeight=state.layoutHeight;
       root.toggleAttribute('data-keyboard-open',state.keyboardOpen);
-      // This height sizes the message pane; the page itself stays in normal flow.
+      // One measurement sizes the entire chat; flex layout gives history the remainder.
+      chat.style.setProperty('--chat-height',`${Math.max(1,viewport?.height??window.innerHeight)}px`);
+      chat.style.setProperty('--chat-top',`${Math.max(0,viewport?.offsetTop??0)}px`);
+      const documentTop=chat.getBoundingClientRect().top+window.scrollY;
+      chat.style.setProperty('--chat-desktop-height',`${Math.max(1,window.innerHeight-documentTop)}px`);
       if(state.keyboardOpen){
         root.style.setProperty('--app-viewport',`${state.height}px`);
         root.style.setProperty('--app-viewport-top',`${state.top}px`);
@@ -52,10 +60,26 @@ export default function ChatComposer({accountId,kind,scope,value,onChange,textar
    window.removeEventListener('resize',updateViewport);
    document.removeEventListener('focusin',updateViewport);
    document.removeEventListener('focusout',updateViewport);
+   chat.style.removeProperty('--chat-height');
+   chat.style.removeProperty('--chat-top');
+   chat.style.removeProperty('--chat-desktop-height');
    root.style.removeProperty('--app-viewport');
    root.style.removeProperty('--app-viewport-top');
    root.removeAttribute('data-keyboard-open');
   };
+ },[textareaRef]);
+ useEffect(()=>{
+  const pane=textareaRef.current?.closest('.chat-workspace')?.querySelector<HTMLElement>('.conversation-messages');
+  if(!pane||typeof ResizeObserver==='undefined')return;
+  let following=pane.scrollHeight-pane.clientHeight-pane.scrollTop<80;
+  const track=()=>{following=pane.scrollHeight-pane.clientHeight-pane.scrollTop<80;};
+  const observer=new ResizeObserver(()=>{
+   // Keyboard and multiline-draft resizing should follow only readers already at the end.
+   if(following)pane.scrollTop=pane.scrollHeight;
+  });
+  observer.observe(pane);
+  pane.addEventListener('scroll',track,{passive:true});
+  return()=>{observer.disconnect();pane.removeEventListener('scroll',track);};
  },[textareaRef]);
  const id=useId(),fileInput=useRef<HTMLInputElement>(null),attempt=useRef(''),[voiceActive,setVoiceActive]=useState(false),[photo,setPhoto]=useState<File|null>(null),[photoError,setPhotoError]=useState(''),[photoSending,setPhotoSending]=useState(false);
  useEffect(()=>{onActivityChange?.(voiceActive||photoSending);},[voiceActive,photoSending,onActivityChange]);

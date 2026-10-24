@@ -31,8 +31,10 @@ function elements(node){if(!node||typeof node!=='object')return [];return [node,
 index=0;tree=Circles({accountId:'member',active:true,connections:[],onReport:()=>{}});
 const nodes=elements(tree),context=nodes.find(n=>n.props?.className==='chat-context-area');
 const contextChildren=React.Children.toArray(context.props.children);
-assert.equal(contextChildren.length,3,'compact header, hidden More tools and local section navigation');
-const [heading,more,sections]=contextChildren;
+assert.equal(contextChildren.length,2,'compact header and hidden More tools share a bounded context area');
+const [heading,more]=contextChildren;
+const sections=nodes.find(n=>n.props?.circleId===circle.id&&n.props?.value==='Chat');
+assert(!contextChildren.includes(sections),'local tabs remain outside the scrollable options area');
 assert.equal(more.props.hidden,true,'rare tools do not consume the default message viewport');
 assert.equal(more.props.className,'circle-more-panel');
 assert.equal(elements(heading).find(n=>n.type==='h1').props.title,circle.title,'full title remains accessible');

@@ -94,7 +94,8 @@ assert(view().find(n=>n.props.className==='photo-exchange-status').props.hidden,
 delete globalThis.__photoHooks;
 
 assert(html.indexOf('Conversation ideas')<html.indexOf('<textarea'),'ideas are reachable alongside the composer');
-assert(html.indexOf('Conversation ideas')<html.indexOf('<details class="chat-help"'),'ideas are no longer nested in help');
+assert(!html.slice(html.indexOf('<details class="chat-help"'),html.indexOf('class="private-chat-tabs"')).includes('Conversation ideas'),'ideas are outside the header help disclosure');
+assert(html.includes('class="direct-options-panel" hidden')&&html.includes('aria-controls="conversation-options-test"'),'secondary controls start collapsed and the header button names their panel');
 assert(source.includes('const bothParticipated=messages.some(message=>message.mine)&&messages.some(message=>!message.mine);'),'shared-activity prompts require messages from both people');
 assert(source.includes('allowDoTogether={bothParticipated}'),'mutual participation controls the Do together goal');
 assert(source.includes("{bothParticipated&&<button onClick={onCircle}>Start a circle together</button>}"),'circle creation stays out of brand-new chats until both people participate');

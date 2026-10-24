@@ -390,7 +390,6 @@ html[data-native-platform] .app-shell:has(.conversation-screen,.circle-conversat
  .app-shell:has(.circle-workspace)>.sidebar nav{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:2px}
  .app-shell:has(.circle-workspace)>.sidebar nav .nav-item{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;min-height:60px;padding:4px 2px;font-size:.75rem}
  .app-shell:has(.circle-workspace) .circle-workspace{background:white;padding:8px 12px}
- .app-shell:has(.circle-workspace) .circle-workspace .conversation-messages{height:clamp(10rem,calc(var(--app-viewport,100dvh) - 278px - env(safe-area-inset-bottom)),48rem);min-height:10rem;padding:12px 0}
  .circle-workspace .chat-composer{position:sticky;bottom:calc(74px + env(safe-area-inset-bottom));z-index:5}
  html[data-keyboard-open] .app-shell:has(.circle-workspace)>.sidebar nav{display:none}
  html[data-keyboard-open] .app-shell:has(.circle-workspace){padding-bottom:0}
@@ -857,8 +856,6 @@ html .app-shell>.sidebar nav .nav-item .nav-icon>.count{position:absolute;top:-9
  .circle-workspace .circle-activity-strip{margin:0;border:0;border-bottom:1px solid var(--border);border-radius:0;background:#f8f9fc}
  .circle-workspace .circle-activity-strip>summary{padding:10px 8px;font-size:.875rem}
  .circle-workspace .circle-activity-strip>summary strong{display:none}
- .app-shell:has(.circle-workspace) .circle-workspace .conversation-messages{height:clamp(12rem,calc(var(--app-viewport,100dvh) - 291px - env(safe-area-inset-bottom)),52rem);min-height:12rem;gap:16px;padding:16px 0}
- .circle-workspace .circle-compose-dock{position:fixed;left:12px;right:12px;bottom:calc(75px + env(safe-area-inset-bottom));z-index:5;padding-top:44px;background:var(--surface)}
  .circle-workspace .circle-compose-dock .chat-composer{position:relative;bottom:auto!important;border:0;border-top:1px solid var(--border);border-radius:0;padding:8px 0;margin:0}
  .circle-compose-dock>.conversation-guidance{margin:0}
  .circle-compose-dock .suggestion-panel{position:relative;margin:0;border:0;padding:0;background:transparent}
@@ -866,10 +863,6 @@ html .app-shell>.sidebar nav .nav-item .nav-icon>.count{position:absolute;top:-9
  .circle-compose-dock .suggestion-panel[open]{padding:12px 4px;border-top:1px solid var(--border);max-height:55dvh;overflow-y:auto}
  .circle-compose-dock .suggestion-panel[open]>summary{position:static;transform:none;width:fit-content;margin:0 0 8px auto}
  .circle-compose-dock:has(.suggestion-panel[open]){padding-top:0}
- html[data-keyboard-open] .circle-workspace .circle-section-tabs,
- html[data-qa-keyboard] .circle-workspace .circle-section-tabs{display:none}
- html[data-keyboard-open] .circle-workspace .circle-compose-dock,
- html[data-qa-keyboard] .circle-workspace .circle-compose-dock{bottom:max(0px,calc(100dvh - var(--app-viewport,100dvh) - var(--app-viewport-top,0px)))}
  .circle-workspace .circle-message-row .message{font-size:1rem;padding:10px 12px}
 }
 
@@ -998,18 +991,12 @@ html .app-shell>.sidebar nav .nav-item .nav-icon>.count{position:absolute;top:-9
  .direct-chat .private-plan-section{padding-bottom:calc(85px + env(safe-area-inset-bottom))}
  .direct-chat .private-plan-section .private-plans-content{padding-bottom:14px}
  .app-shell .direct-chat{padding-bottom:calc(155px + env(safe-area-inset-bottom))}
- .app-shell .direct-chat .conversation-messages{height:clamp(10rem,calc(var(--app-viewport,100dvh) - 415px - env(safe-area-inset-bottom)),40rem)}
- .app-shell .direct-chat .direct-compose-dock{position:fixed;left:12px;right:12px;bottom:calc(75px + env(safe-area-inset-bottom));z-index:5;padding-top:44px;background:var(--surface)}
  .direct-compose-dock>.conversation-guidance{margin:0}
  .app-shell .direct-chat .direct-compose-dock .suggestion-panel{position:relative;margin:0;border:0;padding:0;background:transparent}
  .app-shell .direct-chat .direct-compose-dock .suggestion-panel>summary{position:absolute;right:0;bottom:0;transform:translateY(-2px);min-height:44px;padding:10px 12px;border:1px solid var(--border);border-radius:14px;background:#f8f8ff;color:var(--indigo);font-size:.8125rem}
  .app-shell .direct-chat .direct-compose-dock .suggestion-panel[open]{padding:12px 4px;border-top:1px solid var(--border);max-height:45dvh;overflow-y:auto}
  .app-shell .direct-chat .direct-compose-dock .suggestion-panel[open]>summary{position:static;transform:none;width:fit-content;margin:0 0 8px auto}
  .direct-compose-dock:has(.suggestion-panel[open]){padding-top:0}
- html[data-keyboard-open] .direct-chat .direct-compose-dock,
- html[data-qa-keyboard] .direct-chat .direct-compose-dock{bottom:max(0px,calc(100dvh - var(--app-viewport,100dvh) - var(--app-viewport-top,0px)))}
- html[data-keyboard-open] .direct-chat .private-chat-tabs,
- html[data-qa-keyboard] .direct-chat .private-chat-tabs{display:none}
  html[data-keyboard-open] .app-shell:has(.direct-chat),
  html[data-qa-keyboard] .app-shell:has(.direct-chat){padding-bottom:0}
 }
