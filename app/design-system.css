@@ -1,5 +1,5 @@
 /* Shared visual foundations. Screen-specific rules belong in globals.css. */
-:root{--surface:#fff;--surface-soft:#f8f9fc;--border:var(--line);--border-strong:#d5d6e4;--accent:var(--indigo);--accent-soft:#eeedff;--focus-ring:#747df0;--danger:#9e3434;--space-1:4px;--space-2:8px;--space-3:12px;--space-4:16px;--space-5:20px;--space-6:24px;--space-8:32px;--control-size:44px;--control-radius:8px;--card-radius:12px;--panel-radius:14px;--site-utility-height:64px;--app-sidebar-width:238px}
+:root{--surface:#fff;--surface-soft:#f8f9fc;--border:var(--line);--border-strong:#8a8c9e;--accent:var(--indigo);--accent-soft:#eeedff;--focus-ring:#747df0;--danger:#9e3434;--space-1:4px;--space-2:8px;--space-3:12px;--space-4:16px;--space-5:20px;--space-6:24px;--space-8:32px;--control-size:44px;--control-radius:8px;--card-radius:12px;--panel-radius:14px;--site-utility-height:64px;--app-sidebar-width:238px}
 .app-shell{display:flex;min-height:calc(100vh - var(--site-utility-height))}
 .sidebar{width:var(--app-sidebar-width);flex:0 0 var(--app-sidebar-width);position:sticky;top:var(--site-utility-height);height:calc(100vh - var(--site-utility-height));background:var(--surface);border-right:1px solid var(--border);padding:34px 22px 20px;display:flex;flex-direction:column}
 .sidebar nav{display:flex;flex-direction:column;gap:6px}
