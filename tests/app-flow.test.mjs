@@ -157,7 +157,7 @@ assert.equal((await voicePost('alice','direct',id,audioPayload)).status,200);ass
 assert.equal(sql.prepare('SELECT COUNT(*) AS n FROM messages WHERE id=?').get(audioId).n,1);
 const note=(await post('bob',{action:'messages',connection:id})).data.messages.find(m=>m.id===audioId);assert(note.audio);assert.equal(note.reply.id,rootMessage);assert(!JSON.stringify(note).includes('voice-notes/'));assert.equal((await voiceGet('bob',note.audio.url)).status,200);assert.equal((await voiceGet('referee',note.audio.url)).status,403,'owner cannot read unrelated chats');
 // Safari probes bytes 0-1, then requests more ranges to decode and seek.
-const fullAudio=await voiceGet('bob',note.audio.url),fullBytes=new Uint8Array(await fullAudio.arrayBuffer());
+const fullAudio=await voiceGet('bob',note.audio.url),fullBytes=new Uint8Array(await fullAudio.arrayBuffer());assert.equal(fullAudio.headers.get('Content-Security-Policy'),"default-src 'none'; sandbox",'voice notes are served sandboxed like other private media');
 assert.equal(fullAudio.headers.get('content-length'),String(fullBytes.length));assert.equal(fullAudio.headers.get('accept-ranges'),'bytes');
 for(const [range,start,end] of [['bytes=0-1',0,2],['bytes=8-',8,fullBytes.length],['bytes=-5',fullBytes.length-5,fullBytes.length],['bytes=5-999',5,fullBytes.length]]){
  const part=await voiceGet('bob',note.audio.url,{Range:range});assert.equal(part.status,206);assert.equal(part.headers.get('content-range'),`bytes ${start}-${end-1}/${fullBytes.length}`);assert.equal(part.headers.get('content-length'),String(end-start));assert.deepEqual(new Uint8Array(await part.arrayBuffer()),fullBytes.slice(start,end));
