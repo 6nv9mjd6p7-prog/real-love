@@ -157,7 +157,7 @@ assert.equal((await voicePost('alice','direct',id,audioPayload)).status,200);ass
 assert.equal(sql.prepare('SELECT COUNT(*) AS n FROM messages WHERE id=?').get(audioId).n,1);
 const note=(await post('bob',{action:'messages',connection:id})).data.messages.find(m=>m.id===audioId);assert(note.audio);assert.equal(note.reply.id,rootMessage);assert(!JSON.stringify(note).includes('voice-notes/'));assert.equal((await voiceGet('bob',note.audio.url)).status,200);assert.equal((await voiceGet('referee',note.audio.url)).status,403,'owner cannot read unrelated chats');
 // Safari probes bytes 0-1, then requests more ranges to decode and seek.
-const fullAudio=await voiceGet('bob',note.audio.url),fullBytes=new Uint8Array(await fullAudio.arrayBuffer());
+const fullAudio=await voiceGet('bob',note.audio.url),fullBytes=new Uint8Array(await fullAudio.arrayBuffer());assert.equal(fullAudio.headers.get('Content-Security-Policy'),"default-src 'none'; sandbox",'voice notes are served sandboxed like other private media');
 assert.equal(fullAudio.headers.get('content-length'),String(fullBytes.length));assert.equal(fullAudio.headers.get('accept-ranges'),'bytes');
 for(const [range,start,end] of [['bytes=0-1',0,2],['bytes=8-',8,fullBytes.length],['bytes=-5',fullBytes.length-5,fullBytes.length],['bytes=5-999',5,fullBytes.length]]){
  const part=await voiceGet('bob',note.audio.url,{Range:range});assert.equal(part.status,206);assert.equal(part.headers.get('content-range'),`bytes ${start}-${end-1}/${fullBytes.length}`);assert.equal(part.headers.get('content-length'),String(end-start));assert.deepEqual(new Uint8Array(await part.arrayBuffer()),fullBytes.slice(start,end));
@@ -1153,3 +1153,59 @@ assert(!JSON.stringify(ownerRoles.reviewerInvitations).includes('authority'),'ow
 assert(sql.prepare("SELECT id FROM moderation_audit WHERE action='accept_reviewer_invitation' AND actor='role-accept'").get());
 assert(sql.prepare("SELECT id FROM moderation_audit WHERE action='decline_reviewer_invitation' AND actor='role-decline'").get());
 console.log('Reviewer invitation consent, membership privacy, expiry, cancellation, owner change, account mismatch, replay, race guards and deletion passed.');
+
+// Moderation hides stick until review, and reviewers cannot lock out the owner or each other.
+sql.prepare("DELETE FROM safety_events WHERE actor='referee'").run();
+for(const who of ['guard-mod-a','guard-mod-b','hidden-target','hidden-reporter']){assert.equal((await post(who,{action:'profile',profile:draft(who)})).status,200);assert.equal((await review({action:'admit',target:who,reason:'Reviewed adult eligibility for moderation guard test',adultReviewed:true})).status,200);}
+for(const who of ['guard-mod-a','guard-mod-b']){assert.equal((await review({action:'grant_moderator',target:who,reason:'Appoint reviewer for moderation guard test'})).status,200);assert.equal((await notificationPost(who,{action:'respond_reviewer_invitation',invitation:sql.prepare('SELECT id FROM reviewer_invitations WHERE member=?').get(who).id,accept:true})).status,200);}
+const reportOn=async target=>{assert.equal((await post('hidden-reporter',{action:'block',target})).status,200);const r=await post('hidden-reporter',{action:'report',target,reason:'Other',details:'Moderation guard regression test.'});assert.equal(r.status,200);return r.data.receipt;};
+const hiddenCase=await reportOn('hidden-target');
+assert.equal((await review({action:'hide_profile',report:hiddenCase,target:'hidden-target',reason:'Hide while the report is reviewed'},'guard-mod-a')).status,200);
+assert.equal((await get('hidden-target')).data.me.active,false);
+assert.equal((await post('hidden-target',{action:'visibility',active:true})).status,403,'a member cannot resume a profile a reviewer hid');
+assert.equal((await post('hidden-target',{action:'delete'})).status,200);assert.equal((await post('hidden-target',{action:'profile',profile:{...draft('hidden-target'),active:true}})).status,200);
+assert.equal((await get('hidden-target')).data.me.active,false,'deleting and recreating a profile does not clear a moderation hide');
+assert.equal((await review({action:'restore',report:hiddenCase,target:'hidden-target',reason:'Review complete; profile may be shown again'},'guard-mod-a')).status,200);
+assert.equal((await post('hidden-target',{action:'visibility',active:true})).status,200,'restore lets the member resume');assert.equal((await get('hidden-target')).data.me.active,true);
+assert.equal((await review({action:'restore',report:hiddenCase,target:'hidden-target',reason:'Nothing left to restore here'},'guard-mod-a')).status,403,'restore requires a restriction or hide');
+const reviewerCase=await reportOn('guard-mod-b');
+for(const action of ['restrict','suspend','ban','hide_profile'])assert.equal((await review({action,report:reviewerCase,target:'guard-mod-b',reason:'Reviewer acting against a peer'},'guard-mod-a')).status,403,`a reviewer cannot ${action} another reviewer`);
+assert.equal((await review({action:'suspend',report:reviewerCase,target:'guard-mod-b',reason:'Owner suspends a reviewer'})).status,200,'the owner can still act on reviewers');
+assert.equal((await review({action:'restore',report:reviewerCase,target:'guard-mod-b',reason:'Owner restores the reviewer'})).status,200);
+const ownerCase=await reportOn('referee');
+assert.equal((await review({action:'ban',report:ownerCase,target:'referee',reason:'Reviewer bans the configured owner'},'guard-mod-a')).status,200);
+as('referee');assert.equal((await moderation.GET()).status,200,'a banned owner keeps review access');
+assert.equal((await review({action:'restore',report:ownerCase,target:'referee',reason:'Owner reverses the ban on their account'})).status,200);
+assert.equal(sql.prepare("SELECT status FROM safety_accounts WHERE id='referee'").get().status,'admitted');
+console.log('Sticky moderation hides and reviewer lockout guards passed.');
+
+// Conversation revisions cover only the window a client can display, so polling cost stays bounded.
+const {messageRevision}=await import(revisionUrl);
+const insertLong=sql.prepare("INSERT INTO messages (id,connection,sender,body,created,reply_to) VALUES (?,?,?,?,?,?)");
+for(let i=1;i<=250;i++)insertLong.run('long-'+i,'long-chat',i%2?'long-a':'long-b','Message '+i,new Date(Date.UTC(2026,0,1,0,0,i)).toISOString(),i===249?'long-3':'');
+const longRows=sql.prepare("SELECT rowid,id FROM messages WHERE connection='long-chat' ORDER BY rowid").all(),rowOf=id=>longRows.find(r=>r.id===id).rowid;
+const longRevision=(floor=0)=>messageRevision(DB,'direct','long-chat','long-a',0,false,floor);
+const latestOnly=await longRevision();
+sql.prepare("UPDATE messages SET edit_count=1 WHERE id='long-10'").run();
+assert.equal(await longRevision(),latestOnly,'changes older than the displayed window do not invalidate the latest page');
+assert.notEqual(await longRevision(rowOf('long-1')),latestOnly,'a client that loaded older pages still sees their changes');
+const withFloor=await longRevision(rowOf('long-1'));sql.prepare("INSERT INTO message_reactions (kind,scope,message,member,emoji) VALUES ('direct','long-chat','long-20','long-b',?)").run('👍');
+assert.notEqual(await longRevision(rowOf('long-1')),withFloor,'reactions on loaded older messages change the revision');assert.equal(await longRevision(),latestOnly,'reactions outside the window are not hashed');
+sql.prepare("UPDATE messages SET deleted_at='2026-01-02T00:00:00.000Z' WHERE id='long-3'").run();
+assert.notEqual(await longRevision(),latestOnly,'a quoted message outside the window still invalidates replies that show it');
+const beforeNew=await longRevision();insertLong.run('long-251','long-chat','long-b','Newest',new Date().toISOString(),'');
+assert.notEqual(await longRevision(),beforeNew,'new messages change the revision');
+console.log('Bounded conversation revision windows passed.');
+
+// Retention cleanup, current push roles and private caching for report responses.
+const {cleanup:retentionCleanup}=await import(safetyUrl);
+sql.prepare('INSERT INTO location_selections (token,member,place,expires) VALUES (?,?,?,?)').run('stale-token','location-idle','{}',new Date(Date.now()-60000).toISOString());
+sql.prepare('INSERT INTO location_selections (token,member,place,expires) VALUES (?,?,?,?)').run('live-token','location-idle','{}',new Date(Date.now()+600000).toISOString());
+await retentionCleanup();
+assert.deepEqual(sql.prepare("SELECT token FROM location_selections WHERE member='location-idle'").all().map(r=>r.token),['live-token'],'scheduled cleanup removes expired location tokens for members who never search again');
+const pushRole=async(who,stored)=>{sql.prepare('INSERT OR REPLACE INTO push_subscriptions (endpoint,member,updated,reviewer) VALUES (?,?,?,?)').run('https://fcm.googleapis.com/fcm/send/'+who,who,new Date().toISOString(),stored);sql.prepare('DELETE FROM safety_events WHERE actor=?').run(who);as(who);assert.equal((await notificationsApi.GET()).status,200);return sql.prepare('SELECT reviewer FROM push_subscriptions WHERE member=?').get(who).reviewer;};
+assert.equal(await pushRole('alice',2),0,'a former owner stops receiving owner review alerts once their role is re-read');
+assert.equal(await pushRole('referee',0),2,'the configured owner is flagged for owner review alerts');
+as(null);const anonymousReport=await reports.POST(request({action:'report',target:'alice',reason:'Other',details:'Signed out.'}));
+assert.equal(anonymousReport.status,401);assert.equal(anonymousReport.headers.get('Cache-Control'),'no-store','report errors are never cached');
+console.log('Retention cleanup, push role refresh and report caching headers passed.');

@@ -10,7 +10,7 @@ const source=readFileSync('app/love-app.tsx','utf8');
 const start=source.indexOf(" {route==='settings'&&")+" {route==='settings'&&".length;
 const end=source.indexOf('\n</div></div></>}',start)+'\n</div></div></>'.length;
 const fragment=source.slice(start,end);
-const moduleSource=`const Guidelines=()=>null,Shield=()=>null,EyeOff=()=>null,MessageCircle=()=>null,UserRound=()=>null,AppearanceControl=()=>null;
+const moduleSource=`const Guidelines=()=>null,Shield=()=>null,EyeOff=()=>null,MessageCircle=()=>null,UserRound=()=>null,AppearanceControl=()=>null,KeyboardDiagnosticsToggle=()=>null;
 const appearance='glass';
 const empty={};
 const deletePromptRef={current:null},deleteTriggerRef={current:null},deleteSummaryRef={current:null};
