@@ -17,7 +17,8 @@ export const metadata: Metadata = {
     apple: "/icons/apple-touch-icon.png",
   },
 };
-export const viewport: Viewport = { width: "device-width", initialScale: 1, viewportFit: "cover", themeColor: "#272c70" };
+// Start mobile screens slightly zoomed out so more of the app fits in the phone viewport. Pinch zoom remains available for people who want larger text.
+export const viewport: Viewport = { width: "device-width", initialScale: 0.9, viewportFit: "cover", themeColor: "#272c70" };
 
 export default function RootLayout({
   children,
