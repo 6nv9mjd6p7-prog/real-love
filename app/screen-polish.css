@@ -1034,3 +1034,44 @@ body{font-family:Arial,Helvetica,sans-serif;color:var(--ink);background:var(--bg
 .app-shell .content .interest-action:hover:not(:disabled),
 .app-shell .content .interest-action:focus-visible{color:#fff!important;background:#3b3757!important;border-color:#ffffffa0!important;box-shadow:0 1px 0 #ffffff30 inset,0 0 0 1px #ffffff20!important}
 .app-shell .content .interest-label{color:#f8f7ff!important;background:#302d49f5!important;border:1px solid #ffffff70!important}
+
+
+/* Profile accordions use readable dark glass in their resting state. */
+.app-shell .content .member-screen .profile-sections .profile-detail-section>summary{
+ color:#f8f7ff!important;
+ background:#29253ff2!important;
+ border:1px solid #ffffff52!important;
+ border-radius:12px!important;
+ box-shadow:0 1px 0 #ffffff20 inset;
+ -webkit-backdrop-filter:blur(18px) saturate(145%);
+ backdrop-filter:blur(18px) saturate(145%);
+}
+.app-shell .content .member-screen .profile-sections .profile-detail-section>summary:is(:hover,:focus-visible){
+ color:#fff!important;
+ background:#3b3757!important;
+ border-color:#ffffff90!important;
+}
+@media(prefers-reduced-transparency:reduce){
+ .app-shell .content .member-screen .profile-sections .profile-detail-section>summary{
+  background:#29253f!important;
+  -webkit-backdrop-filter:none!important;
+  backdrop-filter:none!important;
+ }
+}
+@media(prefers-contrast:more){
+ .app-shell .content .member-screen .profile-sections .profile-detail-section>summary{
+  color:#fff!important;
+  border:2px solid #fff!important;
+  box-shadow:none!important;
+ }
+}
+@media(forced-colors:active){
+ .app-shell .content .member-screen .profile-sections .profile-detail-section>summary{
+  color:CanvasText!important;
+  background:Canvas!important;
+  border:1px solid CanvasText!important;
+  box-shadow:none!important;
+  -webkit-backdrop-filter:none!important;
+  backdrop-filter:none!important;
+ }
+}
