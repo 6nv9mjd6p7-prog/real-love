@@ -1027,3 +1027,10 @@ body{font-family:Arial,Helvetica,sans-serif;color:var(--ink);background:var(--bg
  html:not([data-native-platform]) .sample-chat-context{max-height:72px;padding:4px 8px}
  html:not([data-native-platform]) .sample-chat-composer{padding-block:5px}
 }
+
+
+/* Dark glass keeps every interest tag legible in profile, Discover, and Circle views. */
+.app-shell .content .interest-action{color:#f8f7ff!important;background:#302d49f5!important;border-color:#ffffff70!important}
+.app-shell .content .interest-action:hover:not(:disabled),
+.app-shell .content .interest-action:focus-visible{color:#fff!important;background:#3b3757!important;border-color:#ffffffa0!important;box-shadow:0 1px 0 #ffffff30 inset,0 0 0 1px #ffffff20!important}
+.app-shell .content .interest-label{color:#f8f7ff!important;background:#302d49f5!important;border:1px solid #ffffff70!important}
