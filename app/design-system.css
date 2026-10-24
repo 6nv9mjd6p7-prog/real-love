@@ -1182,3 +1182,6 @@ html,body{max-width:100%;overflow-x:clip}
   box-shadow:none!important;
  }
 }
+
+/* Keep inner conversation panels transparent so shared glass surfaces remain visible. */
+.app-shell :is(.direct-chat,.circle-workspace) :is(.conversation-workspace,.conversation-main,.private-chat-panel){color:#f8f7ff!important;background:transparent!important;border-color:transparent!important}
