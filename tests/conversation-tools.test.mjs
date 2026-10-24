@@ -8,6 +8,10 @@ const {appendPrompt,conversationPrompts,incomingSince,nearMessageBottom,messageD
 const person={...examples[1],interests:['History','Philosophy'],topics:[]};
 assert.equal(conversationPrompts({...person,interests:['  HISTORY '],topics:[]},person)[0],'What drew you to History?');
 assert.equal(conversationPrompts(null,person)[0],'What has held your interest lately?');
+const quote='How can a community stay accountable without becoming controlling?';
+assert.match(conversationPrompts(null,person,{context:{label:'Question',text:quote}})[0],new RegExp(quote.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')),'the exact replied-to quote anchors the first opener');
+assert.match(conversationPrompts(null,person,{proposal:quote,incoming:true})[0],/^You asked, “How can a community stay accountable without becoming controlling\?”/);
+assert.match(conversationPrompts(null,person,{proposal:quote,incoming:false})[0],/^We started with, “How can a community stay accountable without becoming controlling\?”/);
 assert.equal(appendPrompt('My unfinished thought','A question?'),'My unfinished thought\n\nA question?');assert.equal(appendPrompt('','A question?'),'A question?');assert.equal(appendPrompt('x'.repeat(1499),'A question?'),null,'prompts cannot exceed the message limit or truncate the existing draft');
 const old=[{id:'one',mine:false},{id:'two',mine:true}];assert.equal(incomingSince(old,[...old,{id:'three',mine:false},{id:'four',mine:true}]),1);assert.equal(incomingSince(old,old),0,'repeat refreshes do not add phantom messages');
 assert(nearMessageBottom(100,300,440));assert(!nearMessageBottom(50,300,600));assert.equal(messageDay('2026-10-05T12:00:00Z'),messageDay('2026-10-05T13:00:00Z'));assert.notEqual(messageDay('2026-10-05T12:00:00Z'),messageDay('2026-10-06T12:00:00Z'));

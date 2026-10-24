@@ -24,5 +24,7 @@ export function saveDiscoveryView(storage:Storage|null,account:string,views:Disc
  try{storage.setItem(discoveryViewsKey(account),JSON.stringify({version:1,views:next}));return next;}catch{return views;}
 }
 export function removeDiscoveryView(storage:Storage|null,account:string,views:DiscoveryView[],id:string):DiscoveryView[]{
- const next=views.filter(view=>view.id!==id);try{if(storage&&account)storage.setItem(discoveryViewsKey(account),JSON.stringify({version:1,views:next}));}catch{return views;}return next;
+ if(!storage||!account)return views;const next=views.filter(view=>view.id!==id);try{if(storage&&account)storage.setItem(discoveryViewsKey(account),JSON.stringify({version:1,views:next}));}catch{return views;}return next;
 }
+
+export function restoreDiscoveryViews(storage:Storage|null,account:string,views:DiscoveryView[]):boolean{if(!storage||!account)return false;try{storage.setItem(discoveryViewsKey(account),JSON.stringify({version:1,views:views.slice(0,MAX_VIEWS)}));return true;}catch{return false;}}

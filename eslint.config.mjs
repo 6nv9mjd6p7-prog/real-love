@@ -14,13 +14,13 @@ const eslintConfig = defineConfig([
     "next-env.d.ts",
   ]),
   {
-    files: ["tests/**/*.test.mjs"],
+    files: ["components/ui/**/*.{ts,tsx}", "hooks/use-mobile.ts"],
     rules: {
-      // Several tests intentionally transpile components/hooks and run them through
-      // lightweight harnesses rather than React's runtime. Production hook rules
-      // still apply to app code.
-      "react-hooks/rules-of-hooks": "off",
-      "@next/next/no-assign-module-variable": "off",
+      // These files are vendored verbatim from shadcn@4.17.0. Keep the
+      // registry source intact while applying the stricter rules to Site code.
+      "@typescript-eslint/no-unused-vars": "off",
+      "react-hooks/purity": "off",
+      "react-hooks/set-state-in-effect": "off",
     },
   },
 ]);

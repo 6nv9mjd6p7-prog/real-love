@@ -2,13 +2,11 @@ import {getChatGPTUser} from '../../chatgpt-auth';
 import {z} from 'zod';
 import {db,initializeAccount,quota,readInput,moderator,activeMember,failure,safetyHeaders,SafetyError} from '../../safety';
 import {caseConflict} from '../../moderation-policy';
-type CampaignRow={id:string;creator:string;data:string;status:string;version:number;created:string};
-type FeedbackRow={id:string;kind:string;body:string;status:string;created:string;actor?:string};
 const reply=(data:unknown,status=200)=>Response.json(data,{status,headers:safetyHeaders});
 const text=(min:number,max:number)=>z.string().trim().min(min).max(max);
 const https=z.string().url().max(1000).refine(s=>{const u=new URL(s);return u.protocol==='https:'&&!u.username&&!u.password;},'Use an HTTPS source without embedded credentials.');
 const draft=z.object({title:text(5,100),company:text(2,120),summary:text(30,1500),demand:text(20,1000),uncertainty:text(10,800),alternatives:text(10,800),sources:z.array(z.object({url:https,claim:text(10,500)})).min(1).max(5),reviewDate:z.string().regex(/^\d{4}-\d{2}-\d{2}$/).refine(s=>Number.isFinite(Date.parse(s))&&new Date(s).toISOString().slice(0,10)===s&&s>new Date().toISOString().slice(0,10)&&Date.parse(s)<=Date.now()+90*86400000,'Choose a future review date within 90 days.')});
-const visible=(c:CampaignRow,today:string)=>['active','paused','completed'].includes(c.status)&&!(c.status==='active'&&JSON.parse(c.data).reviewDate<today);
+const visible=(c:any,today:string)=>['active','paused','completed'].includes(c.status)&&!(c.status==='active'&&JSON.parse(c.data).reviewDate<today);
 async function independent(id:string,creator:string){return !await caseConflict(id,{actor:creator,target:'',context:'{}'});}
 export async function GET(req?:Request){try{
  const u=await getChatGPTUser();if(!u)return reply({error:'Sign in to view collective action.'},401);await initializeAccount(u);await quota(u.userId,'campaign_read',60,60);
@@ -30,8 +28,8 @@ export async function GET(req?:Request){try{
  if(target){filter='('+filter+') AND id=?';values.push(target);}
  const after=cursor?' AND (created<? OR (created=? AND id<?))':'';
  if(cursor)values.push(cursor.created,cursor.created,cursor.id);
- const rows=await db().prepare("SELECT * FROM campaigns WHERE creator<>'' AND "+filter+after+' ORDER BY created DESC,id DESC LIMIT 26').bind(...values).all<CampaignRow>();
- const page=rows.results.slice(0,25),last=page.at(-1);
+ const rows=await db().prepare("SELECT * FROM campaigns WHERE creator<>'' AND "+filter+after+' ORDER BY created DESC,id DESC LIMIT 26').bind(...values).all();
+ const page=(rows.results as any[]).slice(0,25),last=page.at(-1);
  const nextCursor=rows.results.length>25&&last?JSON.stringify({created:last.created,id:last.id}):null;
  const campaigns=[];
  for(const c of page){const mine=c.creator===u.userId;const canReview=reviewer&&await independent(u.userId,c.creator);const publicVisible=active&&visible(c,today);const due=c.status==='active'&&JSON.parse(c.data).reviewDate<today;
@@ -40,8 +38,8 @@ export async function GET(req?:Request){try{
  // members, but the review role does not grant access to its private proposal.
  if(!mine&&!publicVisible&&!participation&&!canReview)continue;
  const updates=await db().prepare("SELECT id,body,kind,created FROM campaign_updates WHERE campaign=? AND (published=1 OR ?=1) ORDER BY created DESC").bind(c.id,canReview||mine?1:0).all();
- const feedbackRows=await db().prepare("SELECT id,kind,body,status,created,actor FROM campaign_feedback WHERE campaign=? AND (?=1 OR actor=?) ORDER BY created DESC").bind(c.id,canReview?1:0,u.userId).all<FeedbackRow&{actor:string}>();
- const feedback=[];for(const item of feedbackRows.results){if(item.actor!==u.userId&&(!canReview||!await independent(u.userId,item.actor)))continue;const safe:FeedbackRow={...item};delete safe.actor;feedback.push(safe);}
+ const feedbackRows=await db().prepare("SELECT id,kind,body,status,created,actor FROM campaign_feedback WHERE campaign=? AND (?=1 OR actor=?) ORDER BY created DESC").bind(c.id,canReview?1:0,u.userId).all();
+ const feedback=[];for(const item of feedbackRows.results as any[]){if(item.actor!==u.userId&&(!canReview||!await independent(u.userId,item.actor)))continue;const {actor,...safe}=item;feedback.push(safe);}
  campaigns.push({id:c.id,...JSON.parse(c.data),status:due?'review_due':c.status,version:c.version,mine,participating:!!participation,canReview,updates:updates.results,feedback});
  }
  return reply({accountId:u.userId,reviewer,active,campaigns,nextCursor});
@@ -52,7 +50,7 @@ export async function POST(req:Request){try{
  await quota(u.userId,'campaign_write',30,60);const id=u.userId,now=new Date().toISOString(),today=now.slice(0,10);
  if(input.action==='leave'){await db().prepare('DELETE FROM campaign_participation WHERE campaign=? AND member=?').bind(String(input.campaign||''),id).run();return reply({ok:true});}
  if(input.action==='withdraw'){
-  const c=await db().prepare('SELECT creator FROM campaigns WHERE id=?').bind(String(input.campaign||'')).first<{creator:string}>();
+  const c=await db().prepare('SELECT creator FROM campaigns WHERE id=?').bind(String(input.campaign||'')).first<any>();
   if(!c||c.creator!==id)return reply({error:'Only the proposer can withdraw.'},403);
   await db().prepare("UPDATE campaigns SET status='withdrawn',version=version+1 WHERE id=? AND creator=? AND status<>'withdrawn'").bind(String(input.campaign),id).run();return reply({ok:true});
  }
@@ -62,7 +60,7 @@ export async function POST(req:Request){try{
   const p=draft.parse(input.draft);if(input.consent!==true)return reply({error:'Acknowledge the campaign rules before submitting.'},400);
   await quota(id,'campaign_propose',2,86400);const campaign=crypto.randomUUID();await db().prepare("INSERT INTO campaigns (id,creator,data,status,version,created) VALUES (?,?,?,'pending',1,?)").bind(campaign,id,JSON.stringify(p),now).run();return reply({ok:true,campaign});
  }
- const c=await db().prepare('SELECT * FROM campaigns WHERE id=?').bind(String(input.campaign||'')).first<CampaignRow>();if(!c)return reply({error:'Campaign unavailable.'},404);
+ const c=await db().prepare('SELECT * FROM campaigns WHERE id=?').bind(String(input.campaign||'')).first<any>();if(!c)return reply({error:'Campaign unavailable.'},404);
  const data=JSON.parse(c.data);
  if(input.action==='join'){
   if(!active||input.consent!==true)return reply({error:'Review the participation choices and confirm voluntary participation.'},400);
@@ -84,8 +82,8 @@ export async function POST(req:Request){try{
   if(p.decision==='reject'){if(status!=='pending')return reply({error:'Only pending proposals can be rejected.'},409);status='rejected';}
   if(p.decision==='pause'){if(status!=='active')return reply({error:'Only active campaigns can be paused.'},409);status='paused';}
   if(p.decision==='complete'){if(!['active','paused'].includes(status))return reply({error:'Only reviewed campaigns can be completed.'},409);status='completed';}
-  let feedback:FeedbackRow&{actor:string}|null=null;
-  if(['publish_update','dismiss_feedback'].includes(p.decision)){feedback=await db().prepare("SELECT * FROM campaign_feedback WHERE id=? AND campaign=? AND status='open'").bind(p.feedback||'',c.id).first<FeedbackRow&{actor:string}>();if(!feedback)return reply({error:'Choose open feedback.'},409);if(!await independent(id,feedback.actor))return reply({error:'Another independent reviewer must review this submission.'},403);}
+  let feedback:any=null;
+  if(['publish_update','dismiss_feedback'].includes(p.decision)){feedback=await db().prepare("SELECT * FROM campaign_feedback WHERE id=? AND campaign=? AND status='open'").bind(p.feedback||'',c.id).first<any>();if(!feedback)return reply({error:'Choose open feedback.'},409);if(!await independent(id,feedback.actor))return reply({error:'Another independent reviewer must review this submission.'},403);}
   // The unique event is the transaction's ownership token. A stale version
   // inserts no event, so every dependent write is a no-op in the atomic batch.
   const event=crypto.randomUUID(),published=['active','paused','completed'].includes(status)?1:0;

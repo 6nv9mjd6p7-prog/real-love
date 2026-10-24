@@ -17,6 +17,7 @@ const policy=await import(compile(readFileSync('app/photo-policy.ts','utf8')));c
 const draftUrl=compile(readFileSync('app/profile-draft.ts','utf8').replace("from './model'",`from '${modelUrl}'`));
 const stub=compile('export default function Stub(){return null;}');let hooks=[],index=0;globalThis.__profileHooks={useState:x=>{const i=index++;if(!(i in hooks))hooks[i]=x;return [hooks[i],v=>hooks[i]=typeof v==='function'?v(hooks[i]):v];},useRef:x=>({current:x}),useEffect:()=>{}};
 let source=readFileSync('app/profile-editor.tsx','utf8').replace("import {useState,useEffect,useRef,type ReactNode} from 'react';","const {useState,useEffect,useRef}=globalThis.__profileHooks;").replace("from './model'",`from '${modelUrl}'`).replace("from './profile-draft'",`from '${draftUrl}'`);for(const dep of ['profile-sections','guidelines','location-editor'])source=source.replace(`from './${dep}'`,`from '${stub}'`);
+source=source.replace("from './profile-sharing-summary'",`from '${compile(readFileSync('app/profile-sharing-summary.tsx','utf8'))}'`);
 const {default:Editor}=await import(compile(source));let form={...examples[1],birthDate:'1996-01-01',availabilityChoices:[],participation:[],promptKeys:[]},me={...form};
 const props={accountId:'member',setForm:x=>form=typeof x==='function'?x(form):x,consent:true,setConsent:()=>{},busy:false,onSave:async()=>{},onPreview:()=>{}};
 function render(step){hooks[0]=step;index=0;return Editor({...props,form,me});}function nodes(n){return !n||typeof n!=='object'?[]:[n,...React.Children.toArray(n.props?.children).flatMap(nodes)];}

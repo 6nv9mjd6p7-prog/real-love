@@ -41,7 +41,7 @@ assert(industryMarkup.includes('New people request to join'));
 elements(label('Circle type')).find(n=>n.type==='select').props.onChange({target:{value:'worker_organizing'}});nodes=render();
 
 assert(!nodes.some(n=>n.type==='option'&&n.props.value==='unavailable'),'unavailable connections are excluded');
-elements(label('Start with')).find(n=>n.type==='select').props.onChange({target:{value:'available'}});nodes=render();
+elements(label('Choose a co-founder')).find(n=>n.type==='select').props.onChange({target:{value:'available'}});nodes=render();
 elements(label('Who is this for, and how will hosts decide admission?')).find(n=>n.type==='textarea').props.onChange({target:{value:'Hosts review respectful workers seeking broad industry discussion.'}});nodes=render();
 assert(submit().props.disabled,'privacy acknowledgement is still required');
 nodes.find(n=>n.type==='input'&&n.props.type==='checkbox').props.onChange({target:{checked:true}});nodes=render();

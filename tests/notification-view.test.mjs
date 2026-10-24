@@ -12,9 +12,15 @@ const source=readFileSync('app/notification-center.tsx','utf8').replace("from '.
 const {default:Center}=await import(compile(source));
 for(const native of [false,true]){globalThis.__native=native;const html=renderToStaticMarkup(React.createElement(Center,{accountId:'test',open:true,onUnread:()=>{},onNavigate:()=>{}}));assert(html.indexOf('Recent activity')<html.indexOf('notification-preferences'),'activity precedes setup on both platforms');assert(!html.includes('<details open'),'setup begins collapsed');assert.match(html,/Activity alert preferences/);assert.equal((html.match(/Recent activity/g)||[]).length,1);if(native)assert.match(html,/Phone alerts · not yet available/);else assert.match(html,/Phone &amp; browser alerts/);}
 console.log('Web and native activity-first notification layouts and collapsed preference controls passed (render tests).');
+const emptySource=source.replace("import {useEffect,useRef,useState} from 'react';", "import {useRef} from 'react';const useEffect=()=>{};const useState=initial=>[initial===true?false:initial,()=>{}];");
+const {default:EmptyCenter}=await import(compile(emptySource));
+const emptyHtml=renderToStaticMarkup(React.createElement(EmptyCenter,{accountId:'test',open:true,onUnread:()=>{},onNavigate:()=>{}}));
+assert.match(emptyHtml,/<p class="field-help" role="status">You’re all caught up\. New activity will appear here\.<\/p>/,'the empty inbox is announced when notifications finish loading');
+console.log('Empty notification inbox exposes a screen-reader status announcement.');
+
 
 // Render the actual pending-invitation controls without a network or role change.
-const invitationSource=source.replace("import {useCallback,useEffect,useRef,useState,useLayoutEffect,useSyncExternalStore} from 'react';", "import {useRef,useSyncExternalStore} from 'react';const useCallback=fn=>fn;const useEffect=()=>{},useLayoutEffect=()=>{};const useState=initial=>[Array.isArray(initial)&&++globalThis.__arrayState===2?[{id:'pending-role',expires:'2099-01-01T00:00:00Z'}]:initial,()=>{}];");
+const invitationSource=source.replace("import {useEffect,useRef,useState} from 'react';", "import {useRef} from 'react';const useEffect=()=>{};const useState=initial=>[Array.isArray(initial)&&++globalThis.__arrayState===2?[{id:'pending-role',expires:'2099-01-01T00:00:00Z'}]:initial,()=>{}];");
 const {default:InvitedCenter}=await import(compile(invitationSource));
 globalThis.__arrayState=0;globalThis.__native=false;
 const invited=renderToStaticMarkup(React.createElement(InvitedCenter,{accountId:'test',open:true,onUnread:()=>{},onNavigate:()=>{}}));
@@ -25,12 +31,15 @@ assert(invited.includes('cannot browse unrestricted private chats or manage revi
 delete globalThis.__arrayState;
 console.log('Pending reviewer invitation displays acceptance, decline, expiry and responsibility copy.');
 
-const groupedSource=source.replace("import {useCallback,useEffect,useRef,useState,useLayoutEffect,useSyncExternalStore} from 'react';", "import {useRef,useSyncExternalStore} from 'react';const useCallback=fn=>fn;const useEffect=()=>{},useLayoutEffect=()=>{};const useState=initial=>{const i=globalThis.__groupState++;return [i===0?globalThis.__groupItems:i===7?false:initial,()=>{}];};");
+const groupedSource=source.replace("import {useEffect,useRef,useState} from 'react';", "import {useRef} from 'react';const useEffect=()=>{};const useState=initial=>{const i=globalThis.__groupState++;return [i===0?globalThis.__groupItems:initial===true?false:initial,()=>{}];};");
 const {default:GroupedCenter}=await import(compile(groupedSource));
 globalThis.__groupState=0;globalThis.__groupItems=[{id:'new',kind:'message',url:'#chat/a',title:'Maya sent you a message',created:'2026-10-18T12:00:00Z',read:0,detail:'Private conversation with Maya'},{id:'old',kind:'message',url:'#chat/a',title:'Maya sent you a voice note',created:'2026-10-17T12:00:00Z',read:1,detail:'Private conversation with Maya'}];
 const groupedHtml=renderToStaticMarkup(React.createElement(GroupedCenter,{accountId:'test',open:true,onUnread:()=>{},onNavigate:()=>{}}));
+assert(groupedHtml.includes('aria-live="polite"')&&groupedHtml.includes('aria-atomic="true"'),'filter changes have a concise screen-reader status region');
 assert(groupedHtml.includes('2 message alerts')&&groupedHtml.includes('1 unread'));
 assert(groupedHtml.includes('Maya sent you a voice note')&&groupedHtml.includes('Latest: Maya sent you a message'),'individual events and latest context remain available');
 assert(groupedHtml.includes('<details class="notification-message-group">'),'message groups begin collapsed with native keyboard disclosure');
 assert.equal((groupedHtml.match(/class="notification-open"/g)||[]).length,2,'each event retains its original open action');
 delete globalThis.__groupState;delete globalThis.__groupItems;
+assert(source.includes("await api({action:'read'});setNotice('All notifications marked as read.');await refresh();"),'mark all as read confirms success through the existing status message');
+assert(source.includes('{notice&&<p role="status">{notice}</p>}'),'notification action confirmations use a screen-reader status announcement');

@@ -1,0 +1,17 @@
+import ts from 'typescript';
+import {readFileSync} from 'node:fs';
+import assert from 'node:assert/strict';
+const source=readFileSync('app/route-focus.ts','utf8');
+const js=ts.transpileModule(source,{compilerOptions:{module:ts.ModuleKind.ESNext}}).outputText;
+const {focusMainContent,routeFocusDecision}=await import('data:text/javascript;base64,'+Buffer.from(js).toString('base64'));
+const classes=[];let focused='';
+const heading={tabIndex:0,classList:{add:value=>classes.push(value)},focus:options=>{focused='heading';assert.deepEqual(options,{preventScroll:true});}};
+const root={querySelector:selector=>selector==='h1'?heading:null,focus:()=>{focused='main';}};
+assert.equal(focusMainContent(root),true);assert.equal(heading.tabIndex,-1);assert.deepEqual(classes,['route-focus-heading']);assert.equal(focused,'heading');
+const fallback={querySelector:()=>null,focus:options=>{focused='main';assert.deepEqual(options,{preventScroll:true});}};
+assert.equal(focusMainContent(fallback),false);assert.equal(focused,'main');assert.equal(focusMainContent(null),false);
+assert.deepEqual(routeFocusDecision('', 'discover', false, false),{focus:false,pending:false},'the initial route does not steal focus');
+assert.deepEqual(routeFocusDecision('discover', 'conversations/requests', false, false),{focus:false,pending:true},'a route change during loading waits for content');
+assert.deepEqual(routeFocusDecision('conversations/requests', 'conversations/requests', true, true),{focus:true,pending:false},'the pending route focuses its heading once content loads');
+assert.deepEqual(routeFocusDecision('discover', 'settings', true, false),{focus:true,pending:false},'loaded route changes focus immediately');
+console.log('Route focus waits through loading, then targets the first page heading; it leaves the initial route alone.');

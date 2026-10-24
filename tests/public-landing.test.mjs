@@ -11,6 +11,7 @@ assert(landing.includes('FRIENDSHIP FIRST. PEOPLE BEFORE LABELS.'));
 assert(landing.includes('Start with curiosity, not swiping.'));
 assert(landing.includes('Profile photos are optional and stay private until both people agree to share.'));
 assert(landing.includes('Circles grow from connection'));
+assert.match(landing,/<div className="public-conversation-card" role="group" aria-label="Example of a conversation starting from a shared interest">/,'assistive technology gets the example conversation context as a named group');
 assert(landing.includes('Early access for adults 18+'));
 assert(app.includes("if(!signedIn&&route==='discover')"));
 assert(app.includes("<PublicLanding authHref={authHref} authLabel={authLabel} onDemo={()=>nav('Examples')}/>"));

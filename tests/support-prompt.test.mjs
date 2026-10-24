@@ -17,6 +17,16 @@ clearSupportPrompts(storage,'b');assert.equal(items.size,1);
 storage.setItem('unrelated','keep');clearSupportPrompts(storage);assert.equal(storage.getItem('unrelated'),'keep');assert.equal(items.size,1);
 assert(!supportPromptReady(null,'a',true,now));
 assert(!supportPromptReady({getItem(){throw Error('denied');}},'a',true,now),'unavailable storage fails without an appeal');
+globalThis.window={localStorage:storage};
+let slots=[],index=0,pending=[];
+globalThis.__supportHooks={useState(initial){const i=index++;if(!(i in slots))slots[i]=initial;return [slots[i],v=>slots[i]=v];},useEffect(fn,deps){const i=index++,previous=slots[i];if(!previous||deps.some((v,j)=>v!==previous[j])){slots[i]=deps;pending.push(fn);}}};
+const hookSource=readFileSync('app/use-support-prompt.ts','utf8').replace("import {useEffect,useState} from 'react';","const {useEffect,useState}=globalThis.__supportHooks;").replace("from './support-prompt'",`from '${policy}'`);
+const {useSupportPrompt}=await import(compile(hookSource));
+function render(account,experienced){index=0;return useSupportPrompt(account,experienced);}
+function commit(){const effects=pending;pending=[];effects.forEach(fn=>fn());}
+supportPromptReady(storage,'old',true,Date.now()-SUPPORT_DELAY_MS-1);
+render('old',true);commit();assert(render('old',true).show);
+assert(!render('new',true).show,'account transitions never inherit a visible banner');commit();assert(!render('new',true).show);
 const source=readFileSync('app/love-app.tsx','utf8');
 const layout=readFileSync('app/layout.tsx','utf8'),banner=readFileSync('app/support-banner.tsx','utf8');
 assert(layout.indexOf('<SupportBanner />')<layout.indexOf('{children}'),'support is above page content');

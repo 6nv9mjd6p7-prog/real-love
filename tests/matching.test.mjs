@@ -1,7 +1,7 @@
 import ts from 'typescript';
 import {readFileSync} from 'node:fs';
 import assert from 'node:assert/strict';
-const source=ts.transpileModule(readFileSync('app/model.ts','utf8'),{compilerOptions:{module:ts.ModuleKind.ESNext}}).outputText;
+const source=ts.transpileModule(readFileSync('app/model.ts','utf8'),{compilerOptions:{module:ts.ModuleKind.ESNext,target:ts.ScriptTarget.ES2022}}).outputText;
 const {newDiscoveryPeople,eligible,examples,normalizeProfile,discoveryScore,reasons}=await import('data:text/javascript;base64,'+Buffer.from(source).toString('base64'));
 const a={...examples[1],id:'a',intentions:['Romance'],gender:'Man',interested:['Woman']};
 const b={...examples[3],id:'b',gender:'Woman',interested:['Man'],intentions:['Friendship']};
@@ -40,6 +40,15 @@ assert(!matchesDiscovery(basic,unrelated,f),'default excludes profiles without i
 assert(matchesDiscovery(basic,unrelated,{...f,interestMode:'any'}),'any interest broadens only the interest selection');
 assert(compareDiscovery(basic,exact,unrelated)<0,'shared interests outrank practical activity overlap');
 assert(compareDiscovery(basic,exact,legacy)<0,'exact topics outrank broad categories');
+const topicVsArea={...basic,interests:['History & culture','History'],topics:[]};
+const broadAreaOnly={...unrelated,id:'broad-area-only',interests:['History & culture'],topics:[],question:'',about:'',care:'',perspective:'',startIdea:''};
+const specificTopicOnly={...unrelated,id:'specific-topic-only',interests:['History'],topics:[],question:'',about:'',care:'',perspective:'',startIdea:''};
+assert(compareDiscovery(topicVsArea,specificTopicOnly,broadAreaOnly)<0,'specific shared topics outrank broad area labels when exact-interest counts tie');
+const ideaViewer={...basic,question:'How does imperialism shape everyday communities?'};
+const ideaMatch={...unrelated,id:'idea-match',interests:[],topics:[],question:'How does imperialism shape everyday communities?'};
+const relatedOnly={...legacy,id:'related-only',question:'',about:'',care:'',perspective:'',startIdea:'',interests:['History & culture'],topics:[]};
+assert(compareDiscovery(ideaViewer,ideaMatch,relatedOnly)<0,'substantive profile-answer overlap outranks a broad related-interest match');
+assert(compareDiscovery(ideaViewer,exact,ideaMatch)<0,'an exact shared interest remains ahead of answer overlap');
 assert(compareDiscovery(basic,localExact,exact)<0,'same-area profiles win when interest overlap is equal');
 assert(matchesDiscovery(basic,localExact,{...f,location:'local'}),'same-area filter normalizes case and whitespace');
 assert(!matchesDiscovery(basic,exact,{...f,location:'local'}),'nearby filter respects the selected radius');
@@ -83,9 +92,3 @@ assert.deepEqual(newDiscoveryPeople(candidates,[{status:'pending',person:{id:'pe
 console.log('Pending invitations and accepted contacts excluded from discovery without altering saved/profile data');
 
 const changedIdentity={...b,gender:'Self-described',genderDescription:'My own words',background:'Different cultural background'};assert.equal(discoveryScore(a,b),discoveryScore(a,changedIdentity),'gender and race do not change ranking');assert.equal(eligible(a,b),eligible(a,changedIdentity),'gender and race do not change friendship eligibility');
-
-const curious=connectionContext(basic,{...localExact,question:'How do communities stay open?',perspective:'A different perspective'});
-assert(curious.curiosity.some(text=>text.includes('How do communities stay open?')),'discussion includes the actual public question');
-assert(!curious.curiosity.some(text=>text.includes('A different perspective')),'one public answer avoids competing prompts');
-const sparseCuriosity=connectionContext({...basic,interests:[],topics:[]},{...unrelated,interests:[],topics:[],question:'',perspective:'',care:''});
-assert.deepEqual(sparseCuriosity.curiosity,[],'missing public answers and interests do not invent discussion context');

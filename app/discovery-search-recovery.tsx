@@ -6,6 +6,10 @@ export function recoveryInterests(query:string,interests:string[]){
  const related=interestGroups.filter(group=>[group.name,...group.topics].some(topic=>terms.some(term=>fold(topic).includes(term)))).map(group=>group.name);
  return [...new Set(related.length?related:interests)].slice(0,3);
 }
+export function searchEmptyHeading(query:string,hasOtherFilters:boolean){
+ const term=query.trim();
+ return hasOtherFilters?`No profiles mention or match “${term}” within these filters.`:`No profile mentions or matches “${term}” yet.`;
+}
 export default function DiscoverySearchRecovery({query,interests,suggestions:related=[],onClear,onInterest}:{query:string;interests:string[];suggestions?:string[];onClear:()=>void;onInterest:(topic:string)=>void}){
  const suggestions=related.length?related:recoveryInterests(query,interests);
  return <div className="discovery-search-recovery"><button type="button" className="secondary" onClick={onClear}>Clear search only</button><p className="field-help">Your other filters stay in place.</p>{suggestions.length>0&&<><p className="field-help">Or explore an interest instead. These suggestions do not indicate available matches.</p><div className="interest-tags" aria-label="Interests to explore instead">{suggestions.map(topic=><button type="button" className="interest-action" key={topic} onClick={()=>onInterest(topic)}>{topic}</button>)}</div></>}</div>;

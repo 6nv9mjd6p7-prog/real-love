@@ -22,6 +22,8 @@ const action=label=>nodes.find(n=>n.type==='button'&&n.props.children===label);
 const allActions=label=>nodes.filter(n=>n.type==='button'&&n.props.children===label);
 assert.equal(cards().length,3,'only three ideas are displayed');
 assert(nodes.some(n=>n.type==='details'&&n.props.className.includes('suggestion-panel')&&!n.props.open),'suggestions begin collapsed');
+assert(nodes.some(n=>n.type==='button'&&n.props['aria-label']==='Conversation goal: Everyday'),'goal choices have explicit accessible names');
+assert(nodes.some(n=>n.type==='button'&&n.props['aria-label']==='Add prompt to draft: Music'),'draft action names the prompt category');
 allActions('Add to draft')[0].props.onClick();assert.equal(added,'What song have you had on repeat lately?');
 const first=cards()[0].props.children[1].props.children;
 allActions('More like this')[0].props.onClick(focusEvent);assert.equal(focused,1,'focus returns to the stable disclosure before the card is removed');nodes=render();

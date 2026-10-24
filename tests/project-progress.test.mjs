@@ -6,8 +6,8 @@ import assert from 'node:assert/strict';
 import React from 'react';
 import {renderToStaticMarkup} from 'react-dom/server';
 const require=createRequire(import.meta.url);
-let slots=[],index=0,rendering=false,restart=false;
-const hooks={useState(initial){const i=index++;if(!(i in slots))slots[i]=initial;return [slots[i],value=>{const next=typeof value==='function'?value(slots[i]):value;if(!Object.is(next,slots[i])){slots[i]=next;if(rendering)restart=true;}}];},useRef(initial){return hooks.useState({current:initial})[0];},useEffect(){},useCallback(fn,deps){const i=index++;if(!slots[i]||deps.some((value,j)=>!Object.is(value,slots[i].deps[j])))slots[i]={fn,deps};return slots[i].fn;},useId:()=> 'project-test'};
+let slots=[],index=0;
+const hooks={useState(initial){const i=index++;if(!(i in slots))slots[i]=initial;return [slots[i],value=>slots[i]=typeof value==='function'?value(slots[i]):value];},useRef(initial){return hooks.useState({current:initial})[0];},useEffect(){},useCallback:fn=>fn,useId:()=> 'project-test'};
 globalThis.__projectHooks=hooks;const attempts=new Map();
 globalThis.__projectAttempt=(_account,kind,_project,text)=>{const key=kind+text;if(!attempts.has(key))attempts.set(key,crypto.randomUUID());return attempts.get(key);};
 const source=readFileSync('app/project-progress.tsx','utf8')
@@ -19,7 +19,7 @@ const {default:Progress}=await import('data:text/javascript;base64,'+Buffer.from
 function elements(node){if(!node||typeof node!=='object')return [];return [node,...React.Children.toArray(node.props?.children).flatMap(elements)];}
 let tree,nodes,calls=[],reported,changed=0;
 const props={accountId:'member',circleId:'circle',projectId:'project',refreshKey:{},disabled:false,onPosted:async()=>changed++,onReport:entry=>reported=entry};
-function render(){do{restart=false;index=0;rendering=true;tree=Progress(props);rendering=false;}while(restart);nodes=elements(tree);return renderToStaticMarkup(tree);}
+function render(){index=0;tree=Progress(props);nodes=elements(tree);return renderToStaticMarkup(tree);}
 const button=label=>nodes.find(node=>node.type==='button'&&node.props.children===label);
 const tick=()=>new Promise(resolve=>setImmediate(resolve));
 const step={id:'step',sender:'host',name:'Host name',body:'Project step: Pick a reading',status:'open',created:new Date().toISOString(),mine:false,canManage:true};

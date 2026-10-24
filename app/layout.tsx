@@ -5,6 +5,7 @@ import NativeRuntime from "./native-runtime";
 import "./globals.css";
 import "./design-system.css";
 import "./screen-polish.css";
+import "./chat-layout.css";
 
 export const metadata: Metadata = {
   title: "Real Love — Begin together",
@@ -17,7 +18,8 @@ export const metadata: Metadata = {
     apple: "/icons/apple-touch-icon.png",
   },
 };
-// Start mobile screens slightly zoomed out so more of the app fits in the phone viewport. Pinch zoom remains available for people who want larger text.
+// Start mobile screens slightly zoomed out so more of the app fits in the
+// phone viewport. Pinch zoom remains available for people who want larger text.
 export const viewport: Viewport = { width: "device-width", initialScale: 0.9, viewportFit: "cover", themeColor: "#272c70" };
 
 export default function RootLayout({
