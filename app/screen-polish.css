@@ -1155,6 +1155,7 @@ body:has(.public-landing)>.site-utility .install-app>.secondary{color:#f3efff;ba
 .public-landing .public-promise :is(h2,p){color:#f8f7ff!important}
 .public-landing .public-section.public-difference{color:#f8f7ff;background:transparent!important}
 .public-landing .public-footer{border-color:#ffffff30}
+.public-landing .public-footer strong{color:#f8f7ff}
 .public-landing :is(a.primary,.public-actions .primary){color:#fff;background:#5a4c91;border:1px solid #ffffff54;box-shadow:0 8px 24px #07081745,0 1px 0 #ffffff29 inset}
 .public-landing :is(button.secondary,.public-actions .secondary){color:#f3efff;background:#ffffff13!important;border:1px solid #ffffff48!important}
 .public-landing a:focus-visible,.public-landing button:focus-visible{outline:3px solid #ffec8a;outline-offset:3px}
