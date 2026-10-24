@@ -1,3 +1,4 @@
+import {env} from 'cloudflare:workers';
 import {getEmailUser} from './email-auth';
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
@@ -20,6 +21,10 @@ const SIGN_OUT_PATH = "/signout-with-chatgpt";
 const CALLBACK_PATH = "/callback";
 
 export async function getLegacyUser(): Promise<ChatGPTUser | null> {
+  // Only the Sites dispatcher strips and sets these headers. Hosts without it
+  // (a test site on plain Workers) must set WORKSPACE_HEADER_AUTH=off, or any
+  // client could claim any account by sending the headers itself.
+  if (env.WORKSPACE_HEADER_AUTH === "off") return null;
   const requestHeaders = await headers();
   const userId = requestHeaders.get(USER_ID_HEADER);
   const email = requestHeaders.get(USER_EMAIL_HEADER);

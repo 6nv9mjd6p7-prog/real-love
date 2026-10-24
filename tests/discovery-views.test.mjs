@@ -5,7 +5,7 @@ const compile=source=>'data:text/javascript;base64,'+Buffer.from(ts.transpileMod
 const preferences=compile(readFileSync('app/discovery-preferences.ts','utf8').replace("from './model'","from 'data:text/javascript,export const activityOptions=[];export const availabilityOptions=[];export const normalizeProfileFilters=x=>x||{}'"));
 const {defaultDiscovery}=await import(preferences);
 const source=readFileSync('app/discovery-views.ts','utf8').replace("from './discovery-preferences'",`from '${preferences}'`);
-const {readDiscoveryViews,saveDiscoveryView,removeDiscoveryView,discoveryViewsKey}=await import(compile(source));
+const {readDiscoveryViews,saveDiscoveryView,removeDiscoveryView,restoreDiscoveryViews,discoveryViewsKey}=await import(compile(source));
 const values=new Map();const storage={getItem:key=>values.get(key)??null,setItem:(key,value)=>values.set(key,value),removeItem:key=>values.delete(key)};
 let views=saveDiscoveryView(storage,'member',[],' Nearby walks ',{...defaultDiscovery,search:'walk',locationFilter:'local'});
 assert.equal(views[0].name,'Nearby walks');assert.equal(views[0].preferences.search,'walk');
@@ -18,3 +18,10 @@ assert.equal(views.length,8);assert.equal(saveDiscoveryView(storage,'member',vie
 views=removeDiscoveryView(storage,'member',views,views[0].id);assert.equal(views.length,7);assert.equal(readDiscoveryViews(storage,'member').length,7);
 values.set(discoveryViewsKey('member'),'invalid JSON');assert.deepEqual(readDiscoveryViews(storage,'member'),[],'bad local data recovers safely');
 console.log('Saved discovery view persistence, limits, account isolation, deletion, and malformed-data checks passed');
+
+const existing=[{id:'test-view',name:'History',preferences:defaultDiscovery}];
+assert.equal(removeDiscoveryView(null,'member',existing,'test-view'),existing,'unavailable storage does not claim removal');
+assert.equal(restoreDiscoveryViews(null,'member',existing),false);
+assert.equal(restoreDiscoveryViews(storage,'member',existing),true);assert.deepEqual(readDiscoveryViews(storage,'member'),existing,'Undo restores the exact prior list');
+const blocked={setItem(){throw Error('blocked');}};
+assert.equal(removeDiscoveryView(blocked,'member',existing,'test-view'),existing);assert.equal(restoreDiscoveryViews(blocked,'member',existing),false);

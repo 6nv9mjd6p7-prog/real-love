@@ -13,22 +13,24 @@ globalThis.__discoveryToolbarHooks={
 };
 let source=readFileSync('app/discovery-toolbar.tsx','utf8')
  .replace("import {useEffect,useId,useRef,useState,type ReactNode} from 'react';",'const {useEffect,useId,useRef,useState}=globalThis.__discoveryToolbarHooks;')
- .replace("import {SlidersHorizontal} from 'lucide-react';",'const SlidersHorizontal=()=>null;');
+ .replace("import {SlidersHorizontal,X} from 'lucide-react';",'const SlidersHorizontal=()=>null,X=()=>null;');
 const code=ts.transpileModule(source,{compilerOptions:{module:ts.ModuleKind.ESNext,jsx:ts.JsxEmit.ReactJSX}}).outputText.replace(/from ["']react\/jsx-runtime["']/,`from '${pathToFileURL(require.resolve('react/jsx-runtime')).href}'`);
 const {default:Toolbar}=await import('data:text/javascript;base64,'+Buffer.from(code).toString('base64'));
 const field=React.createElement('input',{defaultValue:'unfinished rule'}),search=React.createElement('input',{'aria-label':'Search'}),shortcuts=React.createElement('p',null,'Interest shortcuts');
 let nodes;
 function flatten(node){return !node||typeof node!=='object'?[]:[node,...React.Children.toArray(node.props?.children).flatMap(flatten)];}
-function render(){index=0;effects=[];const tree=Toolbar({search,shortcuts,filterCount:2,children:field});nodes=flatten(tree);return tree;}
+function render(){index=0;effects=[];const tree=Toolbar({search,shortcuts,filterCount:2,children:field,resultSummary:'3 matching profiles'});nodes=flatten(tree);return tree;}
 function panel(){return nodes.find(n=>n.props?.role==='region');}
 function trigger(){return nodes.find(n=>n.props?.className==='secondary discovery-filter-toggle');}
-render();assert.equal(panel().props.hidden,true);assert.equal(trigger().props['aria-expanded'],false);
+render();assert.equal(panel().props.hidden,true);assert.equal(trigger().props['aria-expanded'],false);assert.equal(trigger().props['aria-label'],'Open filters, 2 active');
+assert.equal(nodes.find(n=>n.props?.className==='filter-result-summary').props.role,'status','updated result counts are announced politely while filters change');
+assert.equal(nodes.find(n=>n.props?.className==='filter-result-summary').props['aria-atomic'],'true','the complete result count is announced together');
 assert.equal(trigger().props['aria-controls'],panel().props.id);
 assert(flatten(panel()).some(n=>n.type==='input'&&n.props.defaultValue==='unfinished rule'),'closed filters stay mounted, preserving unfinished input state');
 trigger().props.ref.current={focus(){triggerFocused++;}};
 nodes.find(n=>n.type==='h2').props.ref.current={focus(){headingFocused++;}};
 trigger().props.onClick();render();effects.forEach(fn=>fn());
-assert.equal(panel().props.hidden,false);assert.equal(trigger().props['aria-expanded'],true);assert.equal(headingFocused,1,'opening filters moves keyboard focus to the panel heading');
+assert.equal(panel().props.hidden,false);assert.equal(trigger().props['aria-expanded'],true);assert.equal(trigger().props['aria-label'],'Close filters, 2 active');assert.equal(headingFocused,1,'opening filters moves keyboard focus to the panel heading');
 let prevented=false;panel().props.onKeyDown({key:'Escape',preventDefault(){prevented=true;}});render();
 assert(prevented);assert.equal(panel().props.hidden,true);assert.equal(triggerFocused,1,'Escape returns focus to Filters');assert(flatten(panel()).some(n=>n.type==='input'&&n.props.defaultValue==='unfinished rule'));
 trigger().props.onClick();render();nodes.find(n=>n.type==='button'&&n.props.children==='Done').props.onClick();render();

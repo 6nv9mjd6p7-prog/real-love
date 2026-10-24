@@ -5,9 +5,13 @@ export function sharedConversationInterests(me:Profile|null|undefined,person:Pro
  const mine=new Set(me?profileInterests(me).map(x=>x.toLowerCase()):[]);
  return profileInterests(person).filter(x=>mine.has(x.toLowerCase()));
 }
-export function conversationPrompts(me:Profile|null|undefined,person:Profile):string[]{
+export type ConversationAnchor={context?:{label?:string;text?:string}|null;proposal?:string;incoming?:boolean};
+export function conversationPrompts(me:Profile|null|undefined,person:Profile,anchor?:ConversationAnchor):string[]{
  const shared=sharedConversationInterests(me,person)[0];
- return [shared?`What drew you to ${shared}?`:'What has held your interest lately?',
+ const exactContext=anchor?.context?.text?.trim();
+ const proposal=anchor?.proposal?.trim();
+ const opener=exactContext?`You replied to “${exactContext}”. What would you like me to understand about it?`:proposal?`${anchor?.incoming?'You asked':'We started with'}, “${proposal}”. What would you like to explore next?`:shared?`What drew you to ${shared}?`:'What has held your interest lately?';
+ return [opener,
  'What is something you enjoyed this week?',
  'If we explored that interest together, what would be a good first step?'];
 }

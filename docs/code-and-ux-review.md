@@ -14,9 +14,7 @@ The repository contains 243 tracked files. Review covered the application screen
 
 Native Chromium was used at 320px, 390px, and 1440px widths for discovery, conversations, direct chat, circles, profile, and settings. A 390×500 viewport approximated reduced space while composing; it does not replace real phone-keyboard testing. Discovery measurements used demo examples, not a production population. No horizontal page overflow appeared on those checked screens.
 
-Validation at review time: all 23 automated test files passed, TypeScript checks passed, and the production build passed. Lint reported 266 errors and 31 warnings, including explicit `any` types and React-hook rules.
-
-Cleanup update: the suite now contains 95 passing test files, with TypeScript and production-build checks passing. Hook and type lint errors have been resolved. The six intentional native-image uses have narrow, documented lint exceptions: authenticated private/evidence photos keep their direct access paths, and local previews keep browser-owned blob URLs and cleanup. CI now requires lint to pass with zero warnings; the image rule remains enabled elsewhere.
+Current validation: all 23 automated test files pass, TypeScript checks pass, and the production build passes. `npm run lint` fails with 266 errors and 31 warnings, including explicit `any` types and React-hook rules. Passing tests do not imply a clean lint baseline.
 
 ## Fundamentals to borrow
 

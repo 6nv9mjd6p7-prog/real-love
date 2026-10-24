@@ -4,6 +4,7 @@ const staticRoutes = new Set([
   'discover',
   'saved',
   'examples',
+  'examples/chat',
   'profile',
   'settings',
   'review',
@@ -69,8 +70,6 @@ export function recordAppNavigation(previous:string|null,route:string,account:st
  if(marker?.account===account&&marker.route===route)return;
  history.replaceState({...state,realLoveNavigation:{account,route,parent:previous&&allowedAppRoute(previous)?previous:null}},'');
 }
-// Hash navigation creates the browser entry; the root router records its parent.
-export function pushAppRoute(route:string){window.location.hash=route;}
 export function replaceAppRoute(route:string,account:string,preserveParent=false){
  const next=allowedAppRoute(route)||'circles';
  const parent=preserveParent&&history.state?.realLoveNavigation?.account===account?history.state.realLoveNavigation.parent:null;
@@ -94,4 +93,4 @@ export function backWithinApp(fallback:string,account:string,steps=1){
 }
 
 export function returnToAppRoute(target:string,account:string){if(appBackDestination('',account)===target)backWithinApp(target,account);else replaceAppRoute(target,account);}
-export function routeBackLabel(route:string){if(route.startsWith('person/'))return 'profile';if(route==='circles/work')return 'Worker Support';if(route.startsWith('circles/work/'))return 'worker circles';if(route.startsWith('chat/')||route.startsWith('conversations'))return 'Chats';if(route==='notifications')return 'Notifications';if(route==='profile')return 'My profile';if(route==='circles/requests')return 'circle requests';if(route==='circles/joined')return 'joined circles';if(route.startsWith('circles'))return 'Circles';if(route==='saved')return 'Saved';if(route==='examples')return 'Examples';if(route==='settings')return 'Privacy & settings';if(route==='review')return 'Safety review';return 'Discover';}
+export function routeBackLabel(route:string){if(route.startsWith('person/'))return 'profile';if(route==='circles/work')return 'Worker Support';if(route.startsWith('circles/work/'))return 'worker circles';if(route.startsWith('chat/')||route.startsWith('conversations'))return 'Chats';if(route==='notifications')return 'Notifications';if(route==='profile')return 'My profile';if(route==='circles/requests')return 'circle requests';if(route==='circles/joined')return 'joined circles';if(route.startsWith('circles'))return 'Circles';if(route==='saved')return 'Saved';if(route.startsWith('examples'))return 'Examples';if(route==='settings')return 'Privacy & settings';if(route==='review')return 'Safety review';return 'Discover';}

@@ -2,6 +2,9 @@ import {locationKey,type BroadLocationPoint} from './location';
 
 type PhotonFeature={geometry?:{coordinates?:unknown};properties?:Record<string,unknown>};
 type PhotonResponse={features?:unknown};
+export class LocationProviderError extends Error{
+ constructor(public kind:'http'|'timeout'|'network'|'invalid_response',public providerStatus?:number,message='Place suggestions are temporarily unavailable. Try again.') {super(message);}
+}
 
 const text=(value:unknown,max:number)=>typeof value==='string'?value.trim().replace(/\s+/g,' ').slice(0,max):'';
 const number=(value:unknown)=>typeof value==='number'&&Number.isFinite(value)?value:null;
@@ -26,9 +29,11 @@ export function photonSuggestions(payload:unknown,requireBroadPlace=false):Broad
 }
 
 async function photon(url:URL){
- const response=await fetch(url,{headers:{Accept:'application/geo+json','Accept-Language':'en'},signal:AbortSignal.timeout(5000)});
- if(!response.ok){await response.body?.cancel();throw Error('Place search is unavailable.');}
- return await response.json();
+ let response:Response;
+ try{response=await fetch(url,{headers:{Accept:'application/json, application/geo+json','Accept-Language':'en','User-Agent':'RealLove/1.0 (+https://real-love-connections.fetes-rowboat-0k.chatgpt.site)'},signal:AbortSignal.timeout(5000)});}
+ catch(error:any){throw new LocationProviderError(error?.name==='TimeoutError'||error?.name==='AbortError'?'timeout':'network');}
+ if(!response.ok){await response.body?.cancel();throw new LocationProviderError('http',response.status);}
+ try{return await response.json();}catch{throw new LocationProviderError('invalid_response');}
 }
 function searchUrl(query:string,filtered=true){
  const url=new URL('https://photon.komoot.io/api');url.searchParams.set('q',query);url.searchParams.set('limit',filtered?'8':'12');url.searchParams.set('lang','en');
@@ -36,16 +41,21 @@ function searchUrl(query:string,filtered=true){
  return url;
 }
 
+let unavailableUntil=0;
+function providerUnavailable(error:unknown){
+ unavailableUntil=Date.now()+30000;
+ console.warn('location_provider_unavailable',{kind:error instanceof LocationProviderError?error.kind:'internal',providerStatus:error instanceof LocationProviderError?error.providerStatus:undefined});
+}
 const cache=new Map<string,{until:number;results:BroadLocationPoint[]}>();
 export async function searchBroadLocations(query:string){
  const q=query.trim().replace(/\s+/g,' ').slice(0,120);if(q.length<2)return [];
  const key=q.toLocaleLowerCase();const existing=cache.get(key);if(existing&&existing.until>Date.now())return existing.results;
  let results:BroadLocationPoint[]=[];
- try{results=photonSuggestions(await photon(searchUrl(q,true)));}catch{}
- if(!results.length){
-  try{results=photonSuggestions(await photon(searchUrl(q,false)),true);}
-  catch{throw Error('Place suggestions are temporarily unavailable. Try again.');}
+ if(Date.now()>=unavailableUntil){
+  try{results=photonSuggestions(await photon(searchUrl(q,true)));}catch{}
+  if(!results.length){try{results=photonSuggestions(await photon(searchUrl(q,false)),true);}catch(error){providerUnavailable(error);}}
  }
+ if(!results.length){const {directorySearch}=await import('./location-directory.mjs');results=directorySearch(q);}
  if(results.length){cache.set(key,{until:Date.now()+6*60*60*1000,results});if(cache.size>200)cache.delete(cache.keys().next().value as string);}
  return results;
 }
@@ -53,8 +63,11 @@ export async function searchBroadLocations(query:string){
 export async function reverseBroadLocations(lat:number,lon:number){
  const make=(filtered:boolean)=>{const url=new URL('https://photon.komoot.io/reverse');url.searchParams.set('lat',String(lat));url.searchParams.set('lon',String(lon));url.searchParams.set('limit',filtered?'8':'12');url.searchParams.set('radius','50');url.searchParams.set('lang','en');if(filtered){url.searchParams.append('layer','city');url.searchParams.append('layer','locality');url.searchParams.append('layer','district');}return url;};
  let results:BroadLocationPoint[]=[];
- try{results=photonSuggestions(await photon(make(true)));}catch{}
- if(!results.length){try{results=photonSuggestions(await photon(make(false)),true);}catch{throw Error('Current-area lookup is temporarily unavailable. Try again.');}}
+ if(Date.now()>=unavailableUntil){
+  try{results=photonSuggestions(await photon(make(true)));}catch{}
+  if(!results.length){try{results=photonSuggestions(await photon(make(false)),true);}catch(error){providerUnavailable(error);}}
+ }
+ if(!results.length){const {directoryReverse}=await import('./location-directory.mjs');results=directoryReverse(lat,lon);}
  if(!results.length)throw Error('We could not identify a nearby city or general area. Search for your area instead.');
  // Providers can order by place prominence. Sort candidate area points by distance instead.
  const distance=(p:BroadLocationPoint)=>{const rad=(n:number)=>n*Math.PI/180;const a=Math.sin(rad(p.areaLat-lat)/2)**2+Math.cos(rad(lat))*Math.cos(rad(p.areaLat))*Math.sin(rad(p.areaLon-lon)/2)**2;return 2*Math.atan2(Math.sqrt(a),Math.sqrt(Math.max(0,1-a)));};

@@ -1,0 +1,13 @@
+{
+  "source": "GeoNames",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "generated": "2026-10-21",
+  "coverage": "cities15000: cities over 15000 population and administrative capitals; not every town",
+  "records": 34173,
+  "files": {
+    "https://download.geonames.org/export/dump/cities15000.zip": "a839fd6af3d55e5d41d2e281d481b7c0887cc9f2bc536723708843ef01e70ea8",
+    "https://download.geonames.org/export/dump/admin1CodesASCII.txt": "b577baa3476bbe94f0454545e517e1835401d79c5b1105c8e02cf1d4a505e8ec",
+    "https://download.geonames.org/export/dump/countryInfo.txt": "c55f638cfaafb4fe45a9aa15120a0f1f78e8a34a8e1847d7b9320cf740fbc9ab"
+  }
+}

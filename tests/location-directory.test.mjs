@@ -1,0 +1,33 @@
+import assert from 'node:assert/strict';
+import ts from 'typescript';
+import {readFileSync} from 'node:fs';
+import {pathToFileURL} from 'node:url';
+import {directorySearch,directoryReverse} from '../app/location-directory.mjs';
+const austin=directorySearch('Austin Texas')[0];
+assert.equal(austin.city,'Austin');assert.equal(austin.region,'Texas');assert.equal(austin.country,'United States');
+assert.equal(directorySearch('Lagos Nigeria')[0].city,'Lagos');
+assert.equal(directorySearch('Manchester UK')[0].country,'United Kingdom');
+assert.equal(directorySearch('Sao Paulo Brazil')[0].city,'São Paulo');
+assert.equal(directorySearch('Austin Minnesota')[0].region,'Minnesota','same-name cities retain region distinctions');
+assert.deepEqual(directorySearch('TotallyMadeUpCityzzzz'),[]);
+assert.deepEqual(directorySearch(''),[]);
+assert(directorySearch('New').length<=8);
+assert.equal(directoryReverse(30.2672,-97.7431)[0].city,'Austin');
+assert.equal(directoryReverse(30.2672,-97.7431)[0].areaLat,austin.areaLat,'reverse lookup returns directory coordinates, never device coordinates');
+assert.deepEqual(directoryReverse(0,-140),[],'do not invent a nearby city in an uncovered area');
+assert.deepEqual(directoryReverse(NaN,0),[]);
+const compile=s=>'data:text/javascript;base64,'+Buffer.from(ts.transpileModule(s,{compilerOptions:{module:ts.ModuleKind.ESNext,target:ts.ScriptTarget.ES2022}}).outputText).toString('base64');
+const loc=compile(readFileSync('app/location.ts','utf8'));
+const directory=pathToFileURL(new URL('../app/location-directory.mjs',import.meta.url).pathname).href;
+const source=readFileSync('app/location-search.ts','utf8').replace("from './location'",`from '${loc}'`).replaceAll("import('./location-directory.mjs')",`import('${directory}')`);
+const api=await import(compile(source));
+const realFetch=globalThis.fetch;let attempts=0;
+globalThis.fetch=async()=>{attempts++;return new Response('',{status:521});};
+try{
+ const results=await api.searchBroadLocations('Austin Texas');assert.equal(results[0].city,'Austin');assert(results[0].locationPlaceId.startsWith('geonames/'));
+ assert.equal(attempts,2,'the provider fallback remains bounded');
+ assert.equal((await api.searchBroadLocations('Lagos Nigeria'))[0].city,'Lagos');assert.equal(attempts,2,'brief cooldown prevents repeated requests to an unavailable provider');
+ assert.equal((await api.reverseBroadLocations(30.2672,-97.7431))[0].city,'Austin');assert.equal(attempts,2);
+ assert.deepEqual(await api.searchBroadLocations('NonexistentCityzzzz'),[]);
+}finally{globalThis.fetch=realFetch;}
+console.log('Real city disambiguation, accent search, unknown places, nearby bounds, provider outage fallback, and cooldown passed.');

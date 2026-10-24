@@ -38,11 +38,15 @@ assert.match(conversation,/x-chat-image-kind':'direct'/,'direct chats send image
 assert.match(circles,/x-chat-image-kind':'circle'/,'circles send images through the same scoped media endpoint');
 assert.match(bubble,/m\.image&&!deleted&&<figure className="message-photo">/,'messages group the shared image and its caption semantically');
 assert.match(bubble,/<InteractivePhoto src=\{m\.image\.url\} label=\{'Photo shared by '\+/,'chat photos open in the shared accessible photo viewer');
-assert.match(bubble,/<figcaption className="message-body">\{m\.body\}<\/figcaption>/,'photo captions remain readable without duplicating the caption as image alt text');
+assert.match(bubble,/<figcaption className="message-body">\{body\}<\/figcaption>/,'photo captions remain readable without duplicating the caption as image alt text');
 assert.match(photoViewer,/el\?\.showModal\(\)/,'the photo viewer opens as a native modal dialog');
 assert.match(photoViewer,/onCancel=\{\(\)=>setOpen\(false\)\}/,'the photo viewer supports Escape dismissal');
-assert.match(photoViewer,/(?:trigger\.current|triggerEl)\?\.focus\(\{preventScroll:true\}\)/,'closing the viewer returns focus to the photo that opened it');
+assert.match(photoViewer,/trigger\.current\?\.focus\(\{preventScroll:true\}\)/,'closing the viewer returns focus to the photo that opened it');
+assert.match(photoViewer,/if\(restoreTriggerFocus\.current\)trigger\.current\?\.focus/,'focus returns to the opener only when the dialog is dismissed in place');
+assert.match(photoViewer,/restoreTriggerFocus\.current=false;setOpen\(false\);onProfile\(\)/,'profile navigation keeps focus on its destination instead of the closed photo control');
+assert.match(photoViewer,/restoreTriggerFocus\.current=false;setOpen\(false\);onReport\(\)/,'report navigation keeps focus on its destination instead of the closed photo control');
 assert.match(photoViewer,/description\|\|label/,'the enlarged image uses the caption as its accessible description when available');
+assert.match(photoViewer,/role="status" aria-live="polite" aria-atomic="true">Zoom \{Math\.round\(zoom\*100\)\}%/,'screen readers hear the current zoom percentage after it changes');
 assert.match(reports,/evidence\.photoEvidenceKey=key/,'reported chat images are retained as specifically reported evidence');
 assert.match(moderation,/evidence\.photo=/,'moderators receive a scoped image evidence URL');
 assert.match(privacy,/Photos you attach to a chat or circle message are shared with that conversation/,'privacy settings distinguish message images from profile-photo exchange consent');

@@ -9,9 +9,9 @@ export function pushFailureMessage(reason?:PushFailure){
 }
 export async function pushTo(member:string,onlyEndpoint?:string){
  if(!env.DB||!env.WEB_PUSH_PRIVATE_JWK||!env.WEB_PUSH_PUBLIC_KEY)return {accepted:0,failed:0,reason:'unavailable' as PushFailure};
- const rows=await env.DB.prepare('SELECT endpoint FROM push_subscriptions WHERE member=?'+(onlyEndpoint?' AND endpoint=?':'')+' LIMIT 3').bind(...(onlyEndpoint?[member,onlyEndpoint]:[member])).all<{endpoint:string}>();
+ const rows=await env.DB.prepare('SELECT endpoint FROM push_subscriptions WHERE member=?'+(onlyEndpoint?' AND endpoint=?':'')+' LIMIT 3').bind(...(onlyEndpoint?[member,onlyEndpoint]:[member])).all();
  let accepted=0,failed=0,reason:PushFailure|undefined=rows.results.length?undefined:'missing';
- await Promise.all(rows.results.map(async(raw)=>{
+ await Promise.all(rows.results.map(async(raw:any)=>{
   if(!validPushEndpoint(raw.endpoint)){failed++;reason='request';return;}
   const provider=new URL(raw.endpoint).hostname;let stage:'sign'|'send'='sign';
   try{
@@ -36,7 +36,7 @@ export async function notify(member:string,actor:string,kind:string,scope:string
  }catch{console.warn('Notification could not be queued.');}
 }
 export async function notifyCircle(circle:string,actor:string,messageId:string){
- try{const rows=await env.DB!.prepare("SELECT member FROM circle_members WHERE circle=? AND status='accepted' AND member<>?").bind(circle,actor).all<{member:string}>();await Promise.all(rows.results.map((x)=>notify(x.member,actor,'circle_message',circle,'New circle message','#circles/'+encodeURIComponent(circle),messageId)));}catch{console.warn('Circle notifications could not be queued.');}
+ try{const rows=await env.DB!.prepare("SELECT member FROM circle_members WHERE circle=? AND status='accepted' AND member<>?").bind(circle,actor).all();await Promise.all(rows.results.map((x:any)=>notify(x.member,actor,'circle_message',circle,'New circle message','#circles/'+encodeURIComponent(circle),messageId)));}catch{console.warn('Circle notifications could not be queued.');}
 }
 // Catch-up is in-app only: opening the app must not burst old phone alerts.
 export async function syncReviewNotifications(member:string,owner:boolean){
@@ -46,8 +46,8 @@ export async function syncReviewNotifications(member:string,owner:boolean){
 }
 export async function notifyReviewers(subject:string,_eventKey:string,kind:'review'|'review_report'|'review_appeal'='review'){
  try{
-  const rows=await env.DB!.prepare("SELECT member,MAX(is_owner) AS is_owner FROM (SELECT m.id AS member,0 AS is_owner FROM moderators m JOIN safety_accounts a ON a.id=m.id WHERE a.status='admitted' UNION ALL SELECT DISTINCT s.member,1 AS is_owner FROM push_subscriptions s JOIN safety_accounts a ON a.id=s.member WHERE s.reviewer=2 AND a.status='admitted') GROUP BY member").all<{member:string;is_owner:number}>();
-  await Promise.all(rows.results.map(async(raw)=>{
+  const rows=await env.DB!.prepare("SELECT member,MAX(is_owner) AS is_owner FROM (SELECT m.id AS member,0 AS is_owner FROM moderators m JOIN safety_accounts a ON a.id=m.id WHERE a.status='admitted' UNION ALL SELECT DISTINCT s.member,1 AS is_owner FROM push_subscriptions s JOIN safety_accounts a ON a.id=s.member WHERE s.reviewer=2 AND a.status='admitted') GROUP BY member").all();
+  await Promise.all(rows.results.map(async(raw:any)=>{
    const item=await reviewWorkItem(raw.member,!!raw.is_owner,kind,subject);
    if(item)await notify(raw.member,'',item.kind,item.scope,item.title,'#review',item.kind+':'+item.scope,true);
   }));

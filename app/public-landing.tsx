@@ -26,8 +26,8 @@ export default function PublicLanding({
       </div>
     </header>
 
-    <main id="public-top">
-      <section className="public-hero" aria-labelledby="public-hero-title">
+    <main id="main-content" tabIndex={-1}>
+      <section id="public-top" className="public-hero" aria-labelledby="public-hero-title">
         <div className="public-hero-copy">
           <p className="public-eyebrow">FRIENDSHIP FIRST. PEOPLE BEFORE LABELS.</p>
           <h1 id="public-hero-title">Find people you can actually talk to.</h1>
@@ -38,7 +38,7 @@ export default function PublicLanding({
           </div>
           <p className="public-fineprint">Early access for adults 18+. New profiles are reviewed before discovery or messaging.</p>
         </div>
-        <div className="public-conversation-card" aria-label="Example of a conversation starting from a shared interest">
+        <div className="public-conversation-card" role="group" aria-label="Example of a conversation starting from a shared interest">
           <span className="public-kicker">YOU BOTH CARE ABOUT</span>
           <div className="public-topic-row"><span>History</span><span>Community</span><span>Meaning</span></div>
           <span className="public-kicker">A QUESTION WORTH TALKING ABOUT</span>

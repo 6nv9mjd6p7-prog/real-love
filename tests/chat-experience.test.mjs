@@ -8,15 +8,29 @@ import {renderToStaticMarkup} from 'react-dom/server';
 const require=createRequire(import.meta.url);
 function compile(source){let js=ts.transpileModule(source,{compilerOptions:{module:ts.ModuleKind.ESNext,jsx:ts.JsxEmit.ReactJSX}}).outputText;for(const name of ['react/jsx-runtime','react'])js=js.replaceAll(`from "${name}"`,`from '${pathToFileURL(require.resolve(name)).href}'`).replaceAll(`from '${name}'`,`from '${pathToFileURL(require.resolve(name)).href}'`);return 'data:text/javascript;base64,'+Buffer.from(js).toString('base64');}
 const toolsUrl=compile(readFileSync('app/chat-tools.ts','utf8'));
-const {messageFingerprint}=await import(toolsUrl);
+const {messageFingerprint,messageLengthAnnouncement}=await import(toolsUrl);
 assert.notEqual(messageFingerprint('Hello','message-a'),messageFingerprint('Hello','message-b'),'different reply targets have distinct retry keys');
+assert.equal(messageLengthAnnouncement(1199),0,'screen readers are not interrupted while the message is short');assert.equal(messageLengthAnnouncement(1200),1200,'the first announcement starts at the long-message threshold');assert.equal(messageLengthAnnouncement(1299),1200,'typing within a milestone does not repeatedly announce');assert.equal(messageLengthAnnouncement(1300),1300,'the next announcement waits for the 100-character milestone');assert.equal(messageLengthAnnouncement(1500),1500,'the maximum length gets a final announcement');
+const composerSource=readFileSync('app/chat-composer.tsx','utf8').replace("from './chat-tools'",`from '${toolsUrl}'`).replace("from 'lucide-react'",`from '${'data:text/javascript;base64,'+Buffer.from('export const ImagePlus=()=>null;export const X=()=>null;').toString('base64')}'`).replace("from './voice-recorder'",`from '${'data:text/javascript;base64,'+Buffer.from('export default function VoiceRecorder(){return null;}').toString('base64')}'`).replace("from './chat-viewport'",`from '${'data:text/javascript;base64,'+Buffer.from('export function chatViewportState(){return {layoutHeight:0,keyboardOpen:false,height:0,top:0};}').toString('base64')}'`);
+const {default:Composer}=await import(compile(composerSource));
+const composerHtml=renderToStaticMarkup(React.createElement(Composer,{accountId:'test',kind:'direct',scope:'friend',value:'x'.repeat(1250),onChange(){},textareaRef:{current:null},label:'Message',placeholder:'Write a message',disabled:false,sending:false,onSubmit(){},reply:null,onCancelReply(){},onVoiceSent:async()=>{},onImageSend:async()=>{},onImageSent:async()=>{}}));
+assert.match(composerHtml,/>1,250 of 1,500 characters</,'the visual counter stays exact while typing');assert.match(composerHtml,/role="status" aria-live="polite" aria-atomic="true">1,200 of 1,500 characters used\. 300 remaining\./,'the screen-reader announcement uses the last milestone rather than every keystroke');
 const photoStub='data:text/javascript;base64,'+Buffer.from('export default function Photo(){return null;}').toString('base64');
 const source=readFileSync('app/chat-bubble.tsx','utf8').replace("from './chat-tools'",`from '${toolsUrl}'`).replace("from './interactive-photo'",`from '${photoStub}'`);
 const {default:Bubble}=await import(compile(source));
 const message={id:'test',body:'An answer\nwith a new line',created:new Date().toISOString(),mine:false,reply:{id:'original',body:'A question',name:'Friend',mine:false},reactions:[{emoji:'❤️',count:2,mine:true}]};
 const html=renderToStaticMarkup(React.createElement(Bubble,{message,name:'Friend',onReply(){},onReact(){},onReport(){}}));
 assert(html.includes('data-message-id="test"'),'chat messages expose a stable target for search navigation');assert(html.includes('Reply to Friend'));assert(html.includes('A question'));assert(html.includes('Reply'));assert(html.includes('React'));assert(html.includes('Report'));assert(html.includes('your reaction'));assert(html.includes('aria-pressed="true"'));
+const voice=renderToStaticMarkup(React.createElement(Bubble,{message:{...message,reply:null,reactions:[],audio:{url:'/voice/test',duration:7000}},name:'Friend',onReply(){},onReact(){}}));
+assert.match(voice,/aria-label="Play voice note from Friend"/,'voice playback has an explicit, sender-specific button name');
+assert.match(voice,/Seek voice note from Friend/,'voice playback has a labeled seek slider');
+assert.match(voice,/aria-valuetext="0:00 of 0:07"/,'the seek slider communicates the current and total time');
+assert.doesNotMatch(voice,/<audio[^>]*controls/,'the native player controls that appear unnamed in the live accessibility tree are replaced');
 const unavailable=renderToStaticMarkup(React.createElement(Bubble,{message:{...message,reply:null,replyUnavailable:true},name:'Friend',onReply(){},onReact(){}}));assert(unavailable.includes('Original message unavailable'));assert(!unavailable.includes('A question'));
+const compact=renderToStaticMarkup(React.createElement(Bubble,{message,name:'Friend',compactActions:React.createElement('span',null,'Actions'),externalMeta:true,onReply(){},onReact(){},onReport(){}}));
+assert(compact.includes('message-action-menu')&&compact.includes('aria-label="Message actions for message from Friend sent '),'compact messages expose a sender- and time-specific disclosure');
+assert(compact.includes('aria-label="Reply to message from Friend sent ')&&compact.includes('aria-label="React to message from Friend sent ')&&compact.includes('aria-label="Report message from Friend sent '),'message actions identify the specific message they affect');
+assert(!compact.includes('class="message-sender"')&&!compact.includes('<time'),'the circle wrapper owns sender and timestamp exactly once');
 // Exercise pointer and explicit controls without asserting a browser rendering result.
 const fake=source.replace("import {useEffect,useRef,useState} from 'react';","let hook=0;const useEffect=()=>{};const useRef=x=>({current:x});const useState=x=>{const index=hook++;return [x,value=>{if(index===0)globalThis.__picker=value;}];};");
 const {default:Interactive}=await import(compile(fake));let replyCount=0,chosen=null;
@@ -25,7 +39,12 @@ const target={closest:()=>null};const realNow=Date.now;let now=10000;Date.now=()
 tree.props.onPointerUp({pointerType:'touch',target});assert.equal(globalThis.__picker,false);now+=150;tree.props.onPointerUp({pointerType:'touch',target});assert.equal(globalThis.__picker,true,'double touch opens reactions');Date.now=realNow;
 globalThis.__picker=false;tree.props.onDoubleClick({target});assert.equal(globalThis.__picker,true,'double click opens reactions on desktop');
 function elements(node){if(!node||typeof node!=='object')return [];return [node,...React.Children.toArray(node.props?.children).flatMap(elements)];}
-const nodes=elements(tree);nodes.find(n=>n.type==='button'&&n.props['aria-label']==='Reply to message from Friend').props.onClick();assert.equal(replyCount,1);
+const audioFake=source.replace("import {useEffect,useRef,useState} from 'react';","const useEffect=()=>{};let refs=0;const useRef=x=>({current:refs++===0?globalThis.__audioMock:x});const useState=x=>[x,()=>{}];");
+const {default:AudioInteractive}=await import(compile(audioFake));let played=0;globalThis.__audioMock={paused:true,currentTime:0,play(){played++;return Promise.resolve();},pause(){this.paused=true;}};
+const voiceTree=AudioInteractive({message:{...message,reply:null,reactions:[],audio:{url:'/voice/test',duration:7000}},name:'Friend',onReply(){},onReact(){}});
+const voiceNodes=elements(voiceTree);voiceNodes.find(n=>n.type==='button'&&n.props['aria-label']==='Play voice note from Friend').props.onClick();assert.equal(played,1,'the named play control starts the audio');
+voiceNodes.find(n=>n.type==='input'&&n.props.type==='range').props.onChange({currentTarget:{value:'2.5'}});assert.equal(globalThis.__audioMock.currentTime,2.5,'the labeled seek control updates playback position');delete globalThis.__audioMock;
+const nodes=elements(tree);nodes.find(n=>n.type==='button'&&n.props['aria-label'].startsWith('Reply to message from Friend sent ')).props.onClick();assert.equal(replyCount,1);
 nodes.find(n=>n.type==='button'&&n.props['aria-pressed']===true).props.onClick();assert.equal(chosen,'','selecting your existing reaction removes it');
 const modelUrl=compile(readFileSync('app/model.ts','utf8'));const {examples}=await import(modelUrl);
 const rulesUrl=compile(readFileSync('app/rules.ts','utf8'));
@@ -34,10 +53,11 @@ const draftUrl=compile(readFileSync('app/profile-draft.ts','utf8').replace("from
 const locationUrl=compile(readFileSync('app/location.ts','utf8'));
 const locationEditorUrl=compile(readFileSync('app/location-editor.tsx','utf8').replace("from './location'",`from '${locationUrl}'`));
 const sectionsUrl=compile(readFileSync('app/profile-sections.tsx','utf8'));
-const editorSource=readFileSync('app/profile-editor.tsx','utf8').replace("from './profile-sections'",`from '${sectionsUrl}'`).replace("from './model'",`from '${modelUrl}'`).replace("from './guidelines'",`from '${guidelinesUrl}'`).replace("from './profile-draft'",`from '${draftUrl}'`).replace("from './location-editor'",`from '${locationEditorUrl}'`).replace('useState(me?(consent?0:3):profileResumeStep(form))','useState(globalThis.__step)');
+const sharingSummaryUrl=compile(readFileSync('app/profile-sharing-summary.tsx','utf8'));
+const editorSource=readFileSync('app/profile-editor.tsx','utf8').replace("from './profile-sections'",`from '${sectionsUrl}'`).replace("from './profile-sharing-summary'",`from '${sharingSummaryUrl}'`).replace("from './model'",`from '${modelUrl}'`).replace("from './guidelines'",`from '${guidelinesUrl}'`).replace("from './profile-draft'",`from '${draftUrl}'`).replace("from './location-editor'",`from '${locationEditorUrl}'`).replace('useState(me?(consent?0:3):profileResumeStep(form))','useState(globalThis.__step)');
 const {default:Editor}=await import(compile(editorSource));
 const props={accountId:'test-account',form:examples[1],setForm(){},me:null,consent:true,setConsent(){},busy:false,onSave(){},onPreview(){},photoSetup:React.createElement('p',null,'Optional photo picker')};
-globalThis.__step=3;const signup=renderToStaticMarkup(React.createElement(Editor,props));assert(signup.includes('Optional photo picker'));assert(signup.includes('Privacy and agreement'));assert(!signup.includes('Faith or worldview'));assert(!signup.includes('Culture and background'),'new signup does not contain deeper questions');
+globalThis.__step=3;const signup=renderToStaticMarkup(React.createElement(Editor,props));assert(signup.includes('Optional photo picker'));assert(signup.includes('Privacy, sharing, and agreement'));assert(!signup.includes('Faith or worldview'));assert(!signup.includes('Culture and background'),'new signup does not contain deeper questions');
 globalThis.__step=4;const extras=renderToStaticMarkup(React.createElement(Editor,{...props,me:examples[1]}));assert(extras.includes('Faith or worldview'));assert(extras.includes('update gender and cultural background in Basics'));assert(extras.includes('Save changes'));assert(!extras.includes('Optional photo picker'));
 globalThis.__step=1;const basics=renderToStaticMarkup(React.createElement(Editor,{...props,form:{...examples[1],gender:'Self-described',genderDescription:'My words'}}));assert(basics.includes('Gender (optional)'));assert(basics.includes('Prefer not to say'));assert(basics.includes('Gender in your own words'));assert(basics.includes('Race or cultural background (optional)'));assert(basics.includes('City or general area (required)'));assert(basics.includes('Selected area'));assert(basics.includes('Estimate from internet connection'));assert(basics.includes('You choose the area to save'));assert(basics.includes('My words'));
 delete globalThis.__step;delete globalThis.__picker;
@@ -50,8 +70,3 @@ const tombstone=renderToStaticMarkup(React.createElement(Bubble,{message:{...mes
 tree.props.onPointerDown({clientX:10,clientY:10,pointerId:1,target,currentTarget:{setPointerCapture(){}}});tree.props.onPointerUp({clientX:80,clientY:15,pointerId:1,target,pointerType:'touch'});assert.equal(replyCount,2,'horizontal swipe replies');
 tree.props.onPointerDown({clientX:10,clientY:10,pointerId:1,target,currentTarget:{setPointerCapture(){}}});tree.props.onPointerUp({clientX:80,clientY:60,pointerId:1,target,pointerType:'touch'});assert.equal(replyCount,2,'vertical scrolling does not reply');
 console.log('Swipe direction, expiry boundaries, owner edit/delete controls and tombstones passed.');
-
-const compact=renderToStaticMarkup(React.createElement(Bubble,{message,name:'Friend',compactActions:React.createElement('span',null,'Actions'),externalMeta:true,onReply(){},onReact(){},onReport(){}}));
-assert(compact.includes('message-action-menu')&&compact.includes('Message actions for Friend'),'compact messages expose a named disclosure');
-assert(compact.includes('Reply to message from Friend')&&compact.includes('React to message from Friend')&&compact.includes('Report'),'compaction retains reply, reactions and reporting');
-assert(!compact.includes('class="message-sender"')&&!compact.includes('<time'),'the circle wrapper owns sender and timestamp exactly once');

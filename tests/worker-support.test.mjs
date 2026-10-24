@@ -14,12 +14,14 @@ for(const label of ['Work &amp; Worker Support','Explore worker circles','Extern
 assert(!html.includes('<form'),'resource hub does not collect workplace disclosures');
 assert(html.includes('https://www.worker.gov/'));assert(html.includes('https://www.dol.gov/agencies/whd/workers'));
 assert(html.includes('updates were suspended'),'Worker.gov freshness limitation is disclosed');
+assert(html.includes('role="status" aria-live="polite">Showing all 7 resources.'),'resource result count is announced to assistive technology');
 assert(!html.includes('iframe'),'no provider embeds leak a visit before clicking');
 for(const resource of workerResources){assert(new URL(resource.url).protocol==='https:');assert(html.includes(resource.url));}
 assert.equal((html.match(/rel="noopener noreferrer"/g)||[]).length,workerResources.length+1);
 assert.equal((html.match(/referrerPolicy="no-referrer"/g)||[]).length,workerResources.length+1);
 const circles=readFileSync('app/circles.tsx','utf8');
-assert(circles.includes("fetch(workerArea?'/api/circles?scope=worker':'/api/circles')"));
+assert(circles.includes("fetch(workerArea?'/api/circles?scope=worker':'/api/circles',{cache:'no-store',signal:controller.signal})"));
+assert(circles.includes('setTimeout(()=>controller.abort(),12000)')&&circles.includes('Circles are taking longer than expected.'),'circle loading has a bounded wait and a clear recovery message');
 assert(circles.includes("category:workerArea?workerCategory:'friendship'"));
 assert(circles.includes('required disabled={busy} checked={workerConsent}'));
 assert(circles.includes('Who can see these messages?')&&circles.includes('Chats and voice notes are not end-to-end encrypted')&&!circles.includes('Circle chat privacy &amp; history'),'circle privacy stays visible once without a duplicate disclosure');

@@ -1,12 +1,12 @@
 /* Shared private/Circle chat structure. Loaded after the general design system. */
 .app-shell .chat-workspace:is(.direct-chat,.circle-workspace) {
-  display: flex;
-  flex-direction: column;
-  height: var(--chat-desktop-height, 80dvh);
-  min-height: 0;
+  display: flex !important;
+  flex-direction: column !important;
+  height: var(--chat-desktop-height, 80dvh) !important;
+  min-height: 0 !important;
   max-width: 100%;
-  padding: 12px;
-  overflow: hidden;
+  padding: 12px !important;
+  overflow: hidden !important;
   background: var(--surface);
 }
 
@@ -15,56 +15,77 @@
 }
 
 .app-shell .chat-workspace:is(.direct-chat,.circle-workspace) > .chat-context-area {
-  flex: 0 1 auto;
-  min-height: 0;
-  max-height: 40%;
-  overflow: auto;
+  flex: 0 1 auto !important;
+  min-height: 0 !important;
+  max-height: 40% !important;
+  overflow: auto !important;
   overscroll-behavior-y: contain;
 }
 
 .app-shell .chat-workspace:is(.direct-chat,.circle-workspace) :is(.conversation-heading,.circle-workspace-heading) {
-  position: sticky;
-  top: 0;
+  display: grid !important;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 8px;
+  position: sticky !important;
+  top: 0 !important;
   z-index: 2;
   background: var(--surface);
 }
 
+.app-shell .chat-workspace :is(.chat-back,.circle-back) {
+  grid-column: 1 !important;
+  grid-row: 1 !important;
+  width: auto !important;
+  flex: 0 0 auto !important;
+}
+.app-shell .chat-workspace :is(.conversation-heading,.circle-workspace-heading) > div {
+  grid-column: 2 !important;
+  grid-row: 1 !important;
+  min-width: 0;
+}
+.app-shell .chat-workspace :is(.chat-options-button,.circle-more-button) {
+  grid-column: 3 !important;
+  grid-row: 1 !important;
+  width: auto !important;
+}
+
 .app-shell .chat-workspace .direct-options-panel {
-  padding: 8px 0;
+  padding: 8px 0 !important;
 }
 
 .app-shell .chat-workspace .direct-options-panel > button {
-  min-height: 44px;
-  margin: 4px 8px 4px 0;
-  padding: 8px 12px;
+  min-height: 44px !important;
+  margin: 4px 8px 4px 0 !important;
+  padding: 8px 12px !important;
   border: 1px solid var(--border);
   border-radius: var(--control-radius);
 }
 
 .app-shell .chat-workspace:is(.direct-chat,.circle-workspace) :is(.private-chat-tabs,.circle-section-tabs) {
-  position: static;
-  display: grid;
-  flex: 0 0 auto;
-  height: auto;
-  margin: 0;
-  padding: 0;
+  position: static !important;
+  display: grid !important;
+  flex: 0 0 auto !important;
+  height: auto !important;
+  margin: 0 !important;
+  padding: 0 !important;
   border-top: 0;
   border-bottom: 1px solid var(--border);
 }
 
 .app-shell .chat-workspace:is(.direct-chat,.circle-workspace) :is(.private-chat-tabs,.circle-section-tabs) > button {
-  flex-direction: row;
-  min-height: 44px;
-  padding: 6px;
+  flex-direction: row !important;
+  min-height: 44px !important;
+  padding: 6px !important;
 }
 
 .app-shell .chat-workspace:is(.direct-chat,.circle-workspace) :is(.private-chat-panel,.circle-chat-panel):not([hidden]) {
-  display: flex;
-  flex: 1 1 0;
-  flex-direction: column;
-  min-height: 0;
-  padding: 0;
-  overflow: hidden;
+  display: flex !important;
+  flex: 1 1 0 !important;
+  flex-direction: column !important;
+  min-height: 0 !important;
+  padding: 0 !important;
+  overflow: hidden !important;
 }
 
 .app-shell .chat-workspace:is(.direct-chat,.circle-workspace) :is(.private-chat-panel,.circle-section-panel)[hidden] {
@@ -72,93 +93,96 @@
 }
 
 .app-shell .chat-workspace:is(.direct-chat,.circle-workspace) :is(.private-plan-section,.circle-section-panel):not([hidden]) {
-  display: block;
-  flex: 1 1 0;
-  min-height: 0;
-  padding: 12px 0;
-  overflow-y: auto;
+  display: block !important;
+  flex: 1 1 0 !important;
+  min-height: 0 !important;
+  padding: 12px 0 !important;
+  overflow-y: auto !important;
   overscroll-behavior-y: contain;
 }
 
 .app-shell .chat-workspace:is(.direct-chat,.circle-workspace) .conversation-messages {
-  flex: 1 1 0;
-  height: auto;
-  min-height: 0;
-  max-height: none;
-  margin: 0;
-  padding: 12px 0;
-  overflow-y: auto;
+  flex: 1 1 0 !important;
+  height: auto !important;
+  min-height: 0 !important;
+  max-height: none !important;
+  margin: 0 !important;
+  padding: 12px 0 !important;
+  overflow-y: auto !important;
   overscroll-behavior-y: contain;
   overflow-anchor: none;
 }
 
 .app-shell .chat-workspace .private-chat-panel > :is(.inline-error,.field-help) {
-  flex: 0 1 auto;
-  min-height: 0;
-  max-height: 20%;
-  margin: 4px 0;
-  overflow-y: auto;
+  flex: 0 1 auto !important;
+  min-height: 0 !important;
+  max-height: 20% !important;
+  margin: 4px 0 !important;
+  overflow-y: auto !important;
 }
 
 .app-shell .chat-workspace:is(.direct-chat,.circle-workspace) :is(.direct-compose-dock,.circle-compose-dock) {
-  position: relative;
-  inset: auto;
-  display: flex;
-  flex-direction: column;
-  flex: 0 1 auto;
-  min-height: 0;
-  max-height: calc(100% - 44px);
-  padding: 0;
-  overflow: hidden;
+  position: relative !important;
+  inset: auto !important;
+  display: flex !important;
+  flex-direction: column !important;
+  flex: 0 1 auto !important;
+  min-height: 0 !important;
+  max-height: calc(100% - 44px) !important;
+  padding: 0 !important;
+  overflow: hidden !important;
 }
 
 .app-shell .chat-workspace:is(.direct-chat,.circle-workspace) .conversation-guidance {
-  flex: 0 1 auto;
-  min-height: 0;
-  overflow-y: auto;
+  position: relative !important;
+  inset: auto !important;
+  width: 100%;
+  flex: 0 1 auto !important;
+  min-height: 0 !important;
+  overflow-y: auto !important;
   overscroll-behavior-y: contain;
 }
 
 .app-shell .chat-workspace:is(.direct-chat,.circle-workspace) .chat-composer {
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  flex: 0 1 auto;
-  min-height: 64px;
+  position: relative !important;
+  display: flex !important;
+  flex-direction: column !important;
+  flex: 0 1 auto !important;
+  min-height: 64px !important;
   bottom: auto !important;
-  margin: 0;
+  margin: 0 !important;
 }
 
 .app-shell .chat-workspace:is(.direct-chat,.circle-workspace) .composer-controls {
-  flex: 0 0 auto;
+  flex: 0 0 auto !important;
 }
 
 .app-shell .chat-workspace:is(.direct-chat,.circle-workspace) :is(.reply-composer,.chat-photo-draft) {
-  flex: 0 1 auto;
-  min-height: 0;
-  overflow-y: auto;
+  flex: 0 1 auto !important;
+  min-height: 0 !important;
+  overflow-y: auto !important;
 }
 
 .app-shell .chat-workspace:is(.direct-chat,.circle-workspace) .chat-composer .composer-controls > textarea {
-  max-height: clamp(44px, calc(var(--chat-height, 100dvh) * .18), 144px);
-  overflow-y: auto;
+  max-height: clamp(44px, calc(var(--chat-height, 100dvh) * .18), 144px) !important;
+  overflow-y: auto !important;
 }
 
 .app-shell .chat-workspace:is(.direct-chat,.circle-workspace) .suggestion-panel,
 .app-shell .chat-workspace:is(.direct-chat,.circle-workspace) .suggestion-panel[open] {
-  position: static;
-  max-height: none;
-  margin: 0;
-  padding: 0;
-  overflow: visible;
+  position: static !important;
+  max-height: none !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  overflow: visible !important;
 }
 
 .app-shell .chat-workspace:is(.direct-chat,.circle-workspace) .suggestion-panel > summary {
-  position: static;
-  transform: none;
-  min-height: 44px;
-  margin: 0;
-  padding: 10px 4px;
+  position: static !important;
+  transform: none !important;
+  min-height: 44px !important;
+  margin: 0 !important;
+  padding: 10px 4px !important;
   border: 0;
   background: transparent;
 }
@@ -166,37 +190,65 @@
 /* Only an open conversation occupies the mobile viewport. Other routes keep page scrolling. */
 @media (max-width: 720px), (max-width: 1024px) and (max-height: 500px) {
   html:has(.chat-workspace), body:has(.chat-workspace) {
-    overflow-y: hidden;
+    overflow-y: hidden !important;
   }
 
   :root body .app-shell .chat-workspace:is(.direct-chat,.circle-workspace) {
-    position: fixed;
+    position: fixed !important;
     z-index: 13;
-    top: var(--chat-top, 0px);
-    right: 0;
-    bottom: auto;
-    left: 0;
+    top: var(--chat-top, 0px) !important;
+    right: 0 !important;
+    bottom: auto !important;
+    left: 0 !important;
     width: 100%;
-    height: var(--chat-height, 100dvh);
-    min-height: 0;
-    margin: 0;
-    padding: env(safe-area-inset-top) max(12px, env(safe-area-inset-right)) env(safe-area-inset-bottom) max(12px, env(safe-area-inset-left));
+    height: var(--chat-height, 100dvh) !important;
+    min-height: 0 !important;
+    margin: 0 !important;
+    padding: env(safe-area-inset-top) max(12px, env(safe-area-inset-right)) env(safe-area-inset-bottom) max(12px, env(safe-area-inset-left)) !important;
     border: 0;
     border-radius: 0;
   }
 
   .app-shell .chat-workspace:is(.direct-chat,.circle-workspace) .conversation-heading,
   .app-shell .chat-workspace:is(.direct-chat,.circle-workspace) .circle-workspace-heading {
-    margin: 0;
+    margin: 0 !important;
     padding-block: 6px;
   }
 
   html[data-keyboard-open] .chat-workspace .conversation-guidance:not(:has(details[open])) {
-    display: none;
+    display: none !important;
   }
 
   /* A synthetic keyboard remains useful in the local layout preview. */
   :root[data-qa-keyboard] body .app-shell.qa-preview-app .chat-workspace:is(.direct-chat,.circle-workspace) {
-    height: 62dvh;
+    height: 62dvh !important;
   }
+}
+
+/* Keep the restored design's content wrappers in the shared height chain. */
+.app-shell .chat-workspace .conversation-workspace,
+.app-shell .chat-workspace .conversation-main {
+  display: flex !important;
+  flex-direction: column !important;
+  flex: 1 1 0 !important;
+  min-height: 0 !important;
+  height: auto !important;
+  overflow: hidden !important;
+}
+:root body .app-shell .chat-workspace .direct-options-panel .conversation-context-rail {
+  display: block !important;
+  position: static !important;
+  width: 100%;
+  height: auto !important;
+  max-height: none !important;
+  margin: 0 !important;
+  overflow: visible !important;
+}
+.app-shell .chat-workspace:is(.direct-chat,.circle-workspace) :is(.private-chat-tabs,.circle-section-tabs) {
+  order: 0 !important;
+  min-height: 44px !important;
+  inset: auto !important;
+}
+.app-shell .chat-workspace:is(.direct-chat,.circle-workspace) :is(.private-chat-panel,.circle-chat-panel) {
+  order: 1 !important;
 }
